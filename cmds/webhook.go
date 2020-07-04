@@ -49,9 +49,9 @@ var (
 	hosts       = []string{"gh-ci-webhook.appscode.ninja"}
 	port        = 8989
 	enableSSL   bool
-	gh          = lib.NewGitHubClient()
 	queueLength = 100
 	prs         chan PREvent
+	gh          *github.Client
 )
 
 func NewCmdRun() *cobra.Command {
@@ -121,6 +121,7 @@ func runServer() error {
 		panic(err)
 	}
 
+	gh = lib.NewGitHubClient()
 	prs = make(chan PREvent, queueLength)
 
 	go processPREvent(gh, sh)
