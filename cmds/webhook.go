@@ -132,7 +132,7 @@ func runServer() error {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = fmt.Fprintf(w, "Hello, TLS user! Your config: %+v", r.TLS)
 	}).Methods(http.MethodGet)
-	r.HandleFunc("/check-runs", CheckRunsHandler).Methods(http.MethodPost)
+	r.HandleFunc("/check-ci-runs", CheckRunsHandler).Methods(http.MethodPost)
 	r.HandleFunc("/check-pr-runs", CheckPrRepoRunsHandler).Methods(http.MethodPost)
 	r.HandleFunc("/pr", PullRequestsHandler).Methods(http.MethodPost)
 
