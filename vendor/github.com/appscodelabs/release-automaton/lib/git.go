@@ -34,11 +34,7 @@ func IsGitConfigured(sh *shell.Session, key string, global bool) bool {
 		args = append(args, "--global")
 	}
 	args = append(args, key)
-	data, err := sh.Command("git", args...).Output()
-	if err != nil {
-		panic(err)
-	}
-	return len(bytes.TrimSpace(data)) > 0
+	return sh.Command("git", args...).Run() != nil
 }
 
 func ConfigureGit(sh *shell.Session, key, value string, global bool) error {
