@@ -15,6 +15,9 @@ $ mv gh-ci-webhook-linux-amd64 /usr/local/bin/gh-ci-webhook
 ```console
 $ curl -fsSL -O https://github.com/appscodelabs/gh-ci-webhook/raw/v0.0.3/hack/systemd/gh-ci-webhook.service
 $ chmod +x gh-ci-webhook.service
+
+# edit gh-ci-webhook.service file to add `--ssl --secret-key=<uuid>`
+
 $ mv gh-ci-webhook.service /lib/systemd/system/gh-ci-webhook.service
 ```
 
@@ -25,3 +28,13 @@ $ sudo systemctl enable gh-ci-webhook.service
 $ sudo systemctl start gh-ci-webhook
 $ sudo journalctl -f -u gh-ci-webhook
 ```
+
+## Configure Webhooks
+
+## private repo
+`https://gh-ci-webhook.appscode.ninja/payload?ci-repo=github.com/appscode-cloud/grafana-tester&actions=closed`
+
+## public repo
+`https://gh-ci-webhook.appscode.ninja/payload?pr-repo=github.com/appscode-cloud/private-repo`
+
+Also, set the `<uuid>` passed to gh-ci-webhook.service as the secret key.
