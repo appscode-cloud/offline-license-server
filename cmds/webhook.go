@@ -314,16 +314,21 @@ func serveHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePRRepoEvent(event *github.CheckRunEvent, query url.Values) {
+	if len(event.GetCheckRun().PullRequests) == 0 {
+		return
+	}
+	pr := event.GetCheckRun().PullRequests[0]
+
 	if event.GetCheckRun().GetApp().GetSlug() == "github-actions" &&
 		event.GetCheckRun().GetName() == "Build" &&
 		event.GetCheckRun().GetStatus() == "completed" &&
 		event.GetCheckRun().GetConclusion() == "success" {
 
-		pr, _, err := gh.PullRequests.Get(
+		details, _, err := gh.PullRequests.Get(
 			context.TODO(),
 			event.GetRepo().GetOwner().GetLogin(),
 			event.GetRepo().GetName(),
-			event.GetCheckRun().PullRequests[0].GetNumber(),
+			pr.GetNumber(),
 		)
 		if err != nil {
 			panic(err)
@@ -332,20 +337,25 @@ func handlePRRepoEvent(event *github.CheckRunEvent, query url.Values) {
 		prs <- PREvent{
 			PRRepoURL:   strings.TrimPrefix(event.GetRepo().GetHTMLURL(), "https://"),
 			TestRepoURL: strings.TrimPrefix(query.Get("ci-repo"), "https://"),
-			PRNumber:    event.GetCheckRun().PullRequests[0].GetNumber(),
-			PRTitle:     pr.GetTitle(),
-			PRState:     pr.GetState(),
-			PRMerged:    pr.GetMerged(),
-			HeadRef:     event.GetCheckRun().PullRequests[0].GetHead().GetRef(),
-			HeadSHA:     event.GetCheckRun().PullRequests[0].GetHead().GetSHA(),
+			PRNumber:    pr.GetNumber(),
+			PRTitle:     details.GetTitle(),
+			PRState:     details.GetState(),
+			PRMerged:    details.GetMerged(),
+			HeadRef:     pr.GetHead().GetRef(),
+			HeadSHA:     pr.GetHead().GetSHA(),
 		}
 	}
 }
 
 func handleCIRepoEvent(event *github.CheckRunEvent, query url.Values) {
+	if len(event.GetCheckRun().PullRequests) == 0 {
+		return
+	}
+	pr := event.GetCheckRun().PullRequests[0]
+
 	if event.GetCheckRun().GetApp().GetSlug() == "github-actions" {
 		owner, repo := lib.ParseRepoURL(query.Get("pr-repo"))
-		ref := strings.Split(event.GetCheckRun().PullRequests[0].GetHead().GetRef(), "@")[0] // branch name matches pr repo's sha
+		ref := strings.Split(pr.GetHead().GetRef(), "@")[0] // branch name matches pr repo's sha
 
 		var state string
 		if event.GetCheckRun().GetStatus() == "queued" || event.GetCheckRun().GetStatus() == "in_progress" {
