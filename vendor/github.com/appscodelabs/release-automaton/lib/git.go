@@ -23,8 +23,38 @@ import (
 
 	"github.com/appscodelabs/release-automaton/api"
 
+	"github.com/alessio/shellescape"
 	shell "github.com/codeskyblue/go-sh"
 )
+
+func IsGitConfigured(sh *shell.Session, key string, global bool) bool {
+	// git config --global user.email
+	args := []interface{}{"config"}
+	if global {
+		args = append(args, "--global")
+	}
+	args = append(args, key)
+	data, err := sh.Command("git", args...).Output()
+	if err != nil {
+		panic(err)
+	}
+	return len(bytes.TrimSpace(data)) > 0
+}
+
+func ConfigureGit(sh *shell.Session, key, value string, global bool) error {
+	if IsGitConfigured(sh, key, global) {
+		return nil
+	}
+
+	// git config --global user.email "value"
+	args := []interface{}{"config"}
+	if global {
+		args = append(args, "--global")
+	}
+	args = append(args, key)
+	args = append(args, shellescape.Quote(value))
+	return sh.Command("git", args...).Run()
+}
 
 func ListTags(sh *shell.Session) ([]string, error) {
 	data, err := sh.Command("git", "tag").Output()

@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/alessio/shellescape v1.2.2
 	github.com/appscode/go v0.0.0-20200323182826-54e98e09185a
-	github.com/appscodelabs/release-automaton v0.0.11
+	github.com/appscodelabs/release-automaton v0.0.12
 	github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27
 	github.com/google/go-github/v32 v32.0.0
 	github.com/gorilla/mux v1.7.3

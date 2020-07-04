@@ -122,8 +122,16 @@ func runServer() error {
 	}
 
 	gh = lib.NewGitHubClient()
-	prs = make(chan PREvent, queueLength)
+	err = lib.ConfigureGit(sh, "user.name", os.Getenv(api.GitHubUserKey), true)
+	if err != nil {
+		panic(err)
+	}
+	err = lib.ConfigureGit(sh, "user.email", os.Getenv(api.GitHubUserKey)+"@appscode.com", true)
+	if err != nil {
+		panic(err)
+	}
 
+	prs = make(chan PREvent, queueLength)
 	go processPREvent(gh, sh)
 
 	r := mux.NewRouter()
