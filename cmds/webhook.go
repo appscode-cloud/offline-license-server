@@ -129,9 +129,7 @@ func runServer() error {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = fmt.Fprintf(w, "Hello, TLS user! Your config: %+v", r.TLS)
 	}).Methods(http.MethodGet)
-	r.HandleFunc("/check-ci-runs", serveHTTP).Methods(http.MethodPost)
-	r.HandleFunc("/check-pr-runs", serveHTTP).Methods(http.MethodPost)
-	r.HandleFunc("/pr", serveHTTP).Methods(http.MethodPost)
+	r.HandleFunc("/payload", serveHTTP).Methods(http.MethodPost)
 	r.Use()
 
 	if !enableSSL {
