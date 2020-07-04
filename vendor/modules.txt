@@ -11,7 +11,7 @@ github.com/alessio/shellescape
 ## explicit
 github.com/appscode/go/log/golog
 github.com/appscode/go/version
-# github.com/appscodelabs/release-automaton v0.0.13
+# github.com/appscodelabs/release-automaton v0.0.14
 ## explicit
 github.com/appscodelabs/release-automaton/api
 github.com/appscodelabs/release-automaton/lib

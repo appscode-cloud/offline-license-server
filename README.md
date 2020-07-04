@@ -5,7 +5,7 @@
 - Download pre-built binary into a server
 
 ```console
-curl -fsSL -O https://github.com/appscodelabs/gh-ci-webhook/releases/download/v0.0.7/gh-ci-webhook-linux-amd64
+curl -fsSL -O https://github.com/appscodelabs/gh-ci-webhook/releases/download/v0.0.8/gh-ci-webhook-linux-amd64
 chmod +x gh-ci-webhook-linux-amd64
 mv gh-ci-webhook-linux-amd64 /usr/local/bin/gh-ci-webhook
 ```
@@ -13,7 +13,7 @@ mv gh-ci-webhook-linux-amd64 /usr/local/bin/gh-ci-webhook
 - Install systemd service
 
 ```console
-curl -fsSL -O https://github.com/appscodelabs/gh-ci-webhook/raw/v0.0.7/hack/systemd/gh-ci-webhook.service
+curl -fsSL -O https://github.com/appscodelabs/gh-ci-webhook/raw/v0.0.8/hack/systemd/gh-ci-webhook.service
 chmod +x gh-ci-webhook.service
 
 # edit gh-ci-webhook.service file to add `--ssl --secret-key=<uuid>`
