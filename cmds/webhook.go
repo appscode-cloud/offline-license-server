@@ -42,10 +42,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-const (
-	msgSingleJSON = "Request body must only contain a single JSON object"
-)
-
 var (
 	secretKey   = ""
 	certDir     = "certs"
