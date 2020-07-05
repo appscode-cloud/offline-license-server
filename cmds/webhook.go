@@ -265,7 +265,7 @@ func openPR(gh *github.Client, sh *shell.Session, event PREvent) error {
 		return err
 	}
 	if lib.RepoModified(sh) {
-		err = lib.CommitRepo(sh, "", fmt.Sprintf("%s@%s", event.PRRepoURL, event.HeadSHA))
+		err = lib.CommitRepo(sh, "", event.Branch())
 		if err != nil {
 			return err
 		}
