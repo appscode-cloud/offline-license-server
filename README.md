@@ -1,40 +1,36 @@
-# gh-ci-webhook
+# offline-license-server
 
 ## Installation
 
 - Download pre-built binary into a server
 
 ```console
-curl -fsSL -O https://github.com/appscodelabs/gh-ci-webhook/releases/download/v0.0.9/gh-ci-webhook-linux-amd64
-chmod +x gh-ci-webhook-linux-amd64
-mv gh-ci-webhook-linux-amd64 /usr/local/bin/gh-ci-webhook
+curl -fsSL -O https://github.com/appscodelabs/offline-license-server/releases/download/v0.0.9/offline-license-server-linux-amd64
+chmod +x offline-license-server-linux-amd64
+mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
 ```
 
 - Install systemd service
 
 ```console
-curl -fsSL -O https://github.com/appscodelabs/gh-ci-webhook/raw/v0.0.9/hack/systemd/gh-ci-webhook.service
-chmod +x gh-ci-webhook.service
+curl -fsSL -O https://github.com/appscodelabs/offline-license-server/raw/v0.0.9/hack/systemd/offline-license-server.service
+chmod +x offline-license-server.service
 
-# edit gh-ci-webhook.service file to add `--ssl --secret-key=<uuid>`
+# edit offline-license-server.service file to add `--ssl --secret-key=<uuid>`
 
-mv gh-ci-webhook.service /lib/systemd/system/gh-ci-webhook.service
+mv offline-license-server.service /lib/systemd/system/offline-license-server.service
 ```
 
 Now, you should be able to enable the service, start it, then monitor the logs by tailing the systemd journal:
 
 ```console
-sudo systemctl enable gh-ci-webhook.service
-sudo systemctl start gh-ci-webhook
-sudo journalctl -f -u gh-ci-webhook
+sudo systemctl enable offline-license-server.service
+sudo systemctl start offline-license-server
+sudo journalctl -f -u offline-license-server
 ```
 
-## Configure Webhooks
+## Verify Email
 
-## private repo
-`https://gh-ci-webhook.appscode.ninja/payload?ci-repo=github.com/appscode-cloud/grafana-tester&actions=closed`
-
-## public repo
-`https://gh-ci-webhook.appscode.ninja/payload?pr-repo=github.com/appscode-cloud/private-repo`
-
-Also, set the `<uuid>` passed to gh-ci-webhook.service as the secret key.
+```
+curl -d "email=tamal@appscode.com" -X POST http://localhost:4000/register
+```

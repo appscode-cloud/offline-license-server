@@ -19,9 +19,10 @@ package main
 import (
 	"os"
 
-	"github.com/appscodelabs/gh-ci-webhook/cmds"
-
 	logs "github.com/appscode/go/log/golog"
+	"github.com/appscodelabs/offline-license-server/cmds"
+	_ "gocloud.dev/blob/gcsblob"
+	_ "gocloud.dev/blob/memblob"
 )
 
 func main() {

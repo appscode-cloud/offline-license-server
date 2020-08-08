@@ -1,22 +1,45 @@
-module github.com/appscodelabs/gh-ci-webhook
+module github.com/appscodelabs/offline-license-server
 
 go 1.14
 
 require (
-	github.com/alessio/shellescape v1.2.2
+	github.com/Masterminds/goutils v1.1.0 // indirect
+	github.com/Masterminds/semver v1.5.0 // indirect
+	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/appscode/go v0.0.0-20200323182826-54e98e09185a
-	github.com/appscodelabs/release-automaton v0.0.14
-	github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27
-	github.com/google/go-github/v32 v32.0.0
-	github.com/gorilla/mux v1.7.3
+	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
+	github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e
+	github.com/go-macaron/binding v1.1.0
+	github.com/google/uuid v1.1.1
+	github.com/googleapis/gnostic v0.3.1 // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
+	github.com/gorilla/schema v1.1.0 // indirect
+	github.com/huandu/xstrings v1.3.2 // indirect
+	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
+	github.com/mailgun/mailgun-go/v4 v4.1.3
+	github.com/mitchellh/copystructure v1.0.0 // indirect
+	github.com/pkg/errors v0.9.1
+	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/spf13/cobra v1.0.0
-	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
+	github.com/spf13/pflag v1.0.5
+	github.com/yuin/goldmark v1.1.27
+	gocloud.dev v0.20.0
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
+	gomodules.xyz/blobfs v0.1.4
+	gomodules.xyz/cert v1.1.2
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/ini.v1 v1.51.0 // indirect
+	gopkg.in/macaron.v1 v1.3.8
 	k8s.io/apimachinery v0.18.3
+	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/klog v1.0.0
 )
 
 replace (
 	bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
+	cloud.google.com/go => cloud.google.com/go v0.49.0
 	git.apache.org/thrift.git => github.com/apache/thrift v0.13.0
 	github.com/Azure/azure-sdk-for-go => github.com/Azure/azure-sdk-for-go v35.0.0+incompatible
 	github.com/Azure/go-ansiterm => github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
@@ -31,9 +54,13 @@ replace (
 	github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.1.0
 	github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.5.0
 	github.com/codeskyblue/go-sh => github.com/gomodules/go-sh v0.0.0-20200626022009-2c4bcc0f861d
+	github.com/go-macaron/binding => github.com/gomodules/binding v0.0.0-20200811095614-c752727d2156
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.0.0
+	github.com/spf13/afero => github.com/gomodules/afero v1.3.4-0.20200809021348-4197decdee8b
 	go.etcd.io/etcd => go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+	google.golang.org/api => google.golang.org/api v0.14.0
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20191115194625-c23dd37a84c9
 	google.golang.org/grpc => google.golang.org/grpc v1.26.0
 	k8s.io/api => github.com/kmodules/api v0.18.4-0.20200524125823-c8bc107809b9
 	k8s.io/apimachinery => github.com/kmodules/apimachinery v0.19.0-alpha.0.0.20200520235721-10b58e57a423

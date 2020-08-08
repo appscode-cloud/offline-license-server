@@ -12,12 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# Copyright AppsCode Inc. and Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 SHELL=/bin/bash -o pipefail
 
-GO_PKG   := github.com/appscodelabs
+GO_PKG   := go.appscode.dev
 REPO     := $(notdir $(shell pwd))
-BIN      := gh-ci-webhook
+BIN      := offline-license-server
 COMPRESS ?= no
 
 # This version-strategy uses git tags to set the version string
@@ -44,7 +57,7 @@ endif
 ### These variables should not need tweaking.
 ###
 
-SRC_PKGS := cmds
+SRC_PKGS := cmds pkg templates
 SRC_DIRS := $(SRC_PKGS) *.go # directories which hold app source (not vendored)
 
 DOCKER_PLATFORMS := linux/amd64 linux/arm linux/arm64
@@ -100,7 +113,17 @@ version:
 
 .PHONY: gen
 gen:
-	@true
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src/templates                                       \
+		-v /tmp:/.cache                                         \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    $(BUILD_IMAGE)                                          \
+	    go-bindata -ignore=\\.go -ignore=\\.DS_Store -mode=0644 -modtime=1573722179 -o bindata.go -pkg templates ./...
 
 fmt: $(BUILD_DIRS)
 	@docker run                                                 \
