@@ -2,13 +2,11 @@
 
 AppsCode License server. We call it `offline` license server because once you have received the license file, no further connection is required with the license server. So, these licenses can be used within an air-gapped Kubernetes cluster.
 
-## API Reference
-
-### License Validity
+## License Validity
 
 A License file is a valid for a given Kubernetes cluster. For the `community` edition, you will receive a license that is valid for 1 year. For the `enterprise` edition, this server will issue a 14 day trial license. If you are interested in purchasing Enterprise license, please contact us via sales@appscode.com for further discussion. You can also set up a meeting via our [calendly link](https://calendly.com/appscode/30min).
 
-### Cluster UID
+## Cluster UID
 
 We use the `uid` of the `kube-system` namespace as the Kubernetes cluster UID. Please run the command below to get the cluster uid for your cluster:
 
@@ -16,20 +14,22 @@ We use the `uid` of the `kube-system` namespace as the Kubernetes cluster UID. P
 kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'
 ```
 
-### License Issuer CA
+## License Issuer CA
 
 The license issuer ca can be found here: https://licenses.appscode.com/certificates/ca.crt
 
-### List of products
+## List of products
 
 - kubedb-community
 - kubedb-enterprise
 - stash-community
 - stash-enterprise
 
-### Email Address Requirements
+## Email Address Requirements
 
 You must provide a valid non-disposable email to acquire license. For Enterprise products, you must provide a valid work email to acquire license.
+
+## API Reference
 
 ### Register Email
 
