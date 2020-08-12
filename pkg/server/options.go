@@ -48,7 +48,7 @@ func NewOptions() Options {
 	return Options{
 		CertDir:              "certs",
 		CertEmail:            "tamal@appscode.com",
-		Hosts:                []string{"license-issuer.appscode.ninja"},
+		Hosts:                []string{"license-issuer.appscode.com"},
 		Port:                 4000,
 		LicenseBucket:        LicenseBucket,
 		MailgunDomain:        os.Getenv("MAILGUN_DOMAIN"),

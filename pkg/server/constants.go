@@ -18,19 +18,25 @@ package server
 
 import (
 	"time"
+
+	"github.com/appscode/go/sets"
 )
 
 const (
-	MailSender         = "license-issuer@appscode.ninja"
+	MailSender         = "license-issuer@mail.appscode.com"
 	MailLicenseTracker = "issued-license-tracker@appscode.com"
 	MailReplyTo        = "support@appscode.com"
+
+	DefaultTTLForEnterpriseProduct = 14 * 24 * time.Hour
+	DefaultTTLForCommunityProduct  = 365 * 24 * time.Hour
+
+	LicenseIssuerName = "AppsCode Inc."
+	LicenseBucket     = "appscode-licenses"
 )
 
-const LicenseIssuerName = "AppsCode Inc."
-
-const DefaultTTLForEnterpriseProduct = 14 * 24 * time.Hour
-const DefaultTTLForCommunityProduct = 365 * 24 * time.Hour
-
-const LicenseBucket = "appscode-licenses"
-const LicenseBucketURL = "gs://" + LicenseBucket
-const GoogleApplicationCredentials = "/home/tamal/AppsCode/credentials/license-issuer@appscode-domains.json"
+var supportedProducts = sets.NewString(
+	"kubedb-community",
+	"kubedb-enterprise",
+	"stash-community",
+	"stash-enterprise",
+)

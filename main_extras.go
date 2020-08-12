@@ -22,14 +22,11 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/appscodelabs/offline-license-server/pkg/server"
 	"github.com/appscodelabs/offline-license-server/pkg/verifier"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
-	"gomodules.xyz/blobfs/testing"
-	"gomodules.xyz/cert/certstore"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
@@ -141,20 +138,3 @@ gLTp7xSpUYBWzRcct02/XeRkZyQD9gxvrdyKot6GjEW5PTYCCczGw7hEG93Ubqhc
 		panic(err)
 	}
 }
-
-func main_BlobFS() {
-	fs, err := testing.NewTestGCS(server.LicenseBucketURL, server.GoogleApplicationCredentials)
-	if err != nil {
-		panic(err)
-	}
-	store, err := certstore.New(fs, "certificates", "AppsCode Inc.")
-	if err != nil {
-		panic(err)
-	}
-	err = store.InitCA()
-	if err != nil {
-		panic(err)
-	}
-}
-
-// ------------------------------
