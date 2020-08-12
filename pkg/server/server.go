@@ -181,9 +181,9 @@ func (s *Server) HandleRegisterEmail(req RegisterRequest) error {
 	}
 
 	{
-		subject := "Token for AppsCode License server"
+		subject := "AppsCode license server token"
 		src := `Hi,
-Please use the token below to issue licenses with this email.
+Please use the token below to issue licenses using this email address.
 
 {{.Token}}
 
@@ -315,16 +315,15 @@ AppsCode Team`
 		}
 	}
 
-	// mark email as verified
-	if exists, err := s.fs.Exists(context.TODO(), EmailVerifiedPath(domain, info.Email)); err == nil && !exists {
-		err = s.fs.WriteFile(context.TODO(), EmailVerifiedPath(domain, info.Email), []byte(timestamp))
-		if err != nil {
-			return err
-		}
-	}
-
 	{
 		if info.Token != "" {
+			// mark email as verified
+			if exists, err := s.fs.Exists(context.TODO(), EmailVerifiedPath(domain, info.Email)); err == nil && !exists {
+				err = s.fs.WriteFile(context.TODO(), EmailVerifiedPath(domain, info.Email), []byte(timestamp))
+				if err != nil {
+					return err
+				}
+			}
 			respond(ctx, crtLicense)
 		} else {
 			respond(ctx, []byte("Your license has been emailed!"))
@@ -337,7 +336,7 @@ AppsCode Team`
 func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicense, error) {
 	if !emailproviders.IsWorkEmail(domain) {
 		if IsEnterpriseProduct(product) {
-			return nil, apierrors.NewBadRequest("requires work email for enterprise license")
+			return nil, apierrors.NewBadRequest("Please provide work email to issue license for Enterprise products.")
 		}
 		ttl := metav1.Duration{Duration: DefaultTTLForCommunityProduct}
 		return &ProductLicense{

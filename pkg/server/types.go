@@ -44,7 +44,7 @@ type LicenseForm struct {
 	Name    string `form:"name" binding:"Required" json:"name"`
 	Email   string `form:"email" binding:"Required;Email" json:"email"`
 	Product string `form:"product" binding:"Required" json:"product"`
-	Cluster string `form:"cluster-uid" binding:"Required" json:"cluster"`
+	Cluster string `form:"cluster" binding:"Required" json:"cluster"`
 	Tos     string `form:"tos" binding:"Required" json:"tos"`
 	Token   string `form:"token" json:"token"`
 }
