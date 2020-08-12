@@ -71,7 +71,7 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.MailgunDomain, "mailgun.domain", s.MailgunDomain, "Mailgun domain")
 	fs.StringVar(&s.MailgunPrivateAPIKey, "mailgun.api-key", s.MailgunPrivateAPIKey, "Mailgun private api key")
 
-	fs.StringVar(&s.MailSender, "mail.sender", s.MailgunDomain, "License sender mail")
+	fs.StringVar(&s.MailSender, "mail.sender", s.MailSender, "License sender mail")
 	fs.StringVar(&s.MailLicenseTracker, "mail.license-tracker", s.MailLicenseTracker, "License tracker email")
 	fs.StringVar(&s.MailReplyTo, "mail.reply-to", s.MailReplyTo, "Reply email for license emails")
 }
