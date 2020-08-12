@@ -1,6 +1,6 @@
 # ref: https://fabianlee.org/2017/05/21/golang-running-a-go-binary-as-a-systemd-service-on-ubuntu-16-04/
 [Unit]
-Description=GitHub CI Webhook Service
+Description=AppsCode Offline License Server
 After=network.target
 
 [Service]
@@ -13,9 +13,10 @@ Restart=on-failure
 RestartSec=10
 startLimitIntervalSec=60
 
-# GitHub Env Vars
-Environment=GITHUB_USER=1gtm
-Environment=GITHUB_TOKEN=
+# Env Vars
+Environment=GOOGLE_APPLICATION_CREDENTIALS=/root/app/gcloud.json
+Environment=MAILGUN_DOMAIN=mail.appscode.com
+Environment=MAILGUN_KEY=
 
 WorkingDirectory=/root
 ExecStart=/usr/local/bin/offline-license-server run

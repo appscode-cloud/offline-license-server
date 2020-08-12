@@ -44,8 +44,8 @@ type Options struct {
 	MailReplyTo        string
 }
 
-func NewOptions() Options {
-	return Options{
+func NewOptions() *Options {
+	return &Options{
 		CertDir:              "certs",
 		CertEmail:            "tamal@appscode.com",
 		Hosts:                []string{"license-issuer.appscode.com"},
@@ -59,7 +59,7 @@ func NewOptions() Options {
 	}
 }
 
-func (s Options) AddFlags(fs *pflag.FlagSet) {
+func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.CertDir, "ssl.cert-dir", s.CertDir, "Directory where certs are stored")
 	fs.StringVar(&s.CertEmail, "ssl.email", s.CertEmail, "Email used by Let's Encrypt to notify about problems with issued certificates")
 	fs.StringSliceVar(&s.Hosts, "ssl.hosts", s.Hosts, "Hosts for which certificate will be issued")

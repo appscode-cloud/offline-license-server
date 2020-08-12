@@ -25,8 +25,8 @@ import (
 
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:               "gh-ci [command]",
-		Short:             `gh-ci by AppsCode - GitHub CI for private repos`,
+		Use:               "offline-license-server [command]",
+		Short:             `offline-license-server by AppsCode - Offline License server for AppsCode products`,
 		DisableAutoGenTag: true,
 	}
 

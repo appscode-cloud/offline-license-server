@@ -5,7 +5,7 @@
 - Download pre-built binary into a server
 
 ```console
-curl -fsSL -O https://github.com/appscodelabs/offline-license-server/releases/download/v0.0.9/offline-license-server-linux-amd64
+curl -fsSL -O https://github.com/appscode/offline-license-server/releases/download/v0.0.3/offline-license-server-linux-amd64
 chmod +x offline-license-server-linux-amd64
 mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
 ```
@@ -13,10 +13,13 @@ mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
 - Install systemd service
 
 ```console
-curl -fsSL -O https://github.com/appscodelabs/offline-license-server/raw/v0.0.9/hack/systemd/offline-license-server.service
+curl -fsSL -O https://github.com/appscode/offline-license-server/raw/v0.0.3/hack/systemd/offline-license-server.service
 chmod +x offline-license-server.service
 
-# edit offline-license-server.service file to add `--ssl --secret-key=<uuid>`
+# 1. Copy Google cloud service account json key to /root/app/gcloud.json
+# 2. Edit offline-license-server.service file to
+#    - set MAILGUN_KEY
+#    - add `--ssl`
 
 mv offline-license-server.service /lib/systemd/system/offline-license-server.service
 ```

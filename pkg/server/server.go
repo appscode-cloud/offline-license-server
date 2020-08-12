@@ -43,14 +43,14 @@ import (
 )
 
 type Server struct {
-	opts Options
+	opts *Options
 
 	certs *certstore.CertStore
 	fs    *blobfs.BlobFS
 	mg    mailgun.Mailgun
 }
 
-func New(opts Options) (*Server, error) {
+func New(opts *Options) (*Server, error) {
 	fs := blobfs.New("gs://" + opts.LicenseBucket)
 	certs, err := certstore.New(fs, CACertificatesPath(), LicenseIssuerName)
 	if err != nil {
