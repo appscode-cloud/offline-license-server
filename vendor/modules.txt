@@ -257,6 +257,9 @@ gomodules.xyz/blobfs/testing
 ## explicit
 gomodules.xyz/cert
 gomodules.xyz/cert/certstore
+# gomodules.xyz/email-providers v0.1.1
+## explicit
+gomodules.xyz/email-providers
 # gomodules.xyz/version v0.1.0
 gomodules.xyz/version
 # google.golang.org/api v0.30.0 => google.golang.org/api v0.14.0

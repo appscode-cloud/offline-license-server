@@ -36,6 +36,7 @@ import (
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
+	emailproviders "gomodules.xyz/email-providers"
 	"gopkg.in/macaron.v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -158,6 +159,10 @@ func (s *Server) HandleRegisterEmail(req RegisterRequest) error {
 	domain := Domain(req.Email)
 	token := uuid.New()
 
+	if emailproviders.IsDisposableEmail(domain) {
+		return fmt.Errorf("disposable email %s is not supported", req.Email)
+	}
+
 	if exists, err := s.fs.Exists(context.TODO(), EmailBannedPath(domain, req.Email)); err == nil && exists {
 		return fmt.Errorf("email %s is banned", req.Email)
 	}
@@ -205,6 +210,10 @@ AppsCode Team`
 
 func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) error {
 	domain := Domain(info.Email)
+
+	if emailproviders.IsDisposableEmail(domain) {
+		return fmt.Errorf("disposable email %s is not supported", info.Email)
+	}
 
 	if exists, err := s.fs.Exists(context.TODO(), EmailBannedPath(domain, info.Email)); err == nil && exists {
 		return fmt.Errorf("email %s is banned", info.Email)
@@ -326,7 +335,7 @@ AppsCode Team`
 }
 
 func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicense, error) {
-	if publicEmailDomains.Has(domain) {
+	if !emailproviders.IsWorkEmail(domain) {
 		if IsEnterpriseProduct(product) {
 			return nil, apierrors.NewBadRequest("requires work email for enterprise license")
 		}
