@@ -181,7 +181,7 @@ func (s *Server) HandleRegisterEmail(req RegisterRequest) error {
 	}
 
 	{
-		subject := "Token for AppsCode Licenses"
+		subject := "Token for AppsCode License server"
 		src := `Hi,
 Please use the token below to issue licenses with this email.
 
