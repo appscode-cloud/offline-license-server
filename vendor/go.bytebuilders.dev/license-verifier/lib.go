@@ -17,24 +17,13 @@ limitations under the License.
 package verifier
 
 import (
-	"context"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
 
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
-
-func GetClusterUID(client corev1.NamespaceInterface) (string, error) {
-	ns, err := client.Get(context.TODO(), metav1.NamespaceSystem, metav1.GetOptions{})
-	if err != nil {
-		return "", err
-	}
-	return string(ns.UID), nil
-}
 
 func VerifyLicense(product, clusterUID string, caCert []byte, license []byte) error {
 	block, _ := pem.Decode(license)

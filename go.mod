@@ -24,6 +24,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	github.com/yuin/goldmark v1.1.27
+	go.bytebuilders.dev/license-verifier v0.1.0
 	gocloud.dev v0.20.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
@@ -33,9 +34,10 @@ require (
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.51.0 // indirect
 	gopkg.in/macaron.v1 v1.3.8
-	k8s.io/apimachinery v0.18.3
+	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog v1.0.0
+	kmodules.xyz/client-go v0.0.0-20200817064010-b2e03dabff6b
 )
 
 replace (

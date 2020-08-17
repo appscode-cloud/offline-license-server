@@ -22,14 +22,15 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/appscodelabs/offline-license-server/pkg/verifier"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+	verifier "go.bytebuilders.dev/license-verifier"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
+	"kmodules.xyz/client-go/tools/clusterid"
 )
 
 func main_MD_HTML() {
@@ -80,7 +81,7 @@ func main_cluster_uid() {
 		klog.Fatal(err)
 	}
 
-	clusterUID, err := verifier.GetClusterUID(clientset.CoreV1().Namespaces())
+	clusterUID, err := clusterid.ClusterUID(clientset.CoreV1().Namespaces())
 	if err != nil {
 		klog.Fatal(err)
 	}
