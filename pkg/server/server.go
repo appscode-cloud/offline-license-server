@@ -31,7 +31,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/pkg/errors"
-	"gocloud.dev/blob"
 	"golang.org/x/crypto/acme/autocert"
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
@@ -187,6 +186,8 @@ Please use the token below to issue licenses using this email address.
 
 {{.Token}}
 
+Please let us know if you have any questions.
+
 Regards,
 AppsCode Team`
 		data := struct {
@@ -200,7 +201,7 @@ AppsCode Team`
 			return err
 		}
 
-		err = s.SendMail(req.Email, subject, bodyText, bodyHtml)
+		err = s.SendMail(req.Email, subject, bodyText, bodyHtml, nil)
 		if err != nil {
 			return err
 		}
@@ -232,13 +233,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	if err != nil {
 		return err
 	}
-	crtLicense, err := s.CreateLicense(*license, info.Cluster)
-	if err != nil {
-		return err
-	}
-	crtURL, err := s.fs.SignedURL(context.TODO(), LicenseCertPath(license.Domain, license.Product, info.Cluster), &blob.SignedURLOptions{
-		Expiry: 24 * time.Hour,
-	})
+	crtLicense, err := s.CreateOrRetrieveLicense(*license, info.Cluster)
 	if err != nil {
 		return err
 	}
@@ -291,27 +286,22 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		subject := fmt.Sprintf("%s License for cluster %s", info.Product, info.Cluster)
 
 		src := `Hi {{.Name}},
-Thanks for your interest in {{.Product}}. Here is the link to the license for Kubernetes cluster: {{.Cluster}}
+Thanks for your interest in {{.Product}}. The license for Kubernetes cluster {{.Cluster}} is attached with this email.
 
-{{.CrtURL}}
+Please let us know if you have any questions.
 
 Regards,
 AppsCode Team`
-		data := struct {
-			LicenseForm
-			CrtURL string
-		}{
-			info,
-			crtURL,
-		}
-		bodyText, bodyHtml, err := RenderMail(src, data)
+		bodyText, bodyHtml, err := RenderMail(src, info)
 		if err != nil {
 			return err
 		}
 
 		// avoid sending emails for know test emails
 		if !knowTestEmails.Has(info.Email) {
-			err = s.SendMail(info.Email, subject, bodyText, bodyHtml)
+			err = s.SendMail(info.Email, subject, bodyText, bodyHtml, map[string][]byte{
+				fmt.Sprintf("%s-license-%s.txt", info.Product, info.Cluster): crtLicense,
+			})
 			if err != nil {
 				return err
 			}
@@ -388,47 +378,58 @@ func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicens
 	return &opts, nil
 }
 
+func (s *Server) CreateOrRetrieveLicense(license ProductLicense, cluster string) ([]byte, error) {
+	// Return existing license for enterprise products
+	if IsEnterpriseProduct(license.Product) {
+		exists, err := s.fs.Exists(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
+		if err != nil {
+			return nil, err
+		}
+		if exists {
+			return s.fs.ReadFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
+		}
+	}
+	return s.CreateLicense(license, cluster)
+}
+
 func (s *Server) CreateLicense(license ProductLicense, cluster string) ([]byte, error) {
-	exists, err := s.fs.Exists(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
+	// agreement, TTL
+	sans := cert.AltNames{
+		DNSNames: []string{cluster},
+	}
+	cfg := Config{
+		CommonName:   getCN(sans),
+		Organization: []string{license.Product},
+		AltNames:     sans,
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}
+	now := time.Now()
+	cfg.NotBefore = now
+	if license.Agreement != nil {
+		cfg.NotAfter = license.Agreement.ExpiryDate.UTC()
+	} else if license.TTL != nil {
+		cfg.NotAfter = now.Add(license.TTL.Duration).UTC()
+	} else {
+		return nil, apierrors.NewInternalError(fmt.Errorf("Missing license TTL")) // this should never happen
+	}
+
+	key, err := cert.NewPrivateKey()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to generate private key")
+	}
+	crt, err := NewSignedCert(cfg, key, s.certs.CACert(), s.certs.CAKey())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to generate client certificate")
+	}
+
+	err = s.fs.WriteFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster), cert.EncodeCertPEM(crt))
 	if err != nil {
 		return nil, err
 	}
-	if !exists {
-		// agreement, TTL
-		sans := cert.AltNames{
-			DNSNames: []string{cluster},
-		}
-		cfg := Config{
-			CommonName:   getCN(sans),
-			Organization: []string{license.Product},
-			AltNames:     sans,
-			Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-		}
-		if license.Agreement != nil {
-			cfg.NotAfter = license.Agreement.ExpiryDate.UTC()
-		} else if license.TTL != nil {
-			cfg.NotAfter = time.Now().Add(license.TTL.Duration).UTC()
-		} else {
-			return nil, apierrors.NewInternalError(fmt.Errorf("Missing license TTL")) // this should never happen
-		}
-
-		key, err := cert.NewPrivateKey()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to generate private key")
-		}
-		crt, err := NewSignedCert(cfg, key, s.certs.CACert(), s.certs.CAKey())
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to generate client certificate")
-		}
-
-		err = s.fs.WriteFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster), cert.EncodeCertPEM(crt))
-		if err != nil {
-			return nil, err
-		}
-		err = s.fs.WriteFile(context.TODO(), LicenseKeyPath(license.Domain, license.Product, cluster), cert.EncodePrivateKeyPEM(key))
-		if err != nil {
-			return nil, err
-		}
+	err = s.fs.WriteFile(context.TODO(), LicenseKeyPath(license.Domain, license.Product, cluster), cert.EncodePrivateKeyPEM(key))
+	if err != nil {
+		return nil, err
 	}
-	return s.fs.ReadFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
+
+	return cert.EncodeCertPEM(crt), nil
 }

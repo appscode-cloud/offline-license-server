@@ -58,17 +58,20 @@ func RenderMail(src string, data interface{}) (string, string, error) {
 	return bodyText.String(), bodyHtml.String(), nil
 }
 
-func (s *Server) SendMail(recipient, subject, bodyText, bodyHtml string) error {
+func (s *Server) SendMail(recipient, subject, bodyText, bodyHtml string, attachments map[string][]byte) error {
 	// The message object allows you to add attachments and Bcc recipients
-	message := s.mg.NewMessage(s.opts.MailSender, subject, bodyText, recipient)
-	message.SetHtml(bodyHtml)
-	message.AddBCC(s.opts.MailLicenseTracker)
-	message.SetReplyTo(s.opts.MailReplyTo)
+	msg := s.mg.NewMessage(s.opts.MailSender, subject, bodyText, recipient)
+	msg.SetHtml(bodyHtml)
+	msg.AddBCC(s.opts.MailLicenseTracker)
+	msg.SetReplyTo(s.opts.MailReplyTo)
+	for filename, data := range attachments {
+		msg.AddBufferAttachment(filename, data)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	// Send the message with a 10 second timeout
-	_, _, err := s.mg.Send(ctx, message)
+	_, _, err := s.mg.Send(ctx, msg)
 	return err
 }

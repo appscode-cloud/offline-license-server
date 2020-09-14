@@ -46,6 +46,10 @@ func ProductAccessLogPath(domain, product, cluster, timestamp string) string {
 	return fmt.Sprintf("domains/%s/products/%s/clusters/%s/accesslog/%s", domain, product, cluster, timestamp)
 }
 
+func FullLicenseIssueLogPath(domain, product, cluster, timestamp string) string {
+	return fmt.Sprintf("domains/%s/products/%s/clusters/%s/full-license-issued/%s", domain, product, cluster, timestamp)
+}
+
 func EmailAccessLogPath(domain, email, product, timestamp string) string {
 	return fmt.Sprintf("domains/%s/emails/%s/products/%s/accesslog/%s", domain, email, product, timestamp)
 }

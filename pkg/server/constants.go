@@ -27,8 +27,9 @@ const (
 	MailLicenseTracker = "issued-license-tracker@appscode.com"
 	MailReplyTo        = "support@appscode.com"
 
-	DefaultTTLForEnterpriseProduct = 14 * 24 * time.Hour
-	DefaultTTLForCommunityProduct  = 365 * 24 * time.Hour
+	DefaultTTLForEnterpriseProduct     = 14 * 24 * time.Hour
+	DefaultFullTTLForEnterpriseProduct = 365 * 24 * time.Hour
+	DefaultTTLForCommunityProduct      = 365 * 24 * time.Hour
 
 	LicenseIssuerName = "AppsCode Inc."
 	LicenseBucket     = "appscode-licenses"
