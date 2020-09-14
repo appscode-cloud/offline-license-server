@@ -41,11 +41,11 @@ func getCN(sans cert.AltNames) string {
 
 // Config contains the basic fields required for creating a certificate
 type Config struct {
-	CommonName   string
-	Organization []string
-	AltNames     cert.AltNames
-	Usages       []x509.ExtKeyUsage
-	NotAfter     time.Time // Validity bounds.
+	CommonName          string
+	Organization        []string
+	AltNames            cert.AltNames
+	Usages              []x509.ExtKeyUsage
+	NotBefore, NotAfter time.Time // Validity bounds.
 }
 
 // NewSignedCert creates a signed certificate using the given CA certificate and key
@@ -69,7 +69,7 @@ func NewSignedCert(cfg Config, key crypto.Signer, caCert *x509.Certificate, caKe
 		DNSNames:     cfg.AltNames.DNSNames,
 		IPAddresses:  cfg.AltNames.IPs,
 		SerialNumber: serial,
-		NotBefore:    caCert.NotBefore,
+		NotBefore:    cfg.NotBefore,
 		NotAfter:     cfg.NotAfter,
 		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:  cfg.Usages,
