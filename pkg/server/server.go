@@ -309,9 +309,12 @@ AppsCode Team`
 			return err
 		}
 
-		err = s.SendMail(info.Email, subject, bodyText, bodyHtml)
-		if err != nil {
-			return err
+		// avoid sending emails for know test emails
+		if !knowTestEmails.Has(info.Email) {
+			err = s.SendMail(info.Email, subject, bodyText, bodyHtml)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

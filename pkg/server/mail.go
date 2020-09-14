@@ -27,7 +27,10 @@ import (
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
+
+var knowTestEmails = sets.NewString("1gtm@appscode.com")
 
 func RenderMail(src string, data interface{}) (string, string, error) {
 	tpl := template.Must(template.New("").Funcs(sprig.TxtFuncMap()).Parse(src))
