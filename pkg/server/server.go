@@ -399,7 +399,7 @@ func (s *Server) CreateLicense(license ProductLicense, cluster string) ([]byte, 
 	}
 	cfg := Config{
 		CommonName:   getCN(sans),
-		Organization: []string{license.Product},
+		Organization: supportedProducts[license.Product],
 		AltNames:     sans,
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
