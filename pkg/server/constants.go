@@ -18,8 +18,6 @@ package server
 
 import (
 	"time"
-
-	"github.com/appscode/go/sets"
 )
 
 const (
@@ -35,9 +33,9 @@ const (
 	LicenseBucket     = "appscode-licenses"
 )
 
-var supportedProducts = sets.NewString(
-	"kubedb-community",
-	"kubedb-enterprise",
-	"stash-community",
-	"stash-enterprise",
-)
+var supportedProducts = map[string][]string{
+	"kubedb-community":  {"kubedb-community"},
+	"kubedb-enterprise": {"kubedb-enterprise", "kubedb-community"},
+	"stash-community":   {"stash-community"},
+	"stash-enterprise":  {"stash-enterprise"},
+}
