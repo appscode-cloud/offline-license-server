@@ -34,8 +34,12 @@ const (
 )
 
 var supportedProducts = map[string][]string{
-	"kubedb-community":  {"kubedb-community"},
-	"kubedb-enterprise": {"kubedb-enterprise", "kubedb-community"},
-	"stash-community":   {"stash-community"},
-	"stash-enterprise":  {"stash-enterprise"},
+	"kubedb-community":     {"kubedb-community"},
+	"kubedb-enterprise":    {"kubedb-enterprise", "kubedb-community"},
+	"stash-community":      {"stash-community"},
+	"stash-enterprise":     {"stash-enterprise", "stash-community"},
+	"kubevault-community":  {"kubevault-community"},
+	"kubevault-enterprise": {"kubevault-enterprise", "kubevault-community"},
+	"kubeform-community":   {"kubeform-community"},
+	"kubeform-enterprise":  {"kubeform-enterprise", "kubeform-community"},
 }
