@@ -1,3 +1,5 @@
+[![PkgGoDev](https://pkg.go.dev/badge/gomodules.xyz/email-providers)](https://pkg.go.dev/gomodules.xyz/email-providers)
+
 # email-providers
 List of public and disposable email providers
 
