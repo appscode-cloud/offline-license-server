@@ -10,7 +10,7 @@ A License file is a valid for a given Kubernetes cluster. For the `community` ed
 
 We use the `uid` of the `kube-system` namespace as the Kubernetes cluster UID. Please run the command below to get the cluster uid for your cluster:
 
-```console
+```bash
 kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'
 ```
 
@@ -35,7 +35,7 @@ You must provide a valid non-disposable email to acquire license. For Enterprise
 
 Make the api call below with a valid email address. We are going to email you a token for the License server.
 
-```console
+```bash
 curl -d "email=***" -X POST https://license-issuer.appscode.com/register
 ```
 
@@ -43,7 +43,7 @@ curl -d "email=***" -X POST https://license-issuer.appscode.com/register
 
 You can use the `{email, token}` to issue license using `curl` from command line. In the example below replace `***` with an actual token you have received in the email.
 
-```console
+```bash
 # pass request body as application/x-www-form-urlencoded
 
 curl -X POST \
@@ -73,7 +73,7 @@ These instructions are useful if you are trying to deploy your own license serve
 
 - Download pre-built binary into a server
 
-```console
+```bash
 curl -fsSL -O https://github.com/appscode/offline-license-server/releases/download/v0.0.10/offline-license-server-linux-amd64
 chmod +x offline-license-server-linux-amd64
 mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
@@ -81,7 +81,7 @@ mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
 
 - Install systemd service
 
-```console
+```bash
 curl -fsSL -O https://github.com/appscode/offline-license-server/raw/v0.0.10/hack/systemd/offline-license-server.service
 chmod +x offline-license-server.service
 
@@ -95,7 +95,7 @@ mv offline-license-server.service /lib/systemd/system/offline-license-server.ser
 
 Now, you should be able to enable the service, start it, then monitor the logs by tailing the systemd journal:
 
-```console
+```bash
 sudo systemctl enable offline-license-server.service
 sudo systemctl start offline-license-server
 sudo journalctl -f -u offline-license-server
@@ -103,11 +103,13 @@ sudo journalctl -f -u offline-license-server
 
 ## Issue Extended License
 
-```
+```bash
 offline-license-server issue-full-license \
   --email= \
   --name= \
   --product= \
   --cluster= \
-  --duration=(P1M | P1Y)
+  --duration=(P14D | P1M | P1Y)
+
+# --duration flag used https://pkg.go.dev/github.com/rickb777/date/period for parsing duration.
 ```
