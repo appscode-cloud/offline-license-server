@@ -27,7 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (s *Server) IssueEnterpriseLicense(info LicenseForm) error {
+func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration) error {
 	if !IsEnterpriseProduct(info.Product) {
 		return fmt.Errorf("%s is not an Enterprise product", info.Product)
 	}
@@ -48,7 +48,7 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm) error {
 		Product: info.Product,
 		Agreement: &LicenseAgreement{
 			NumClusters: 1, // is not used currently
-			ExpiryDate:  metav1.NewTime(time.Now().Add(DefaultFullTTLForEnterpriseProduct).UTC()),
+			ExpiryDate:  metav1.NewTime(time.Now().Add(extendBy).UTC()),
 		},
 	}
 
@@ -73,7 +73,7 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm) error {
 		if ttl > DefaultTTLForEnterpriseProduct {
 			// if expires in next 14 days issue new license
 			if time.Until(certs[0].NotAfter) < DefaultTTLForEnterpriseProduct {
-				license.Agreement.ExpiryDate = metav1.NewTime(certs[0].NotAfter.Add(DefaultFullTTLForEnterpriseProduct).UTC())
+				license.Agreement.ExpiryDate = metav1.NewTime(certs[0].NotAfter.Add(extendBy).UTC())
 			} else {
 				// Original license is > 14 days valid. Keep using that.
 				crtLicense = cert.EncodeCertPEM(certs[0])

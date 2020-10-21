@@ -100,3 +100,14 @@ sudo systemctl enable offline-license-server.service
 sudo systemctl start offline-license-server
 sudo journalctl -f -u offline-license-server
 ```
+
+## Issue Extended License
+
+```
+offline-license-server issue-full-license \
+  --email= \
+  --name= \
+  --product= \
+  --cluster= \
+  --duration=(P1M | P1Y)
+```
