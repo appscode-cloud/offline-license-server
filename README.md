@@ -24,6 +24,10 @@ The license issuer ca can be found here: https://licenses.appscode.com/certifica
 - kubedb-enterprise
 - stash-community
 - stash-enterprise
+- kubevault-community
+- kubevault-enterprise
+- kubeform-community
+- kubeform-enterprise
 
 ## Email Address Requirements
 
