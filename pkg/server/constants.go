@@ -30,7 +30,7 @@ const (
 	DefaultTTLForCommunityProduct      = 365 * 24 * time.Hour
 
 	LicenseIssuerName = "AppsCode Inc."
-	LicenseBucket     = "appscode-licenses"
+	LicenseBucket     = "licenses.appscode.com"
 )
 
 var supportedProducts = map[string][]string{
