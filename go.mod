@@ -20,7 +20,7 @@ require (
 	github.com/mailgun/mailgun-go/v4 v4.1.3
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/rickb777/date v0.0.0-00010101000000-000000000000
+	github.com/rickb777/date v1.14.3-0.20201028092123-24acb1ed9c07
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
@@ -40,8 +40,6 @@ require (
 	k8s.io/klog v1.0.0
 	kmodules.xyz/client-go v0.0.0-20200817064010-b2e03dabff6b
 )
-
-replace github.com/rickb777/date => github.com/gomodules/date v1.14.3-0.20201021084239-f5e4a85d0809
 
 replace (
 	bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

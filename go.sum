@@ -248,8 +248,6 @@ github.com/gomodules/afero v1.3.4-0.20200809021348-4197decdee8b h1:NaUOoTwJSPCW0
 github.com/gomodules/afero v1.3.4-0.20200809021348-4197decdee8b/go.mod h1:DqFTTqm2p3kls+It6Fk++QqYRJc68aWFNVKUDRoYllc=
 github.com/gomodules/binding v0.0.0-20200811095614-c752727d2156 h1:r9VOUxlnawaVhXAQX3+0MTxWyscw8W4lT2RpjtXQzt0=
 github.com/gomodules/binding v0.0.0-20200811095614-c752727d2156/go.mod h1:dJU/AtPKG0gUiFra1K5TTGduFGMNxMvfJzV/zmXwyGM=
-github.com/gomodules/date v1.14.3-0.20201021084239-f5e4a85d0809 h1:f3endf+/SPY8BY7iDrtDCkdAT759kTjsoRnR3mH7lkM=
-github.com/gomodules/date v1.14.3-0.20201021084239-f5e4a85d0809/go.mod h1:swmf05C+hN+m8/Xh7gEq3uB6QJDNc5pQBWojKdHetOs=
 github.com/gomodules/go-sh v0.0.0-20200626022009-2c4bcc0f861d h1:jI5d2FFTz6gRNkSObVhgnCW4Agtx4DYR/2XNCdPuDow=
 github.com/gomodules/go-sh v0.0.0-20200626022009-2c4bcc0f861d/go.mod h1:VQx0hjo2oUeQkQUET7wRwradO6f+fN5jzXgB/zROxxE=
 github.com/google/btree v1.0.0 h1:0udJVsspx3VBr5FwtLhQQtuAsVc79tTq0ocGIPAU6qo=
@@ -441,6 +439,8 @@ github.com/prometheus/client_model v0.2.0/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6T
 github.com/prometheus/common v0.4.1/go.mod h1:TNfzLD0ON7rHzMJeJkieUDPYmFC7Snx/y86RQel1bk4=
 github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d/go.mod h1:c3At6R/oaqEKCNdg8wHV1ftS6bRYblBhIjjI8uT2IGk=
 github.com/prometheus/procfs v0.0.2/go.mod h1:TjEm7ze935MbeOT/UhFTIMYKhuLP4wbCsTZCD3I8kEA=
+github.com/rickb777/date v1.14.3-0.20201028092123-24acb1ed9c07 h1:reav89WUAb4KAvecVidynwUC5fvANHUG7iTydGMC9Uc=
+github.com/rickb777/date v1.14.3-0.20201028092123-24acb1ed9c07/go.mod h1:swmf05C+hN+m8/Xh7gEq3uB6QJDNc5pQBWojKdHetOs=
 github.com/rickb777/plural v1.2.2 h1:4CU5NiUqXSM++2+7JCrX+oguXd2D7RY5O1YisMw1yCI=
 github.com/rickb777/plural v1.2.2/go.mod h1:xyHbelv4YvJE51gjMnHvk+U2e9zIysg6lTnSQK8XUYA=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
