@@ -29,6 +29,8 @@ type Options struct {
 	Port      int
 	EnableSSL bool
 
+	GeoCityDatabase string
+
 	LicenseBucket        string
 	LicenseSpreadsheetId string
 
@@ -66,6 +68,8 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringSliceVar(&s.Hosts, "ssl.hosts", s.Hosts, "Hosts for which certificate will be issued")
 	fs.IntVar(&s.Port, "port", s.Port, "Port used when SSL is not enabled")
 	fs.BoolVar(&s.EnableSSL, "ssl", s.EnableSSL, "Set true to enable SSL via Let's Encrypt")
+
+	fs.StringVar(&s.GeoCityDatabase, "geo-city-database-file", s.GeoCityDatabase, "Path to GeoLite2-City.mmdb")
 
 	fs.StringVar(&s.LicenseBucket, "bucket", s.LicenseBucket, "Name of GCS bucket used to store licenses")
 	fs.StringVar(&s.LicenseSpreadsheetId, "spreadsheet-id", s.LicenseSpreadsheetId, "Google Spreadsheet Id used to store license issue log")

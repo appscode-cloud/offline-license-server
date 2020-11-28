@@ -30,6 +30,7 @@ import (
 	"github.com/go-macaron/binding"
 	"github.com/google/uuid"
 	"github.com/mailgun/mailgun-go/v4"
+	"github.com/oschwald/geoip2-golang"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/acme/autocert"
 	"gomodules.xyz/blobfs"
@@ -48,6 +49,7 @@ type Server struct {
 	fs    *blobfs.BlobFS
 	mg    mailgun.Mailgun
 	sheet *Spreadsheet
+	geodb *geoip2.Reader
 }
 
 func New(opts *Options) (*Server, error) {
@@ -64,13 +66,22 @@ func New(opts *Options) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	geodb, err := geoip2.Open(opts.GeoCityDatabase)
+	if err != nil {
+		return nil, err
+	}
 	return &Server{
 		opts:  opts,
 		certs: certs,
 		fs:    fs,
 		mg:    mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
 		sheet: sheet,
+		geodb: geodb,
 	}, nil
+}
+
+func (s *Server) Close() {
+	s.geodb.Close()
 }
 
 func respond(ctx *macaron.Context, data []byte) {
@@ -252,6 +263,8 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 			IP:          GetIP(ctx.Req.Request),
 			Timestamp:   timestamp,
 		}
+		DecorateGeoData(s.geodb, &accesslog)
+
 		// TODO: IP to location
 		// https://github.com/oschwald/geoip2-golang
 		data, err := json.MarshalIndent(accesslog, "", "  ")
