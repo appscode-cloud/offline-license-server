@@ -18,8 +18,12 @@ package server
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
+
+	"github.com/oschwald/geoip2-golang"
+	"gomodules.xyz/x/log"
 )
 
 func Domain(email string) string {
@@ -42,4 +46,25 @@ func GetIP(r *http.Request) string {
 		return forwarded
 	}
 	return r.RemoteAddr
+}
+
+func DecorateGeoData(db *geoip2.Reader, entry *LogEntry) {
+	ips := strings.Split(entry.IP, ",")
+	if len(ips) == 0 {
+		return
+	}
+	ip := net.ParseIP(strings.TrimSpace(ips[0]))
+	if ip == nil {
+		return
+	}
+	record, err := db.City(ip)
+	if err != nil {
+		log.Warningf("failed to detect geo data for ip %s. reason: %v", ip, err)
+		return
+	}
+
+	entry.City = record.City.Names["en"]
+	entry.Country = record.Country.IsoCode
+	entry.Timezone = record.Location.TimeZone
+	entry.Coordinates = fmt.Sprintf("%v,%v", record.Location.Latitude, record.Location.Longitude)
 }

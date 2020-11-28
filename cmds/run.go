@@ -32,6 +32,9 @@ func NewCmdRun() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			defer func() {
+				s.Close()
+			}()
 			return s.Run()
 		},
 	}
