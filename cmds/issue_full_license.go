@@ -53,6 +53,9 @@ func NewCmdIssueFullLicense() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			defer func() {
+				s.Close()
+			}()
 			return s.IssueEnterpriseLicense(info, d2)
 		},
 	}

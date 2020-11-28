@@ -66,9 +66,12 @@ func New(opts *Options) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	geodb, err := geoip2.Open(opts.GeoCityDatabase)
-	if err != nil {
-		return nil, err
+	var geodb *geoip2.Reader
+	if opts.GeoCityDatabase != "" {
+		geodb, err = geoip2.Open(opts.GeoCityDatabase)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &Server{
 		opts:  opts,
@@ -81,7 +84,9 @@ func New(opts *Options) (*Server, error) {
 }
 
 func (s *Server) Close() {
-	s.geodb.Close()
+	if s.geodb != nil {
+		s.geodb.Close()
+	}
 }
 
 func respond(ctx *macaron.Context, data []byte) {
@@ -265,8 +270,6 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		}
 		DecorateGeoData(s.geodb, &accesslog)
 
-		// TODO: IP to location
-		// https://github.com/oschwald/geoip2-golang
 		data, err := json.MarshalIndent(accesslog, "", "  ")
 		if err != nil {
 			return err

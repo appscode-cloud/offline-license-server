@@ -65,12 +65,12 @@ func (form LicenseForm) Validate() error {
 
 type LogEntry struct {
 	LicenseForm `json:",inline,omitempty"`
-	Timestamp   string `json:"timestamp"`
-	IP          string `json:"ip"`
-	Timezone    string `json:"timezone"`
-	City        string `json:"city"`
-	Country     string `json:"country"`
-	Coordinates string `json:"coordinates"`
+	Timestamp   string `json:"timestamp,omitempty"`
+	IP          string `json:"ip,omitempty"`
+	Timezone    string `json:"timezone,omitempty"`
+	City        string `json:"city,omitempty"`
+	Country     string `json:"country,omitempty"`
+	Coordinates string `json:"coordinates,omitempty"`
 }
 
 func (_ LogEntry) Headers() []string {

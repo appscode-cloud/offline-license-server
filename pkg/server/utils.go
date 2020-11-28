@@ -49,6 +49,9 @@ func GetIP(r *http.Request) string {
 }
 
 func DecorateGeoData(db *geoip2.Reader, entry *LogEntry) {
+	if db == nil {
+		return
+	}
 	ips := strings.Split(entry.IP, ",")
 	if len(ips) == 0 {
 		return

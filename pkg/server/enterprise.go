@@ -90,21 +90,21 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 	{
 		// record request
-		accesslog := struct {
-			LicenseForm
-			IP string
-		}{
-			info,
-			"",
+		accesslog := LogEntry{
+			LicenseForm: info,
+			Timestamp:   timestamp,
 		}
-		// TODO: IP to location
-		// https://github.com/oschwald/geoip2-golang
 
 		data, err := json.MarshalIndent(accesslog, "", "  ")
 		if err != nil {
 			return err
 		}
 		err = s.fs.WriteFile(context.TODO(), FullLicenseIssueLogPath(domain, info.Product, info.Cluster, timestamp), data)
+		if err != nil {
+			return err
+		}
+
+		err = s.sheet.Append(accesslog)
 		if err != nil {
 			return err
 		}
