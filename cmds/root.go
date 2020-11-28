@@ -19,8 +19,8 @@ package cmds
 import (
 	"flag"
 
-	v "github.com/appscode/go/version"
 	"github.com/spf13/cobra"
+	v "gomodules.xyz/x/version"
 )
 
 func NewRootCmd() *cobra.Command {
