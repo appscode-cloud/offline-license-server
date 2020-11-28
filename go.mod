@@ -6,11 +6,10 @@ require (
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/appscode/go v0.0.0-20200323182826-54e98e09185a
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e
 	github.com/go-macaron/binding v1.1.0
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
 	github.com/gorilla/schema v1.1.0 // indirect
@@ -21,8 +20,7 @@ require (
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rickb777/date v1.14.3-0.20201028092123-24acb1ed9c07
-	github.com/smartystreets/goconvey v1.6.4 // indirect
-	github.com/spf13/cobra v1.0.0
+	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/yuin/goldmark v1.1.27
 	go.bytebuilders.dev/license-verifier v0.1.0
@@ -32,8 +30,8 @@ require (
 	gomodules.xyz/blobfs v0.1.4
 	gomodules.xyz/cert v1.1.2
 	gomodules.xyz/email-providers v0.1.2
+	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/ini.v1 v1.51.0 // indirect
 	gopkg.in/macaron.v1 v1.3.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v12.0.0+incompatible

@@ -21,11 +21,11 @@ import (
 	"net"
 	"os"
 
-	"github.com/appscode/go/log"
 	"github.com/spf13/cobra"
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
+	"gomodules.xyz/x/log"
 )
 
 func NewCmdCreateServer(certDir string) *cobra.Command {

@@ -19,10 +19,10 @@ package main
 import (
 	"os"
 
-	logs "github.com/appscode/go/log/golog"
 	"github.com/appscodelabs/offline-license-server/cmds"
 	_ "gocloud.dev/blob/gcsblob"
 	_ "gocloud.dev/blob/memblob"
+	logs "gomodules.xyz/x/log/golog"
 )
 
 func main() {
