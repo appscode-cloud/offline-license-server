@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/appscode/go/sets"
+	"gomodules.xyz/sets"
 )
 
 type IPRange struct {

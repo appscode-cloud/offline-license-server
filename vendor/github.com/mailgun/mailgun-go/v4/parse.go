@@ -5,14 +5,12 @@ import (
 	"reflect"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/mailgun/mailgun-go/v4/events"
-	"github.com/mailru/easyjson"
 )
 
 // All events returned by the EventIterator conform to this interface
 type Event interface {
-	easyjson.Unmarshaler
-	easyjson.Marshaler
 	GetName() string
 	SetName(name string)
 	GetTimestamp() time.Time
@@ -47,7 +45,7 @@ func new_(e interface{}) func() Event {
 
 func parseResponse(raw []byte) ([]Event, error) {
 	var resp events.Response
-	if err := easyjson.Unmarshal(raw, &resp); err != nil {
+	if err := jsoniter.Unmarshal(raw, &resp); err != nil {
 		return nil, fmt.Errorf("failed to un-marshall event.Response: %s", err)
 	}
 
@@ -79,20 +77,20 @@ func ParseEvents(raw []events.RawJSON) ([]Event, error) {
 func ParseEvent(raw []byte) (Event, error) {
 	// Try to recognize the event first.
 	var e events.EventName
-	if err := easyjson.Unmarshal(raw, &e); err != nil {
+	if err := jsoniter.Unmarshal(raw, &e); err != nil {
 		return nil, fmt.Errorf("failed to recognize event: %v", err)
 	}
 
 	// Get the event "constructor" from the map.
-	newEvent, ok := EventNames[e.Name]
+	newEvent, ok := EventNames[e.GetName()]
 	if !ok {
-		return nil, fmt.Errorf("unsupported event: '%s'", e.Name)
+		return nil, fmt.Errorf("unsupported event: '%s'", e.GetName())
 	}
 	event := newEvent()
 
 	// Parse the known event.
-	if err := easyjson.Unmarshal(raw, event); err != nil {
-		return nil, fmt.Errorf("failed to parse event '%s': %v", e.Name, err)
+	if err := jsoniter.Unmarshal(raw, event); err != nil {
+		return nil, fmt.Errorf("failed to parse event '%s': %v", e.GetName(), err)
 	}
 
 	return event, nil

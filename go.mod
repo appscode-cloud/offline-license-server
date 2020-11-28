@@ -8,31 +8,27 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e
-	github.com/go-macaron/binding v1.1.0
+	github.com/go-macaron/binding v0.0.0-00010101000000-000000000000
 	github.com/google/uuid v1.1.2
-	github.com/googleapis/gnostic v0.3.1 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
-	github.com/gorilla/schema v1.1.0 // indirect
+	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
-	github.com/imdario/mergo v0.3.9 // indirect
-	github.com/kr/pretty v0.2.0 // indirect
-	github.com/mailgun/mailgun-go/v4 v4.1.3
+	github.com/mailgun/mailgun-go/v4 v4.3.0
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/rickb777/date v1.14.3-0.20201028092123-24acb1ed9c07
+	github.com/rickb777/date v1.14.3
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/yuin/goldmark v1.1.27
-	go.bytebuilders.dev/license-verifier v0.1.0
+	go.bytebuilders.dev/license-verifier v0.5.1
 	gocloud.dev v0.20.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
-	gomodules.xyz/blobfs v0.1.4
-	gomodules.xyz/cert v1.1.2
+	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102
+	gomodules.xyz/blobfs v0.1.7
+	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.2
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/macaron.v1 v1.3.8
+	google.golang.org/api v0.30.0
+	gopkg.in/macaron.v1 v1.4.0
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog v1.0.0

@@ -29,7 +29,8 @@ type Options struct {
 	Port      int
 	EnableSSL bool
 
-	LicenseBucket string
+	LicenseBucket        string
+	LicenseSpreadsheetId string
 
 	// Your available domain names can be found here:
 	// (https://app.mailgun.com/app/domains)
@@ -67,6 +68,7 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&s.EnableSSL, "ssl", s.EnableSSL, "Set true to enable SSL via Let's Encrypt")
 
 	fs.StringVar(&s.LicenseBucket, "bucket", s.LicenseBucket, "Name of GCS bucket used to store licenses")
+	fs.StringVar(&s.LicenseSpreadsheetId, "spreadsheet-id", s.LicenseSpreadsheetId, "Google Spreadsheet Id used to store license issue log")
 
 	fs.StringVar(&s.MailgunDomain, "mailgun.domain", s.MailgunDomain, "Mailgun domain")
 	fs.StringVar(&s.MailgunPrivateAPIKey, "mailgun.api-key", s.MailgunPrivateAPIKey, "Mailgun private api key")
