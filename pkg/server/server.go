@@ -261,7 +261,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	}
 
 	timestamp := time.Now().UTC().Format(time.RFC3339)
-	{
+	if !skipEmailDomains.Has(Domain(info.Email)) {
 		// record request
 		accesslog := LogEntry{
 			LicenseForm: info,

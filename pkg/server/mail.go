@@ -31,6 +31,7 @@ import (
 )
 
 var knowTestEmails = sets.NewString("1gtm@appscode.com")
+var skipEmailDomains = sets.NewString("appscode.com")
 
 func RenderMail(src string, data interface{}) (string, string, error) {
 	tpl := template.Must(template.New("").Funcs(sprig.TxtFuncMap()).Parse(src))
