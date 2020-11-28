@@ -47,6 +47,7 @@ type Server struct {
 	certs *certstore.CertStore
 	fs    *blobfs.BlobFS
 	mg    mailgun.Mailgun
+	sheet *Spreadsheet
 }
 
 func New(opts *Options) (*Server, error) {
@@ -59,11 +60,16 @@ func New(opts *Options) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	sheet, err := NewSpreadsheet(opts.LicenseSpreadsheetId) // Share this sheet with the service account email
+	if err != nil {
+		return nil, err
+	}
 	return &Server{
 		opts:  opts,
 		certs: certs,
 		fs:    fs,
 		mg:    mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
+		sheet: sheet,
 	}, nil
 }
 
@@ -241,42 +247,29 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 	{
 		// record request
-		accesslog := struct {
-			LicenseForm
-			IP string
-		}{
-			info,
-			GetIP(ctx.Req.Request),
+		accesslog := LogEntry{
+			LicenseForm: info,
+			IP:          GetIP(ctx.Req.Request),
+			Timestamp:   timestamp,
 		}
 		// TODO: IP to location
 		// https://github.com/oschwald/geoip2-golang
-
 		data, err := json.MarshalIndent(accesslog, "", "  ")
 		if err != nil {
 			return err
 		}
+
 		err = s.fs.WriteFile(context.TODO(), ProductAccessLogPath(domain, info.Product, info.Cluster, timestamp), data)
 		if err != nil {
 			return err
 		}
-	}
-	{
-		// record request
-		accesslog := struct {
-			LicenseForm
-			IP string
-		}{
-			info,
-			GetIP(ctx.Req.Request),
-		}
-		// TODO: IP to location
-		// https://github.com/oschwald/geoip2-golang
 
-		data, err := json.MarshalIndent(accesslog, "", "  ")
+		err = s.fs.WriteFile(context.TODO(), EmailAccessLogPath(domain, info.Email, info.Product, timestamp), data)
 		if err != nil {
 			return err
 		}
-		err = s.fs.WriteFile(context.TODO(), EmailAccessLogPath(domain, info.Email, info.Product, timestamp), data)
+
+		err = s.sheet.Append(accesslog)
 		if err != nil {
 			return err
 		}

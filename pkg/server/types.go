@@ -62,3 +62,33 @@ func (form LicenseForm) Validate() error {
 	}
 	return nil
 }
+
+type LogEntry struct {
+	LicenseForm `json:",inline,omitempty"`
+	IP          string `json:"ip"`
+	Timestamp   string `json:"timestamp"`
+}
+
+func (_ LogEntry) Headers() []string {
+	return []string{
+		"Domain",
+		"Name",
+		"Email",
+		"Product",
+		"Cluster",
+		"Timestamp",
+		"IP",
+	}
+}
+
+func (info LogEntry) Data() []string {
+	return []string{
+		Domain(info.Email),
+		info.Name,
+		info.Email,
+		info.Product,
+		info.Cluster,
+		info.Timestamp,
+		info.IP,
+	}
+}

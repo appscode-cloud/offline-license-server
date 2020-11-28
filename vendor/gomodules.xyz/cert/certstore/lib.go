@@ -10,10 +10,10 @@ import (
 	"path"
 	"strings"
 
-	netz "github.com/appscode/go/net"
 	"github.com/pkg/errors"
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
+	netz "gomodules.xyz/x/net"
 )
 
 func SANsForNames(s string, names ...string) cert.AltNames {

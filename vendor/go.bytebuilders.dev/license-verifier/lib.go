@@ -20,13 +20,22 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-
 	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/util/sets"
+	"gomodules.xyz/sets"
 )
 
-func VerifyLicense(product, clusterUID string, caCert []byte, license []byte) error {
-	block, _ := pem.Decode(license)
+type Options struct {
+	ClusterUID  string
+	ProductName string
+	CACert      []byte
+	License     []byte
+}
+
+func VerifyLicense(opts *Options) error {
+	if opts == nil {
+		return fmt.Errorf("missing license")
+	}
+	block, _ := pem.Decode(opts.License)
 	if block == nil {
 		// This probably is a JWT token, should be check for that when ready
 		return errors.New("failed to parse certificate PEM")
@@ -40,23 +49,23 @@ func VerifyLicense(product, clusterUID string, caCert []byte, license []byte) er
 	// have one. It's also possible to omit this in order to use the
 	// default root set of the current operating system.
 	roots := x509.NewCertPool()
-	ok := roots.AppendCertsFromPEM(caCert)
+	ok := roots.AppendCertsFromPEM(opts.CACert)
 	if !ok {
 		return errors.New("failed to parse root certificate")
 	}
 
-	opts := x509.VerifyOptions{
-		DNSName: clusterUID,
+	crtopts := x509.VerifyOptions{
+		DNSName: opts.ClusterUID,
 		Roots:   roots,
 		KeyUsages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageClientAuth,
 		},
 	}
-	if _, err := cert.Verify(opts); err != nil {
+	if _, err := cert.Verify(crtopts); err != nil {
 		return errors.Wrap(err, "failed to verify certificate")
 	}
-	if !sets.NewString(cert.Subject.Organization...).Has(product) {
-		return fmt.Errorf("license was not issued for %s", product)
+	if !sets.NewString(cert.Subject.Organization...).Has(opts.ProductName) {
+		return fmt.Errorf("license was not issued for %s", opts.ProductName)
 	}
 	return nil
 }
