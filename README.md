@@ -78,7 +78,7 @@ These instructions are useful if you are trying to deploy your own license serve
 - Download pre-built binary into a server
 
 ```bash
-curl -fsSL -O https://github.com/appscode/offline-license-server/releases/download/v0.0.12/offline-license-server-linux-amd64
+curl -fsSL -O https://github.com/appscode/offline-license-server/releases/download/v0.0.13/offline-license-server-linux-amd64
 chmod +x offline-license-server-linux-amd64
 mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
 ```
@@ -86,13 +86,14 @@ mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
 - Install systemd service
 
 ```bash
-curl -fsSL -O https://github.com/appscode/offline-license-server/raw/v0.0.12/hack/systemd/offline-license-server.service
+curl -fsSL -O https://github.com/appscode/offline-license-server/raw/v0.0.13/hack/systemd/offline-license-server.service
 chmod +x offline-license-server.service
 
 # 1. Copy Google cloud service account json key to /root/app/gcloud.json
 # 2. Edit offline-license-server.service file to
 #    - set MAILGUN_KEY
 #    - add `--ssl`
+#    - add --spreadsheet-id=1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA --geo-city-database-file=/root/maxmind/GeoLite2-City.mmdb
 
 mv offline-license-server.service /lib/systemd/system/offline-license-server.service
 ```
