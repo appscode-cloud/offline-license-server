@@ -17,10 +17,7 @@ limitations under the License.
 package server
 
 import (
-	"errors"
 	"fmt"
-	"log"
-	"time"
 
 	"golang.org/x/net/context"
 	"google.golang.org/api/sheets/v4"
@@ -30,28 +27,6 @@ type Spreadsheet struct {
 	srv            *sheets.Service
 	SpreadSheetId  string
 	CurrentSheetID int64
-}
-
-func main2() {
-	si, err := NewSpreadsheet("1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA") // Share this sheet with the service account email
-	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets client: %v", err)
-	}
-	info := LogEntry{
-		LicenseForm: LicenseForm{
-			Name:    "Fahim Abrar",
-			Email:   "fahimabrar@appscode.com",
-			Product: "Kubeform Community",
-			Cluster: "bad94a42-0210-4c81-b07a-99bae529ec14",
-		},
-		IP:        "",
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
-	}
-
-	err = si.Append(info)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func NewSpreadsheet(spreadsheetId string) (*Spreadsheet, error) {
@@ -65,25 +40,6 @@ func NewSpreadsheet(spreadsheetId string) (*Spreadsheet, error) {
 		srv:           srv,
 		SpreadSheetId: spreadsheetId,
 	}, nil
-}
-
-func (si *Spreadsheet) getCellData(row, column int64) (string, error) {
-	resp, err := si.srv.Spreadsheets.GetByDataFilter(si.SpreadSheetId, &sheets.GetSpreadsheetByDataFilterRequest{
-		IncludeGridData: true,
-	}).Do()
-	if err != nil {
-		return "", fmt.Errorf("unable to retrieve data from sheet: %v", err)
-	}
-
-	var val string
-
-	for _, s := range resp.Sheets {
-		if s.Properties.SheetId == si.CurrentSheetID {
-			val = s.Data[0].RowData[row].Values[column].FormattedValue
-		}
-	}
-
-	return val, nil
 }
 
 // ref: https://developers.google.com/sheets/api/guides/batchupdate
@@ -268,23 +224,6 @@ func (si *Spreadsheet) ensureSheet(name string) (int64, error) {
 
 func (si *Spreadsheet) ensureHeader() error {
 	return si.updateRowData(0, LogEntry{}.Headers(), true)
-}
-
-func (si *Spreadsheet) findEmptyCell() (int64, error) {
-	resp, err := si.srv.Spreadsheets.GetByDataFilter(si.SpreadSheetId, &sheets.GetSpreadsheetByDataFilterRequest{
-		IncludeGridData: true,
-	}).Do()
-	if err != nil {
-		return 0, fmt.Errorf("unable to retrieve data from sheet: %v", err)
-	}
-
-	for _, s := range resp.Sheets {
-		if s.Properties.SheetId == si.CurrentSheetID {
-			return int64(len(s.Data[0].RowData)), nil
-		}
-	}
-
-	return 0, errors.New("no empty cell found")
 }
 
 func (si *Spreadsheet) Append(info LogEntry) error {

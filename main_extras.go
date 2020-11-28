@@ -21,11 +21,14 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"time"
 
+	"github.com/appscodelabs/offline-license-server/pkg/server"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+	"gomodules.xyz/x/log"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
@@ -86,4 +89,26 @@ func main_cluster_uid() {
 	}
 
 	fmt.Println(clusterUID)
+}
+
+func main_sheets() {
+	si, err := server.NewSpreadsheet("1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA") // Share this sheet with the service account email
+	if err != nil {
+		log.Fatalf("Unable to retrieve Sheets client: %v", err)
+	}
+	info := server.LogEntry{
+		LicenseForm: server.LicenseForm{
+			Name:    "Fahim Abrar",
+			Email:   "fahimabrar@appscode.com",
+			Product: "Kubeform Community",
+			Cluster: "bad94a42-0210-4c81-b07a-99bae529ec14",
+		},
+		IP:        "",
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+	}
+
+	err = si.Append(info)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
