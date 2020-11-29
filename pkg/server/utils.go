@@ -56,7 +56,12 @@ func DecorateGeoData(db *geoip2.Reader, entry *LogEntry) {
 	if len(ips) == 0 {
 		return
 	}
-	ip := net.ParseIP(strings.TrimSpace(ips[0]))
+	var ip net.IP
+	if host, _, err := net.SplitHostPort(strings.TrimSpace(ips[0])); err == nil {
+		ip = net.ParseIP(host)
+	} else {
+		ip = net.ParseIP(strings.TrimSpace(ips[0]))
+	}
 	if ip == nil {
 		return
 	}
