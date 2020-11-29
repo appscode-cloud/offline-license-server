@@ -37,6 +37,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(NewCmdGet())
 	rootCmd.AddCommand(NewCmdRun())
 	rootCmd.AddCommand(NewCmdIssueFullLicense())
+	rootCmd.AddCommand(NewCmdGenerateAccessLogCSV())
 	rootCmd.AddCommand(v.NewCmdVersion())
 	return rootCmd
 }
