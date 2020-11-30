@@ -46,7 +46,7 @@ type LicenseForm struct {
 	Product string `form:"product" binding:"Required" json:"product"`
 	Cluster string `form:"cluster" binding:"Required" json:"cluster"`
 	Tos     string `form:"tos" binding:"Required" json:"tos"`
-	Sales   string `form:"sales" binding:"Required" json:"sales"`
+	Sales   string `form:"sales" json:"sales"`
 	Token   string `form:"token" json:"token"`
 }
 
