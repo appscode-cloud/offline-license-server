@@ -23,6 +23,8 @@ import (
 )
 
 type Options struct {
+	Issuer string
+
 	CertDir   string
 	CertEmail string
 	Hosts     []string
@@ -49,6 +51,7 @@ type Options struct {
 
 func NewOptions() *Options {
 	return &Options{
+		Issuer:               "",
 		CertDir:              "certs",
 		CertEmail:            "tamal@appscode.com",
 		Hosts:                []string{"license-issuer.appscode.com"},
@@ -65,6 +68,8 @@ func NewOptions() *Options {
 }
 
 func (s *Options) AddFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&s.Issuer, "ssl.issuer", s.Issuer, "Name of License issuer")
+
 	fs.StringVar(&s.CertDir, "ssl.cert-dir", s.CertDir, "Directory where certs are stored")
 	fs.StringVar(&s.CertEmail, "ssl.email", s.CertEmail, "Email used by Let's Encrypt to notify about problems with issued certificates")
 	fs.StringSliceVar(&s.Hosts, "ssl.hosts", s.Hosts, "Hosts for which certificate will be issued")

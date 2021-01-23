@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path"
 	"time"
 
 	"github.com/appscodelabs/offline-license-server/templates"
@@ -54,7 +55,14 @@ type Server struct {
 
 func New(opts *Options) (*Server, error) {
 	fs := blobfs.New("gs://" + opts.LicenseBucket)
-	certs, err := certstore.New(fs, CACertificatesPath(), LicenseIssuerName)
+
+	caCertPath := CACertificatesPath()
+	issuerName := LicenseIssuerName
+	if opts.Issuer != "" {
+		caCertPath = path.Join(CACertificatesPath(), opts.Issuer)
+		issuerName = opts.Issuer
+	}
+	certs, err := certstore.New(fs, caCertPath, issuerName)
 	if err != nil {
 		return nil, err
 	}
