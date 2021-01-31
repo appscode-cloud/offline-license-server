@@ -2,6 +2,8 @@ package emailproviders
 
 // https://github.com/wesbos/burner-email-providers
 var disposableEmailServices = map[string]struct{}{
+	"wqcefp.com":                             empty,
+	"relay.firefox.com":                      empty,
 	"instasmail.com":                         empty,
 	"donymails.com":                          empty,
 	"0-mail.com":                             empty,

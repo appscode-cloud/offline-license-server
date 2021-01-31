@@ -246,7 +246,7 @@ gomodules.xyz/blobfs
 ## explicit
 gomodules.xyz/cert
 gomodules.xyz/cert/certstore
-# gomodules.xyz/email-providers v0.1.2
+# gomodules.xyz/email-providers v0.1.3
 ## explicit
 gomodules.xyz/email-providers
 # gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799

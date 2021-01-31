@@ -25,7 +25,7 @@ require (
 	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102
 	gomodules.xyz/blobfs v0.1.7
 	gomodules.xyz/cert v1.2.0
-	gomodules.xyz/email-providers v0.1.2
+	gomodules.xyz/email-providers v0.1.3
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	google.golang.org/api v0.30.0
 	gopkg.in/macaron.v1 v1.4.0
