@@ -495,7 +495,22 @@ func (s *Server) recordInCRM(info LogEntry) error {
 		id = lead.ID
 	}
 	// add note
-	desc, err := yaml.Marshal(info)
+	note := struct {
+		Product  string `form:"product" binding:"Required" json:"product"`
+		Cluster  string `form:"cluster" binding:"Required" json:"cluster"`
+		IP       string `json:"ip,omitempty"`
+		Timezone string `json:"timezone,omitempty"`
+		City     string `json:"city,omitempty"`
+		Country  string `json:"country,omitempty"`
+	}{
+		Product:  info.Product,
+		Cluster:  info.Cluster,
+		IP:       info.IP,
+		Timezone: info.Timezone,
+		City:     info.City,
+		Country:  info.Country,
+	}
+	desc, err := yaml.Marshal(note)
 	if err != nil {
 		return err
 	}
