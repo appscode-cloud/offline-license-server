@@ -30,11 +30,11 @@ require (
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	google.golang.org/api v0.30.0
 	gopkg.in/macaron.v1 v1.4.0
+	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog v1.0.0
 	kmodules.xyz/client-go v0.0.0-20200817064010-b2e03dabff6b
-	sigs.k8s.io/yaml v1.2.0
 )
 
 replace (

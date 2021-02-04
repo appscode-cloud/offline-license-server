@@ -41,9 +41,9 @@ import (
 	emailproviders "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	"gopkg.in/macaron.v1"
+	"gopkg.in/yaml.v2"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/yaml"
 )
 
 type Server struct {
@@ -495,20 +495,27 @@ func (s *Server) recordInCRM(info LogEntry) error {
 		id = lead.ID
 	}
 	// add note
-	note := struct {
-		Product  string `form:"product" binding:"Required" json:"product"`
-		Cluster  string `form:"cluster" binding:"Required" json:"cluster"`
-		IP       string `json:"ip,omitempty"`
-		Timezone string `json:"timezone,omitempty"`
-		City     string `json:"city,omitempty"`
-		Country  string `json:"country,omitempty"`
-	}{
-		Product:  info.Product,
-		Cluster:  info.Cluster,
-		IP:       info.IP,
-		Timezone: info.Timezone,
-		City:     info.City,
-		Country:  info.Country,
+	note := yaml.MapSlice{
+		{
+			Key:   "product",
+			Value: info.Product,
+		},
+		{
+			Key:   "cluster",
+			Value: info.Cluster,
+		},
+		{
+			Key:   "timezone",
+			Value: info.Timezone,
+		},
+		{
+			Key:   "city",
+			Value: info.City,
+		},
+		{
+			Key:   "country",
+			Value: info.Country,
+		},
 	}
 	desc, err := yaml.Marshal(note)
 	if err != nil {
