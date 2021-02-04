@@ -43,6 +43,7 @@ import (
 	"gopkg.in/macaron.v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 )
 
 type Server struct {
@@ -303,7 +304,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 			return err
 		}
 
-		err = s.recordInCRM(info)
+		err = s.recordInCRM(accesslog)
 		if err != nil {
 			return err
 		}
@@ -461,7 +462,7 @@ func (s *Server) CreateLicense(license ProductLicense, cluster string) ([]byte, 
 	return cert.EncodeCertPEM(crt), nil
 }
 
-func (s *Server) recordInCRM(info LicenseForm) error {
+func (s *Server) recordInCRM(info LogEntry) error {
 	result, err := s.freshsales.LookupByEmail(info.Email, freshsalesclient.EntityLead, freshsalesclient.EntityContact)
 	if err != nil {
 		return err
@@ -494,6 +495,10 @@ func (s *Server) recordInCRM(info LicenseForm) error {
 		id = lead.ID
 	}
 	// add note
-	_, err = s.freshsales.AddNote(id, et, info.Describe())
+	desc, err := yaml.Marshal(info)
+	if err != nil {
+		return err
+	}
+	_, err = s.freshsales.AddNote(id, et, string(desc))
 	return err
 }

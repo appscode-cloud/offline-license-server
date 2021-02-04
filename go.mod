@@ -34,6 +34,7 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog v1.0.0
 	kmodules.xyz/client-go v0.0.0-20200817064010-b2e03dabff6b
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace (

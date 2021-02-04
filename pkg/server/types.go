@@ -50,10 +50,6 @@ type LicenseForm struct {
 	Token   string `form:"token" json:"token"`
 }
 
-func (form LicenseForm) Describe() string {
-	return fmt.Sprintf("%s license for cluster %s", form.Product, form.Cluster)
-}
-
 func (form LicenseForm) Validate() error {
 	_, err := uuid.Parse(form.Cluster)
 	if err != nil {
