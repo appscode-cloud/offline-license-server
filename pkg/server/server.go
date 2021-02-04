@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/appscodelabs/offline-license-server/templates"
@@ -38,6 +39,7 @@ import (
 	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
 	emailproviders "gomodules.xyz/email-providers"
+	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	"gopkg.in/macaron.v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,11 +48,12 @@ import (
 type Server struct {
 	opts *Options
 
-	certs *certstore.CertStore
-	fs    *blobfs.BlobFS
-	mg    mailgun.Mailgun
-	sheet *Spreadsheet
-	geodb *geoip2.Reader
+	certs      *certstore.CertStore
+	fs         *blobfs.BlobFS
+	mg         mailgun.Mailgun
+	sheet      *Spreadsheet
+	freshsales *freshsalesclient.Client
+	geodb      *geoip2.Reader
 }
 
 func New(opts *Options) (*Server, error) {
@@ -81,13 +84,15 @@ func New(opts *Options) (*Server, error) {
 			return nil, err
 		}
 	}
+
 	return &Server{
-		opts:  opts,
-		certs: certs,
-		fs:    fs,
-		mg:    mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
-		sheet: sheet,
-		geodb: geodb,
+		opts:       opts,
+		certs:      certs,
+		fs:         fs,
+		mg:         mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
+		sheet:      sheet,
+		freshsales: freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
+		geodb:      geodb,
 	}, nil
 }
 
@@ -297,6 +302,11 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		if err != nil {
 			return err
 		}
+
+		err = s.recordInCRM(info)
+		if err != nil {
+			return err
+		}
 	}
 
 	{
@@ -449,4 +459,41 @@ func (s *Server) CreateLicense(license ProductLicense, cluster string) ([]byte, 
 	}
 
 	return cert.EncodeCertPEM(crt), nil
+}
+
+func (s *Server) recordInCRM(info LicenseForm) error {
+	result, err := s.freshsales.LookupByEmail(info.Email, freshsalesclient.EntityLead, freshsalesclient.EntityContact)
+	if err != nil {
+		return err
+	}
+
+	var et freshsalesclient.EntityType
+	var id int64
+	if len(result.Leads.Leads) > 0 {
+		et = freshsalesclient.EntityLead
+		// lead found
+		id = result.Leads.Leads[0].ID
+	} else if len(result.Contacts.Contacts) > 0 {
+		// contact found
+		et = freshsalesclient.EntityContact
+		id = result.Contacts.Contacts[0].ID
+	} else {
+		// create lead
+		et = freshsalesclient.EntityLead
+
+		fields := strings.Fields(info.Name)
+		lead, err := s.freshsales.CreateLead(&freshsalesclient.Lead{
+			Email:       info.Email,
+			DisplayName: info.Name,
+			FirstName:   strings.Join(fields[0:len(fields)-1], " "),
+			LastName:    fields[len(fields)-1],
+		})
+		if err != nil {
+			return err
+		}
+		id = lead.ID
+	}
+	// add note
+	_, err = s.freshsales.AddNote(id, et, info.Describe())
+	return err
 }

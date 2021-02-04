@@ -47,6 +47,9 @@ type Options struct {
 	MailSender         string
 	MailLicenseTracker string
 	MailReplyTo        string
+
+	freshsalesHost     string
+	freshsalesAPIToken string
 }
 
 func NewOptions() *Options {
@@ -64,6 +67,8 @@ func NewOptions() *Options {
 		MailSender:           MailSender,
 		MailLicenseTracker:   MailLicenseTracker,
 		MailReplyTo:          MailReplyTo,
+		freshsalesHost:       "https://appscode.freshsales.io",
+		freshsalesAPIToken:   os.Getenv("CRM_API_TOKEN"),
 	}
 }
 
@@ -87,4 +92,7 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.MailSender, "mail.sender", s.MailSender, "License sender mail")
 	fs.StringVar(&s.MailLicenseTracker, "mail.license-tracker", s.MailLicenseTracker, "License tracker email")
 	fs.StringVar(&s.MailReplyTo, "mail.reply-to", s.MailReplyTo, "Reply email for license emails")
+
+	fs.StringVar(&s.freshsalesHost, "freshsales.host", s.freshsalesHost, "Freshsales host url")
+	fs.StringVar(&s.freshsalesAPIToken, "freshsales.token", s.freshsalesAPIToken, "Freshsales api token")
 }
