@@ -497,6 +497,10 @@ func (s *Server) recordInCRM(info LogEntry) error {
 	// add note
 	note := yaml.MapSlice{
 		{
+			Key:   "event",
+			Value: "license_issued",
+		},
+		{
 			Key:   "product",
 			Value: info.Product,
 		},
