@@ -35,6 +35,10 @@ github.com/go-macaron/bindata
 github.com/go-macaron/binding
 # github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191
 github.com/go-macaron/inject
+# github.com/go-resty/resty/v2 v2.4.0
+github.com/go-resty/resty/v2
+# github.com/gobuffalo/flect v0.2.2
+github.com/gobuffalo/flect
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
@@ -183,7 +187,7 @@ golang.org/x/lint/golint
 # golang.org/x/mod v0.3.0
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20201031054903-ff519b6c9102
+# golang.org/x/net v0.0.0-20201224014010-6772e930b67b
 ## explicit
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
@@ -192,6 +196,7 @@ golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
+golang.org/x/net/publicsuffix
 golang.org/x/net/trace
 # golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 golang.org/x/oauth2
@@ -199,7 +204,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
+# golang.org/x/sys v0.0.0-20201119102817-f84b799fce68
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -249,6 +254,9 @@ gomodules.xyz/cert/certstore
 # gomodules.xyz/email-providers v0.1.3
 ## explicit
 gomodules.xyz/email-providers
+# gomodules.xyz/freshsales-client-go v0.0.0-20210204000632-49a286fb1763
+## explicit
+gomodules.xyz/freshsales-client-go
 # gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799
 gomodules.xyz/sets
 # gomodules.xyz/version v0.1.0

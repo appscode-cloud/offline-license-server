@@ -22,10 +22,11 @@ require (
 	github.com/yuin/goldmark v1.1.27
 	gocloud.dev v0.20.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102
+	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
 	gomodules.xyz/blobfs v0.1.7
 	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.3
+	gomodules.xyz/freshsales-client-go v0.0.0-20210204000632-49a286fb1763
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	google.golang.org/api v0.30.0
 	gopkg.in/macaron.v1 v1.4.0
