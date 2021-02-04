@@ -26,14 +26,6 @@ import (
 	"gomodules.xyz/x/log"
 )
 
-func Domain(email string) string {
-	idx := strings.LastIndexByte(email, '@')
-	if idx == -1 {
-		panic(fmt.Errorf("email %s is missing domain", email))
-	}
-	return email[idx+1:]
-}
-
 func IsEnterpriseProduct(product string) bool {
 	return strings.HasSuffix(strings.ToLower(product), "-enterprise")
 }
@@ -48,7 +40,7 @@ func GetIP(r *http.Request) string {
 	return r.RemoteAddr
 }
 
-func DecorateGeoData(db *geoip2.Reader, entry *LogEntry) {
+func DecorateGeoData(db *geoip2.Reader, entry *GeoLocation) {
 	if db == nil {
 		return
 	}

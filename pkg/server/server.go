@@ -24,10 +24,10 @@ import (
 	"fmt"
 	"net/http"
 	"path"
-	"strings"
 	"time"
 
 	"github.com/appscodelabs/offline-license-server/templates"
+	"github.com/avct/uasurfer"
 	"github.com/go-macaron/bindata"
 	"github.com/go-macaron/binding"
 	"github.com/google/uuid"
@@ -38,10 +38,11 @@ import (
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
-	emailproviders "gomodules.xyz/email-providers"
+	. "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
+	gdrive "gomodules.xyz/gdrive-utils"
+	"google.golang.org/api/option"
 	"gopkg.in/macaron.v1"
-	"gopkg.in/yaml.v2"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -49,12 +50,13 @@ import (
 type Server struct {
 	opts *Options
 
-	certs      *certstore.CertStore
-	fs         *blobfs.BlobFS
-	mg         mailgun.Mailgun
-	sheet      *Spreadsheet
-	freshsales *freshsalesclient.Client
-	geodb      *geoip2.Reader
+	certs       *certstore.CertStore
+	fs          *blobfs.BlobFS
+	mg          mailgun.Mailgun
+	sheet       *gdrive.Spreadsheet
+	freshsales  *freshsalesclient.Client
+	geodb       *geoip2.Reader
+	driveClient *http.Client
 }
 
 func New(opts *Options) (*Server, error) {
@@ -74,7 +76,13 @@ func New(opts *Options) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	sheet, err := NewSpreadsheet(opts.LicenseSpreadsheetId) // Share this sheet with the service account email
+
+	client, err := gdrive.DefaultClient(opts.GoogleCredentialDir)
+	if err != nil {
+		return nil, err
+	}
+
+	sheet, err := gdrive.NewSpreadsheet(opts.LicenseSpreadsheetId, option.WithHTTPClient(client)) // Share this sheet with the service account email
 	if err != nil {
 		return nil, err
 	}
@@ -87,13 +95,14 @@ func New(opts *Options) (*Server, error) {
 	}
 
 	return &Server{
-		opts:       opts,
-		certs:      certs,
-		fs:         fs,
-		mg:         mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
-		sheet:      sheet,
-		freshsales: freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
-		geodb:      geodb,
+		opts:        opts,
+		certs:       certs,
+		fs:          fs,
+		mg:          mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
+		sheet:       sheet,
+		freshsales:  freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
+		geodb:       geodb,
+		driveClient: client,
 	}, nil
 }
 
@@ -154,6 +163,32 @@ func (s *Server) Run() error {
 		// ctx.Write([]byte("Your license has been emailed!"))
 	})
 
+	m.Get("/_/pricing/", func(ctx *macaron.Context) {
+		product := ctx.Query("p")
+		if product != "" && product != "kubedb-payg" && product != "stash-payg" {
+			ctx.Error(http.StatusBadRequest, fmt.Sprintf("unknown product: %s", product))
+			return
+		}
+		ctx.Data["Product"] = product
+		ctx.HTML(200, "pricing") // 200 is the response code.
+	})
+	m.Post("/_/pricing/", binding.Bind(QuotationForm{}), func(ctx *macaron.Context, lead QuotationForm) {
+		if err := lead.Validate(); err != nil {
+			ctx.WriteHeader(http.StatusBadRequest)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+
+		err := s.HandleEmailQuotation(ctx, lead)
+		if err != nil {
+			ctx.WriteHeader(http.StatusInternalServerError)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+	})
+
+	m.Post("/_/webhooks/mailgun/", s.HandleMailgunWebhook)
+
 	if !s.opts.EnableSSL {
 		addr := fmt.Sprintf(":%d", s.opts.Port)
 		fmt.Println("Listening to addr", addr)
@@ -194,7 +229,7 @@ func (s *Server) HandleRegisterEmail(req RegisterRequest) error {
 	domain := Domain(req.Email)
 	token := uuid.New()
 
-	if emailproviders.IsDisposableEmail(domain) {
+	if IsDisposableEmail(domain) {
 		return fmt.Errorf("disposable email %s is not supported", req.Email)
 	}
 
@@ -216,28 +251,14 @@ func (s *Server) HandleRegisterEmail(req RegisterRequest) error {
 	}
 
 	{
-		subject := "AppsCode license server token"
-		src := `Hi,
-Please use the token below to issue licenses using this email address.
-
-{{.Token}}
-
-Please let us know if you have any questions.
-
-Regards,
-AppsCode Team`
-		data := struct {
+		params := struct {
 			Token string
 		}{
 			token.String(),
 		}
 
-		bodyText, bodyHtml, err := RenderMail(src, data)
-		if err != nil {
-			return err
-		}
-
-		err = s.SendMail(req.Email, subject, bodyText, bodyHtml, nil)
+		mailer := NewRegistrationMailer(params)
+		err = mailer.SendMail(s.mg, req.Email, nil)
 		if err != nil {
 			return err
 		}
@@ -248,7 +269,7 @@ AppsCode Team`
 func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) error {
 	domain := Domain(info.Email)
 
-	if emailproviders.IsDisposableEmail(domain) {
+	if IsDisposableEmail(domain) {
 		return fmt.Errorf("disposable email %s is not supported", info.Email)
 	}
 
@@ -279,10 +300,13 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		// record request
 		accesslog := LogEntry{
 			LicenseForm: info,
-			IP:          GetIP(ctx.Req.Request),
-			Timestamp:   timestamp,
+			GeoLocation: GeoLocation{
+				IP: GetIP(ctx.Req.Request),
+			},
+			Timestamp: timestamp,
+			UA:        uasurfer.Parse(ctx.Req.UserAgent()),
 		}
-		DecorateGeoData(s.geodb, &accesslog)
+		DecorateGeoData(s.geodb, &accesslog.GeoLocation)
 
 		data, err := json.MarshalIndent(accesslog, "", "  ")
 		if err != nil {
@@ -299,37 +323,25 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 			return err
 		}
 
-		err = s.sheet.Append(accesslog)
+		err = LogLicense(s.sheet, accesslog)
 		if err != nil {
 			return err
 		}
 
-		err = s.recordInCRM(accesslog)
+		err = s.noteEventLicenseIssued(accesslog)
 		if err != nil {
 			return err
 		}
 	}
 
 	{
-		subject := fmt.Sprintf("%s License for cluster %s", info.Product, info.Cluster)
-
-		src := `Hi {{.Name}},
-Thanks for your interest in {{.Product}}. The license for Kubernetes cluster {{.Cluster}} is attached with this email.
-
-Please let us know if you have any questions.
-
-Regards,
-AppsCode Team`
-		bodyText, bodyHtml, err := RenderMail(src, info)
-		if err != nil {
-			return err
-		}
-
 		// avoid sending emails for know test emails
 		if !knowTestEmails.Has(info.Email) {
-			err = s.SendMail(info.Email, subject, bodyText, bodyHtml, map[string][]byte{
+			mailer := NewLicenseMailer(info)
+			mailer.AttachmentBytes = map[string][]byte{
 				fmt.Sprintf("%s-license-%s.txt", info.Product, info.Cluster): crtLicense,
-			})
+			}
+			err = mailer.SendMail(s.mg, info.Email, nil)
 			if err != nil {
 				return err
 			}
@@ -355,7 +367,7 @@ AppsCode Team`
 }
 
 func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicense, error) {
-	if !emailproviders.IsWorkEmail(domain) {
+	if !IsWorkEmail(domain) {
 		if IsEnterpriseProduct(product) {
 			return nil, apierrors.NewBadRequest("Please provide work email to issue license for Enterprise products.")
 		}
@@ -462,69 +474,12 @@ func (s *Server) CreateLicense(license ProductLicense, cluster string) ([]byte, 
 	return cert.EncodeCertPEM(crt), nil
 }
 
-func (s *Server) recordInCRM(info LogEntry) error {
-	result, err := s.freshsales.LookupByEmail(info.Email, freshsalesclient.EntityLead, freshsalesclient.EntityContact)
+func LogLicense(si *gdrive.Spreadsheet, info LogEntry) error {
+	const sheetName = "License Issue Log"
+
+	sheetId, err := si.EnsureSheet(sheetName, LogEntry{}.Headers())
 	if err != nil {
 		return err
 	}
-
-	var et freshsalesclient.EntityType
-	var id int64
-	if len(result.Leads.Leads) > 0 {
-		et = freshsalesclient.EntityLead
-		// lead found
-		id = result.Leads.Leads[0].ID
-	} else if len(result.Contacts.Contacts) > 0 {
-		// contact found
-		et = freshsalesclient.EntityContact
-		id = result.Contacts.Contacts[0].ID
-	} else {
-		// create lead
-		et = freshsalesclient.EntityLead
-
-		fields := strings.Fields(info.Name)
-		lead, err := s.freshsales.CreateLead(&freshsalesclient.Lead{
-			Email:       info.Email,
-			DisplayName: info.Name,
-			FirstName:   strings.Join(fields[0:len(fields)-1], " "),
-			LastName:    fields[len(fields)-1],
-		})
-		if err != nil {
-			return err
-		}
-		id = lead.ID
-	}
-	// add note
-	note := yaml.MapSlice{
-		{
-			Key:   "event",
-			Value: "license_issued",
-		},
-		{
-			Key:   "product",
-			Value: info.Product,
-		},
-		{
-			Key:   "cluster",
-			Value: info.Cluster,
-		},
-		{
-			Key:   "timezone",
-			Value: info.Timezone,
-		},
-		{
-			Key:   "city",
-			Value: info.City,
-		},
-		{
-			Key:   "country",
-			Value: info.Country,
-		},
-	}
-	desc, err := yaml.Marshal(note)
-	if err != nil {
-		return err
-	}
-	_, err = s.freshsales.AddNote(id, et, string(desc))
-	return err
+	return si.AppendRowData(sheetId, info.Data(), false)
 }

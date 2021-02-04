@@ -1,10 +1,10 @@
 #!/bin/bash -e
-cd $(dirname $0)
-PATH=$HOME/go/bin:$GOPATH/bin:$PATH
+cd "$(dirname $0)"
+PATH=$HOME/go/bin:$PATH
 
 if ! type -p goveralls; then
-  echo go get github.com/mattn/goveralls
-  go get github.com/mattn/goveralls
+  echo go install github.com/mattn/goveralls
+  go install github.com/mattn/goveralls
 fi
 
 echo date...

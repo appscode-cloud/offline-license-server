@@ -19,21 +19,35 @@ package server
 import (
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
 	"text/template"
 	"time"
 
 	"github.com/Masterminds/sprig"
+	"github.com/mailgun/mailgun-go/v4"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
-	"k8s.io/apimachinery/pkg/util/sets"
+	"google.golang.org/api/drive/v3"
 )
 
-var knowTestEmails = sets.NewString("1gtm@appscode.com")
-var skipEmailDomains = sets.NewString("appscode.com")
+type Mailer struct {
+	Sender  string
+	BCC     string
+	ReplyTo string
 
-func RenderMail(src string, data interface{}) (string, string, error) {
+	Subject string
+	Body    string
+	params  interface{}
+
+	AttachmentBytes map[string][]byte
+	GDriveFiles     map[string]string
+	GoogleDocIds    map[string]string
+}
+
+func (m *Mailer) renderMail(src string, data interface{}) (string, string, error) {
 	tpl := template.Must(template.New("").Funcs(sprig.TxtFuncMap()).Parse(src))
 
 	var bodyText bytes.Buffer
@@ -59,20 +73,48 @@ func RenderMail(src string, data interface{}) (string, string, error) {
 	return bodyText.String(), bodyHtml.String(), nil
 }
 
-func (s *Server) SendMail(recipient, subject, bodyText, bodyHtml string, attachments map[string][]byte) error {
+func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient string, srv *drive.Service) error {
+	bodyText, bodyHtml, err := m.renderMail(m.Body, m.params)
+	if err != nil {
+		return err
+	}
+
 	// The message object allows you to add attachments and Bcc recipients
-	msg := s.mg.NewMessage(s.opts.MailSender, subject, bodyText, recipient)
+	msg := mg.NewMessage(m.Sender, m.Subject, bodyText, recipient)
+	msg.AddBCC(m.BCC)
+	msg.SetReplyTo(m.ReplyTo)
+
+	msg.SetTracking(true)
+	msg.SetTrackingClicks(true)
+	msg.SetTrackingOpens(true)
+
 	msg.SetHtml(bodyHtml)
-	msg.AddBCC(s.opts.MailLicenseTracker)
-	msg.SetReplyTo(s.opts.MailReplyTo)
-	for filename, data := range attachments {
+	for filename, data := range m.AttachmentBytes {
 		msg.AddBufferAttachment(filename, data)
+	}
+
+	for f, docId := range m.GoogleDocIds {
+		filename := filepath.Join(os.TempDir(), recipient, f)
+		err := ExportPDF(srv, docId, filename)
+		if err != nil {
+			return err
+		}
+		msg.AddAttachment(filename)
+	}
+
+	for f, docId := range m.GDriveFiles {
+		filename := filepath.Join(os.TempDir(), recipient, f)
+		err := DownloadFile(srv, docId, filename)
+		if err != nil {
+			return err
+		}
+		msg.AddAttachment(filename)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	// Send the message with a 10 second timeout
-	_, _, err := s.mg.Send(ctx, msg)
+	_, _, err = mg.Send(ctx, msg)
 	return err
 }
