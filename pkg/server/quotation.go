@@ -426,6 +426,22 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 	DecorateGeoData(s.geodb, &location)
 	gen.Location = location
 
+	go func() {
+		if err := s.processQuotationRequest(gen); err != nil {
+			// email support@appscode.com failed to process request
+			mailer := NewQuotationProcessFailedMailer(gen, err)
+			e2 := mailer.SendMail(s.mg, MailSupport, nil)
+			if e2 != nil {
+				_, _ = fmt.Fprintf(os.Stderr, "failed send email %v", e2)
+			}
+		}
+	}()
+
+	respond(ctx, []byte("Thank you! Please check your email in a few minutes for price quotation. Don't forget to check spam folder."))
+	return nil
+}
+
+func (s *Server) processQuotationRequest(gen *QuotationGenerator) error {
 	quote, docId, err := gen.Generate()
 	if err != nil {
 		return err
@@ -445,20 +461,20 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 	if err != nil {
 		return err
 	}
-	err = mailer.SendMail(mg, lead.Email, srvDrive)
+	err = mailer.SendMail(mg, gen.Lead.Email, srvDrive)
 	if err != nil {
 		return err
 	}
 
-	return s.noteEventQuotation(lead, EventQuotationGenerated{
+	return s.noteEventQuotation(gen.Lead, EventQuotationGenerated{
 		BaseNoteDescription: freshsalesclient.BaseNoteDescription{
 			Event: "quotation_generated",
 			Client: freshsalesclient.ClientInfo{
 				OS:     gen.UA.OS.Name.StringTrimPrefix(),
 				Device: gen.UA.DeviceType.StringTrimPrefix(),
 				Location: freshsalesclient.GeoLocation{
-					City:    location.City,
-					Country: location.Country,
+					City:    gen.Location.City,
+					Country: gen.Location.Country,
 				},
 			},
 		},

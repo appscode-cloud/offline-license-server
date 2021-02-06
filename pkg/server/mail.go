@@ -45,15 +45,22 @@ type Mailer struct {
 	AttachmentBytes map[string][]byte
 	GDriveFiles     map[string]string
 	GoogleDocIds    map[string]string
+
+	EnableTracking bool
 }
 
-func (m *Mailer) renderMail(src string, data interface{}) (string, string, error) {
-	tpl := template.Must(template.New("").Funcs(sprig.TxtFuncMap()).Parse(src))
-
+func (m *Mailer) renderMail(src string, params interface{}) (string, string, error) {
 	var bodyText bytes.Buffer
-	err := tpl.Execute(&bodyText, data)
-	if err != nil {
-		return "", "", err
+
+	if params == nil {
+		// by pass if there is no params passed for rendering
+		bodyText.WriteString(src)
+	} else {
+		tpl := template.Must(template.New("").Funcs(sprig.TxtFuncMap()).Parse(src))
+		err := tpl.Execute(&bodyText, params)
+		if err != nil {
+			return "", "", err
+		}
 	}
 
 	var bodyHtml bytes.Buffer
@@ -81,12 +88,18 @@ func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient string, srv *drive.Servi
 
 	// The message object allows you to add attachments and Bcc recipients
 	msg := mg.NewMessage(m.Sender, m.Subject, bodyText, recipient)
-	msg.AddBCC(m.BCC)
-	msg.SetReplyTo(m.ReplyTo)
+	if m.BCC != "" {
+		msg.AddBCC(m.BCC)
+	}
+	if m.ReplyTo != "" {
+		msg.SetReplyTo(m.ReplyTo)
+	}
 
-	msg.SetTracking(true)
-	msg.SetTrackingClicks(true)
-	msg.SetTrackingOpens(true)
+	if m.EnableTracking {
+		msg.SetTracking(true)
+		msg.SetTrackingClicks(true)
+		msg.SetTrackingOpens(true)
+	}
 
 	msg.SetHtml(bodyHtml)
 	for filename, data := range m.AttachmentBytes {

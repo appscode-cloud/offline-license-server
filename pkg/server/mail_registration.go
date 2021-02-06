@@ -37,5 +37,6 @@ AppsCode Team
 		Body:            src,
 		params:          params,
 		AttachmentBytes: nil,
+		EnableTracking:  true,
 	}
 }

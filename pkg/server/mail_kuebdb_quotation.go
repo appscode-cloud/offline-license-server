@@ -46,5 +46,6 @@ AppsCode Team
 			"kubedb_pricing_table.pdf": "1-RRVPczOoPQZ21-BICtabrkpcfhLfJrQ",
 			"kubedb-support-plans.pdf": "1zDvN0KUcvKFrgY_0PZCj4lfxri6xnGgr",
 		},
+		EnableTracking: true,
 	}
 }

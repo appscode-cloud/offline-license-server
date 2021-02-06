@@ -46,5 +46,6 @@ AppsCode Team
 		GDriveFiles: map[string]string{
 			"stash-support-plans.pdf": "1j1PwFd4YprSGiuRp_d8qAq3jfK_-jtHo",
 		},
+		EnableTracking: true,
 	}
 }
