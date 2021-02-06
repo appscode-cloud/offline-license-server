@@ -11,6 +11,7 @@ require (
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e
 	github.com/go-macaron/binding v0.0.0-00010101000000-000000000000
+	github.com/go-macaron/cors v0.0.0-20210206180111-00b7f53a9308
 	github.com/gobuffalo/flect v0.2.2
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/schema v1.2.0 // indirect

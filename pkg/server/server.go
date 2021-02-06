@@ -30,6 +30,7 @@ import (
 	"github.com/avct/uasurfer"
 	"github.com/go-macaron/bindata"
 	"github.com/go-macaron/binding"
+	"github.com/go-macaron/cors"
 	"github.com/google/uuid"
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/oschwald/geoip2-golang"
@@ -123,6 +124,15 @@ func (s *Server) Run() error {
 	m := macaron.New()
 	m.Use(macaron.Logger())
 	m.Use(macaron.Recovery())
+	m.Use(cors.CORS(cors.Options{
+		Section:          "",
+		Scheme:           "*",
+		AllowDomain:      []string{"appscode.com"},
+		AllowSubdomain:   true,
+		Methods:          []string{http.MethodGet, http.MethodPost},
+		MaxAgeSeconds:    600,
+		AllowCredentials: false,
+	}))
 	m.Use(macaron.Renderer(macaron.RenderOptions{
 		TemplateFileSystem: bindata.Templates(bindata.Options{
 			Asset:      templates.Asset,
