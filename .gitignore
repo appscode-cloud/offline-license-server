@@ -33,3 +33,6 @@ _testmain.go
 /.go
 
 apiserver.local.config/**
+
+credentials.json
+token.json

@@ -44,15 +44,14 @@ type Options struct {
 	// (https://app.mailgun.com/app/account/security)
 	MailgunPrivateAPIKey string
 
-	MailSender         string
-	MailLicenseTracker string
-	MailReplyTo        string
-
 	freshsalesHost     string
 	freshsalesAPIToken string
+
+	GoogleCredentialDir string
 }
 
 func NewOptions() *Options {
+	cwd, _ := os.Getwd()
 	return &Options{
 		Issuer:               "",
 		CertDir:              "certs",
@@ -61,14 +60,12 @@ func NewOptions() *Options {
 		Port:                 4000,
 		GeoCityDatabase:      "",
 		LicenseBucket:        LicenseBucket,
-		LicenseSpreadsheetId: "1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA",
-		MailgunDomain:        os.Getenv("MAILGUN_DOMAIN"),
-		MailgunPrivateAPIKey: os.Getenv("MAILGUN_KEY"),
-		MailSender:           MailSender,
-		MailLicenseTracker:   MailLicenseTracker,
-		MailReplyTo:          MailReplyTo,
+		LicenseSpreadsheetId: LicenseSpreadsheetId,
+		MailgunDomain:        os.Getenv("MG_DOMAIN"),
+		MailgunPrivateAPIKey: os.Getenv("MG_API_KEY"),
 		freshsalesHost:       "https://appscode.freshsales.io",
 		freshsalesAPIToken:   os.Getenv("CRM_API_TOKEN"),
+		GoogleCredentialDir:  cwd,
 	}
 }
 
@@ -89,10 +86,8 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.MailgunDomain, "mailgun.domain", s.MailgunDomain, "Mailgun domain")
 	fs.StringVar(&s.MailgunPrivateAPIKey, "mailgun.api-key", s.MailgunPrivateAPIKey, "Mailgun private api key")
 
-	fs.StringVar(&s.MailSender, "mail.sender", s.MailSender, "License sender mail")
-	fs.StringVar(&s.MailLicenseTracker, "mail.license-tracker", s.MailLicenseTracker, "License tracker email")
-	fs.StringVar(&s.MailReplyTo, "mail.reply-to", s.MailReplyTo, "Reply email for license emails")
-
 	fs.StringVar(&s.freshsalesHost, "freshsales.host", s.freshsalesHost, "Freshsales host url")
 	fs.StringVar(&s.freshsalesAPIToken, "freshsales.token", s.freshsalesAPIToken, "Freshsales api token")
+
+	fs.StringVar(&s.GoogleCredentialDir, "google.credential-dir", s.GoogleCredentialDir, "Directory used to store Google credential")
 }

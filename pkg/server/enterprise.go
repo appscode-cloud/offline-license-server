@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"gomodules.xyz/cert"
-	emailproviders "gomodules.xyz/email-providers"
+	. "gomodules.xyz/email-providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -34,7 +34,7 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration
 
 	domain := Domain(info.Email)
 
-	if emailproviders.IsDisposableEmail(domain) {
+	if IsDisposableEmail(domain) {
 		return fmt.Errorf("disposable email %s is not supported", info.Email)
 	}
 
@@ -104,32 +104,20 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration
 			return err
 		}
 
-		err = s.sheet.Append(accesslog)
+		err = LogLicense(s.sheet, accesslog)
 		if err != nil {
 			return err
 		}
 	}
 
 	{
-		subject := fmt.Sprintf("%s License for cluster %s", info.Product, info.Cluster)
-
-		src := `Hi {{.Name}},
-Thanks for purchasing license for {{.Product}}. The full license for Kubernetes cluster {{.Cluster}} is attached with this email. 
-
-Please let us know if you have any questions.
-
-Regards,
-AppsCode Team`
-		bodyText, bodyHtml, err := RenderMail(src, info)
-		if err != nil {
-			return err
-		}
-
 		// avoid sending emails for know test emails
 		if !knowTestEmails.Has(info.Email) {
-			err = s.SendMail(info.Email, subject, bodyText, bodyHtml, map[string][]byte{
+			mailer := NewEnterpriseLicenseMailer(info)
+			mailer.AttachmentBytes = map[string][]byte{
 				fmt.Sprintf("%s-license-%s.txt", info.Product, info.Cluster): crtLicense,
-			})
+			}
+			err = mailer.SendMail(s.mg, info.Email, nil)
 			if err != nil {
 				return err
 			}

@@ -1,5 +1,5 @@
 /*
-Copyright The Kubepack Authors.
+Copyright AppsCode Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import (
 	"github.com/oschwald/geoip2-golang"
 	"github.com/spf13/cobra"
 	"gocloud.dev/blob"
+	. "gomodules.xyz/email-providers"
 )
 
 func NewCmdGenerateAccessLogCSV() *cobra.Command {
@@ -103,7 +104,7 @@ func NewCmdGenerateAccessLogCSV() *cobra.Command {
 					return err
 				}
 
-				if server.Domain(accesslog.Email) == "appscode.com" {
+				if Domain(accesslog.Email) == "appscode.com" {
 					continue
 				}
 
@@ -114,9 +115,11 @@ func NewCmdGenerateAccessLogCSV() *cobra.Command {
 				entry := server.LogEntry{
 					LicenseForm: accesslog.LicenseForm,
 					Timestamp:   parts[len(parts)-1],
-					IP:          accesslog.IP,
+					GeoLocation: server.GeoLocation{
+						IP: accesslog.IP,
+					},
 				}
-				server.DecorateGeoData(db, &entry)
+				server.DecorateGeoData(db, &entry.GeoLocation)
 				records = append(records, &entry)
 			}
 

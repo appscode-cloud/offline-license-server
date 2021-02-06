@@ -218,3 +218,19 @@ type APIObject struct {
 	Contact *Contact `json:"contact,omitempty"`
 	Note    *Note    `json:"note,omitempty"`
 }
+
+type BaseNoteDescription struct {
+	Event  string     `json:"event,omitempty"`
+	Client ClientInfo `json:"client,omitempty"`
+}
+
+type ClientInfo struct {
+	OS       string      `json:"os,omitempty"`
+	Device   string      `json:"device,omitempty"`
+	Location GeoLocation `json:"location,omitempty"`
+}
+
+type GeoLocation struct {
+	City    string `json:"city,omitempty"`
+	Country string `json:"country,omitempty"`
+}

@@ -15,8 +15,8 @@ startLimitIntervalSec=60
 
 # Env Vars
 Environment=GOOGLE_APPLICATION_CREDENTIALS=/root/app/gcloud.json
-Environment=MAILGUN_DOMAIN=mail.appscode.com
-Environment=MAILGUN_KEY=
+Environment=MG_DOMAIN=mail.appscode.com
+Environment=MG_API_KEY=
 
 WorkingDirectory=/root
 ExecStart=/usr/local/bin/offline-license-server run

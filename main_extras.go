@@ -19,7 +19,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"time"
 
@@ -28,11 +27,8 @@ import (
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+	gdrive "gomodules.xyz/gdrive-utils"
 	"gomodules.xyz/x/log"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog"
-	"kmodules.xyz/client-go/tools/clusterid"
 )
 
 func main_MD_HTML() {
@@ -63,36 +59,8 @@ AppsCode Team
 	fmt.Println(buf.String())
 }
 
-func main_cluster_uid() {
-	var kubeconfig string
-	var master string
-
-	flag.StringVar(&kubeconfig, "kubeconfig", "", "absolute path to the kubeconfig file")
-	flag.StringVar(&master, "master", "", "master url")
-	flag.Parse()
-
-	// creates the connection
-	config, err := clientcmd.BuildConfigFromFlags(master, kubeconfig)
-	if err != nil {
-		klog.Fatal(err)
-	}
-
-	// creates the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		klog.Fatal(err)
-	}
-
-	clusterUID, err := clusterid.ClusterUID(clientset.CoreV1().Namespaces())
-	if err != nil {
-		klog.Fatal(err)
-	}
-
-	fmt.Println(clusterUID)
-}
-
 func main_sheets() {
-	si, err := server.NewSpreadsheet("1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA") // Share this sheet with the service account email
+	si, err := gdrive.NewSpreadsheet("1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA") // Share this sheet with the service account email
 	if err != nil {
 		log.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
@@ -103,11 +71,10 @@ func main_sheets() {
 			Product: "Kubeform Community",
 			Cluster: "bad94a42-0210-4c81-b07a-99bae529ec14",
 		},
-		IP:        "",
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
 
-	err = si.Append(info)
+	err = server.LogLicense(si, info)
 	if err != nil {
 		log.Fatal(err)
 	}

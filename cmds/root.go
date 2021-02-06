@@ -33,6 +33,7 @@ func NewRootCmd() *cobra.Command {
 	flags := rootCmd.PersistentFlags()
 	flags.AddGoFlagSet(flag.CommandLine)
 
+	rootCmd.AddCommand(NewCmdQuotation())
 	rootCmd.AddCommand(NewCmdCreate())
 	rootCmd.AddCommand(NewCmdGet())
 	rootCmd.AddCommand(NewCmdRun())

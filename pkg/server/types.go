@@ -20,7 +20,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/avct/uasurfer"
 	"github.com/google/uuid"
+	. "gomodules.xyz/email-providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -46,7 +48,6 @@ type LicenseForm struct {
 	Product string `form:"product" binding:"Required" json:"product"`
 	Cluster string `form:"cluster" binding:"Required" json:"cluster"`
 	Tos     string `form:"tos" binding:"Required" json:"tos"`
-	Sales   string `form:"sales" json:"sales"`
 	Token   string `form:"token" json:"token"`
 }
 
@@ -66,7 +67,12 @@ func (form LicenseForm) Validate() error {
 
 type LogEntry struct {
 	LicenseForm `json:",inline,omitempty"`
-	Timestamp   string `json:"timestamp,omitempty"`
+	GeoLocation `json:",inline,omitempty"`
+	Timestamp   string              `json:"timestamp,omitempty"`
+	UA          *uasurfer.UserAgent `json:"-"`
+}
+
+type GeoLocation struct {
 	IP          string `json:"ip,omitempty"`
 	Timezone    string `json:"timezone,omitempty"`
 	City        string `json:"city,omitempty"`
@@ -87,7 +93,8 @@ func (_ LogEntry) Headers() []string {
 		"City",
 		"Country",
 		"Coordinates",
-		"Contact For Sales",
+		"Client OS",
+		"Client Device",
 	}
 }
 
@@ -104,6 +111,7 @@ func (info LogEntry) Data() []string {
 		info.City,
 		info.Country,
 		info.Coordinates,
-		info.Sales,
+		info.UA.OS.Name.StringTrimPrefix(),
+		info.UA.DeviceType.StringTrimPrefix(),
 	}
 }

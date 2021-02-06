@@ -18,12 +18,18 @@ package server
 
 import (
 	"time"
+
+	"gomodules.xyz/sets"
 )
 
 const (
-	MailSender         = "license-issuer@mail.appscode.com"
+	AccountFolderId      = "1RBXgSR0jud5cpCqeC90fAdyb0Oaz7EIc"
+	LicenseSpreadsheetId = "1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA"
+
+	MailLicenseSender  = "license-issuer@mail.appscode.com"
 	MailLicenseTracker = "issued-license-tracker@appscode.com"
-	MailReplyTo        = "support@appscode.com"
+	MailSupport        = "support@appscode.com"
+	MailSales          = "sales@appscode.com"
 
 	DefaultTTLForEnterpriseProduct     = 14 * 24 * time.Hour
 	DefaultFullTTLForEnterpriseProduct = 365 * 24 * time.Hour
@@ -32,6 +38,9 @@ const (
 	LicenseIssuerName = "AppsCode Inc."
 	LicenseBucket     = "licenses.appscode.com"
 )
+
+var knowTestEmails = sets.NewString("1gtm@appscode.com")
+var skipEmailDomains = sets.NewString("appscode.com")
 
 var supportedProducts = map[string][]string{
 	"kubedb-community":     {"kubedb-community"},

@@ -91,7 +91,7 @@ chmod +x offline-license-server.service
 
 # 1. Copy Google cloud service account json key to /root/app/gcloud.json
 # 2. Edit offline-license-server.service file to
-#    - set MAILGUN_KEY
+#    - set MG_API_KEY
 #    - add `--ssl`
 #    - add --spreadsheet-id=1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA --geo-city-database-file=/root/maxmind/GeoLite2-City.mmdb
 
