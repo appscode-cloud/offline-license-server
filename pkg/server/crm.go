@@ -47,11 +47,16 @@ func (s *Server) ensureCRMEntity(lead *freshsalesclient.Lead) (freshsalesclient.
 
 func (s *Server) createLead(email string, name string) *freshsalesclient.Lead {
 	fields := strings.Fields(name)
+	var firstname, lastname string
+	if len(fields) > 0 {
+		firstname = strings.Join(fields[0:len(fields)-1], " ")
+		lastname = fields[len(fields)-1]
+	}
 	return &freshsalesclient.Lead{
 		Email:       email,
 		DisplayName: name,
-		FirstName:   strings.Join(fields[0:len(fields)-1], " "),
-		LastName:    fields[len(fields)-1],
+		FirstName:   firstname,
+		LastName:    lastname,
 	}
 }
 
