@@ -19,6 +19,7 @@ package server
 import (
 	"strings"
 
+	"github.com/gobuffalo/flect"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	"sigs.k8s.io/yaml"
 )
@@ -192,7 +193,18 @@ func (s *Server) noteEventQuotation(form QuotationForm, e EventQuotationGenerate
 }
 
 func (s *Server) noteEventMailgun(email string, e EventMailgun) error {
-	et, id, err := s.ensureCRMEntity(s.createLead(email, ""))
+	name := email
+	idx := strings.LastIndex(email, "@")
+	if idx >= 0 {
+		name = email[:idx]
+	}
+	name = flect.Humanize(name)
+	name = strings.ReplaceAll(name, "_", " ")
+	name = strings.ReplaceAll(name, ".", " ")
+	name = strings.ReplaceAll(name, "-", " ")
+	name = flect.Titleize(name)
+
+	et, id, err := s.ensureCRMEntity(s.createLead(email, name))
 	if err != nil {
 		return err
 	}

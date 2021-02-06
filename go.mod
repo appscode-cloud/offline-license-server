@@ -11,6 +11,7 @@ require (
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e
 	github.com/go-macaron/binding v0.0.0-00010101000000-000000000000
+	github.com/gobuffalo/flect v0.2.2
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
@@ -30,7 +31,7 @@ require (
 	gomodules.xyz/blobfs v0.1.7
 	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.4
-	gomodules.xyz/freshsales-client-go v0.0.0-20210206083335-ac94e293030c
+	gomodules.xyz/freshsales-client-go v0.0.0-20210206154829-0dcd7e727722
 	gomodules.xyz/gdrive-utils v0.0.0-20210204225940-6681833950ff
 	gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
 	gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799

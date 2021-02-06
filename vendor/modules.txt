@@ -42,6 +42,7 @@ github.com/go-macaron/inject
 # github.com/go-resty/resty/v2 v2.4.0
 github.com/go-resty/resty/v2
 # github.com/gobuffalo/flect v0.2.2
+## explicit
 github.com/gobuffalo/flect
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
@@ -255,7 +256,7 @@ gomodules.xyz/cert/certstore
 # gomodules.xyz/email-providers v0.1.4
 ## explicit
 gomodules.xyz/email-providers
-# gomodules.xyz/freshsales-client-go v0.0.0-20210206083335-ac94e293030c
+# gomodules.xyz/freshsales-client-go v0.0.0-20210206154829-0dcd7e727722
 ## explicit
 gomodules.xyz/freshsales-client-go
 # gomodules.xyz/gdrive-utils v0.0.0-20210204225940-6681833950ff

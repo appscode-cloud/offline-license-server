@@ -2,6 +2,7 @@ package freshsalesclient
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
@@ -40,6 +41,9 @@ func (c *Client) CreateLead(lead *Lead) (*Lead, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode() < http.StatusOK || resp.StatusCode() >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
+	}
 	return resp.Result().(*APIObject).Lead, nil
 }
 
@@ -58,6 +62,9 @@ func (c *Client) GetLead(id int) (*Lead, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode() < http.StatusOK || resp.StatusCode() >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
+	}
 	return resp.Result().(*APIObject).Lead, nil
 }
 
@@ -69,6 +76,9 @@ func (c *Client) UpdateLead(lead *Lead) (*Lead, error) {
 	if err != nil {
 		panic(err)
 	}
+	if resp.StatusCode() < http.StatusOK || resp.StatusCode() >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
+	}
 	return resp.Result().(*APIObject).Lead, nil
 }
 
@@ -79,6 +89,9 @@ func (c *Client) UpdateContact(contact *Contact) (*Contact, error) {
 		Put(fmt.Sprintf("/api/contacts/%d", contact.ID))
 	if err != nil {
 		panic(err)
+	}
+	if resp.StatusCode() < http.StatusOK || resp.StatusCode() >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
 	}
 	return resp.Result().(*APIObject).Contact, nil
 }
@@ -94,6 +107,9 @@ func (c *Client) AddNote(id int64, et EntityType, desc string) (*Note, error) {
 		Post("/api/notes")
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode() < http.StatusOK || resp.StatusCode() >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
 	}
 	return resp.Result().(*APIObject).Note, nil
 }
@@ -114,6 +130,9 @@ func (c *Client) Search(str string, et EntityType, more ...EntityType) ([]Entity
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode() < http.StatusOK || resp.StatusCode() >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
+	}
 	return *(resp.Result().(*SearchResults)), nil
 }
 
@@ -133,6 +152,9 @@ func (c *Client) LookupByEmail(email string, et EntityType, more ...EntityType) 
 		Get("/api/lookup")
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode() < http.StatusOK || resp.StatusCode() >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
 	}
 	return resp.Result().(*LookupResult), nil
 }
