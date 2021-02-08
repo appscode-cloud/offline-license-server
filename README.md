@@ -118,3 +118,14 @@ offline-license-server issue-full-license \
 
 # --duration flag used https://pkg.go.dev/github.com/rickb777/date/period for parsing duration.
 ```
+
+### Generate Quotation
+
+```bash
+offline-license-server quotation generate \
+  --lead.email='****' \
+  --lead.name='***' \
+  --lead.title='***' \
+  --lead.company='***' \
+  --template-doc-id=***
+```
