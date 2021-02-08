@@ -16,7 +16,11 @@ limitations under the License.
 
 package server
 
-func NewStashQuotationMailer(params interface{}) Mailer {
+import (
+	"fmt"
+)
+
+func NewStashQuotationMailer(lead QuotationForm) Mailer {
 	src := `Hello {{ .Name }},
 
 Thanks for your interest in licensing Stash. I have prepared a quotation of the Stash PAYG license for you.
@@ -39,9 +43,9 @@ AppsCode Team
 		Sender:          MailSales,
 		BCC:             MailSales,
 		ReplyTo:         MailSales,
-		Subject:         "Re: KubeDB PAYG price quotation",
+		Subject:         fmt.Sprintf("Re: KubeDB PAYG Quotation - %s", lead.Email),
 		Body:            src,
-		params:          params,
+		params:          lead,
 		AttachmentBytes: nil,
 		GDriveFiles: map[string]string{
 			"stash-support-plans.pdf": "1j1PwFd4YprSGiuRp_d8qAq3jfK_-jtHo",
