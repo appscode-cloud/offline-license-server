@@ -90,7 +90,7 @@ func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient, cc string, srv *drive.S
 	// The message object allows you to add attachments and Bcc recipients
 	msg := mg.NewMessage(m.Sender, m.Subject, bodyText, recipient)
 	for _, e := range strings.Split(cc, ",") {
-		msg.AddCC(e)
+		msg.AddCC(strings.TrimSpace(e))
 	}
 	if m.BCC != "" {
 		msg.AddBCC(m.BCC)
