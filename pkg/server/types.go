@@ -45,6 +45,7 @@ type RegisterRequest struct {
 type LicenseForm struct {
 	Name    string `form:"name" binding:"Required" json:"name"`
 	Email   string `form:"email" binding:"Required;Email" json:"email"`
+	CC      string `form:"cc" json:"cc"`
 	Product string `form:"product" binding:"Required" json:"product"`
 	Cluster string `form:"cluster" binding:"Required" json:"cluster"`
 	Tos     string `form:"tos" binding:"Required" json:"tos"`

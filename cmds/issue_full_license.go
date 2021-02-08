@@ -62,6 +62,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 	opts.AddFlags(cmd.Flags())
 	cmd.Flags().StringVar(&info.Name, "name", info.Name, "Name of the user receiving the license")
 	cmd.Flags().StringVar(&info.Email, "email", info.Email, "Email of the user receiving the license")
+	cmd.Flags().StringVar(&info.CC, "cc", info.CC, "CC the license to these emails")
 	cmd.Flags().StringVar(&info.Product, "product", info.Product, "Product for which license will be issued")
 	cmd.Flags().StringVar(&info.Cluster, "cluster", info.Cluster, "Cluster ID for which license will be issued")
 	cmd.Flags().Var(&d, "duration", "Duration for the new license")

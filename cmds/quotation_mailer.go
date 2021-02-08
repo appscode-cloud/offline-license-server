@@ -67,7 +67,7 @@ func NewCmdEmailQuotation() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return mailer.SendMail(mg, opts.Lead.Email, "", gen.DriveService)
+			return mailer.SendMail(mg, opts.Lead.Email, opts.Lead.CC, gen.DriveService)
 		},
 	}
 
@@ -78,6 +78,7 @@ func NewCmdEmailQuotation() *cobra.Command {
 
 	cmd.Flags().StringVar(&opts.Lead.Name, "lead.name", opts.Lead.Name, "Name of lead")
 	cmd.Flags().StringVar(&opts.Lead.Email, "lead.email", opts.Lead.Email, "Email of lead")
+	cmd.Flags().StringVar(&opts.Lead.CC, "lead.cc", opts.Lead.CC, "CC the quotation to these command separated emails")
 	cmd.Flags().StringVar(&opts.Lead.Title, "lead.title", opts.Lead.Title, "Job title of lead")
 	cmd.Flags().StringVar(&opts.Lead.Telephone, "lead.telephone", opts.Lead.Telephone, "Telephone number of lead")
 	cmd.Flags().StringVar(&opts.Lead.Product, "lead.product", opts.Lead.Product, "Name of product for which quotation is requested")
