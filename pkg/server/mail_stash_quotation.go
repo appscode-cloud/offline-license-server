@@ -43,7 +43,7 @@ AppsCode Team
 		Sender:          MailSales,
 		BCC:             MailSales,
 		ReplyTo:         MailSales,
-		Subject:         fmt.Sprintf("Stash PAYG Quotation - %s", lead.Name),
+		Subject:         fmt.Sprintf("Stash PAYG Quotation - %s", lead.Company),
 		Body:            src,
 		params:          lead,
 		AttachmentBytes: nil,
