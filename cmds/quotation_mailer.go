@@ -17,7 +17,6 @@ limitations under the License.
 package cmds
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 
@@ -25,8 +24,6 @@ import (
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/spf13/cobra"
 	gdrive "gomodules.xyz/gdrive-utils"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 )
 
 func NewCmdEmailQuotation() *cobra.Command {
@@ -66,16 +63,11 @@ func NewCmdEmailQuotation() *cobra.Command {
 				gen.DocName(quote) + ".pdf": docId,
 			}
 
-			srvDrive, err := drive.NewService(context.TODO(), option.WithHTTPClient(client))
-			if err != nil {
-				return err
-			}
-
 			mg, err := mailgun.NewMailgunFromEnv()
 			if err != nil {
 				return err
 			}
-			return mailer.SendMail(mg, opts.Lead.Email, srvDrive)
+			return mailer.SendMail(mg, opts.Lead.Email, "", gen.DriveService)
 		},
 	}
 

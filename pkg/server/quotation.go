@@ -61,6 +61,7 @@ var templateIds = map[string]string{
 type QuotationForm struct {
 	Name      string `form:"name" binding:"Required" json:"name"`
 	Email     string `form:"email" binding:"Required" json:"email"`
+	CC        string `form:"cc" json:"cc"`
 	Title     string `form:"title" binding:"Required" json:"title"`
 	Telephone string `form:"telephone" binding:"Required" json:"telephone"`
 	Product   string `form:"product" binding:"Required" json:"product"`
@@ -154,9 +155,9 @@ type QuotationGenerator struct {
 	Location GeoLocation
 	UA       *uasurfer.UserAgent
 
-	srvDrive *drive.Service
-	srvDoc   *docs.Service
-	srvSheet *gdrive.Spreadsheet
+	DriveService *drive.Service
+	DocService   *docs.Service
+	SheetService *gdrive.Spreadsheet
 }
 
 func NewQuotationGenerator(client *http.Client, cfg QuotationGeneratorConfig) *QuotationGenerator {
@@ -176,10 +177,10 @@ func NewQuotationGenerator(client *http.Client, cfg QuotationGeneratorConfig) *Q
 	}
 
 	return &QuotationGenerator{
-		cfg:      cfg,
-		srvDrive: srvDrive,
-		srvDoc:   srvDoc,
-		srvSheet: srvSheet,
+		cfg:          cfg,
+		DriveService: srvDrive,
+		DocService:   srvDoc,
+		SheetService: srvSheet,
 	}
 }
 
@@ -195,7 +196,12 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 	}
 
 	replacements := gen.Lead.Replacements()
-	quote, err := logQuotation(gen.srvSheet, []string{
+	var clientOS, clientDevice string
+	if gen.UA != nil {
+		clientOS = gen.UA.OS.Name.StringTrimPrefix()
+		clientDevice = gen.UA.DeviceType.StringTrimPrefix()
+	}
+	quote, err := logQuotation(gen.SheetService, []string{
 		"Quotation #",
 		"Name",
 		"Title",
@@ -229,8 +235,8 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 		gen.Location.City,
 		gen.Location.Country,
 		gen.Location.Coordinates,
-		gen.UA.OS.Name.StringTrimPrefix(),
-		gen.UA.DeviceType.StringTrimPrefix(),
+		clientOS,
+		clientDevice,
 	})
 	if err != nil {
 		return "", "", fmt.Errorf("unable to append quotation: %v", err)
@@ -241,7 +247,7 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 
 	// https://developers.google.com/drive/api/v3/search-files
 	q := fmt.Sprintf("name = '%s' and mimeType = 'application/vnd.google-apps.folder' and '%s' in parents", FolderName(gen.Lead.Email), gen.cfg.AccountsFolderId)
-	files, err := gen.srvDrive.Files.List().Q(q).Spaces("drive").Do()
+	files, err := gen.DriveService.Files.List().Q(q).Spaces("drive").Do()
 	if err != nil {
 		return "", "", err
 	}
@@ -254,7 +260,7 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 			MimeType: "application/vnd.google-apps.folder",
 			Parents:  []string{gen.cfg.AccountsFolderId},
 		}
-		folder, err := gen.srvDrive.Files.Create(folderMetadata).Fields("id").Do()
+		folder, err := gen.DriveService.Files.Create(folderMetadata).Fields("id").Do()
 		if err != nil {
 			return "", "", err
 		}
@@ -267,7 +273,7 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 		Name:    gen.DocName(quote),
 		Parents: []string{domainFolderId},
 	}
-	copyFile, err := gen.srvDrive.Files.Copy(gen.cfg.TemplateDocId, copyMetadata).Fields("id", "parents").Do()
+	copyFile, err := gen.DriveService.Files.Copy(gen.cfg.TemplateDocId, copyMetadata).Fields("id", "parents").Do()
 	if err != nil {
 		return "", "", err
 	}
@@ -288,7 +294,7 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 			},
 		})
 	}
-	doc, err := gen.srvDoc.Documents.BatchUpdate(copyFile.Id, req).Do()
+	doc, err := gen.DocService.Documents.BatchUpdate(copyFile.Id, req).Do()
 	if err != nil {
 		return "", "", err
 	}
@@ -430,7 +436,7 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 		if err := s.processQuotationRequest(gen); err != nil {
 			// email support@appscode.com failed to process request
 			mailer := NewQuotationProcessFailedMailer(gen, err)
-			e2 := mailer.SendMail(s.mg, MailSupport, nil)
+			e2 := mailer.SendMail(s.mg, MailSupport, "", nil)
 			if e2 != nil {
 				_, _ = fmt.Fprintf(os.Stderr, "failed send email %v", e2)
 			}
@@ -461,7 +467,7 @@ func (s *Server) processQuotationRequest(gen *QuotationGenerator) error {
 	if err != nil {
 		return err
 	}
-	err = mailer.SendMail(mg, gen.Lead.Email, srvDrive)
+	err = mailer.SendMail(mg, gen.Lead.Email, gen.Lead.CC, srvDrive)
 	if err != nil {
 		return err
 	}

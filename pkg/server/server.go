@@ -268,7 +268,7 @@ func (s *Server) HandleRegisterEmail(req RegisterRequest) error {
 		}
 
 		mailer := NewRegistrationMailer(params)
-		err = mailer.SendMail(s.mg, req.Email, nil)
+		err = mailer.SendMail(s.mg, req.Email, "", nil)
 		if err != nil {
 			return err
 		}
@@ -351,7 +351,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 			mailer.AttachmentBytes = map[string][]byte{
 				fmt.Sprintf("%s-license-%s.txt", info.Product, info.Cluster): crtLicense,
 			}
-			err = mailer.SendMail(s.mg, info.Email, nil)
+			err = mailer.SendMail(s.mg, info.Email, "", nil)
 			if err != nil {
 				return err
 			}

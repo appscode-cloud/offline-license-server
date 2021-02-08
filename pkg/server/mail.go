@@ -21,6 +21,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 	"time"
 
@@ -80,7 +81,7 @@ func (m *Mailer) renderMail(src string, params interface{}) (string, string, err
 	return bodyText.String(), bodyHtml.String(), nil
 }
 
-func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient string, srv *drive.Service) error {
+func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient, cc string, srv *drive.Service) error {
 	bodyText, bodyHtml, err := m.renderMail(m.Body, m.params)
 	if err != nil {
 		return err
@@ -88,6 +89,9 @@ func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient string, srv *drive.Servi
 
 	// The message object allows you to add attachments and Bcc recipients
 	msg := mg.NewMessage(m.Sender, m.Subject, bodyText, recipient)
+	for _, e := range strings.Split(cc, ",") {
+		msg.AddCC(e)
+	}
 	if m.BCC != "" {
 		msg.AddBCC(m.BCC)
 	}

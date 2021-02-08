@@ -58,7 +58,7 @@ func NewCmdGenerateQuotation() *cobra.Command {
 			}
 
 			filename := filepath.Join(outDir, server.FolderName(opts.Lead.Email), gen.DocName(quote)+".pdf")
-			return server.ExportPDF(nil, docId, filename)
+			return server.ExportPDF(gen.DriveService, docId, filename)
 		},
 	}
 
