@@ -100,6 +100,11 @@ func (_ LogEntry) Headers() []string {
 }
 
 func (info LogEntry) Data() []string {
+	var clientOS, clientDevice string
+	if info.UA != nil {
+		clientOS = info.UA.OS.Name.StringTrimPrefix()
+		clientDevice = info.UA.DeviceType.StringTrimPrefix()
+	}
 	return []string{
 		Domain(info.Email),
 		info.Name,
@@ -112,7 +117,7 @@ func (info LogEntry) Data() []string {
 		info.City,
 		info.Country,
 		info.Coordinates,
-		info.UA.OS.Name.StringTrimPrefix(),
-		info.UA.DeviceType.StringTrimPrefix(),
+		clientOS,
+		clientDevice,
 	}
 }
