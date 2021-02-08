@@ -43,7 +43,7 @@ AppsCode Team
 		Sender:          MailSales,
 		BCC:             MailSales,
 		ReplyTo:         MailSales,
-		Subject:         fmt.Sprintf("Re: KubeDB PAYG Quotation - %s", lead.Email),
+		Subject:         fmt.Sprintf("Stash PAYG Quotation - %s", lead.Name),
 		Body:            src,
 		params:          lead,
 		AttachmentBytes: nil,
