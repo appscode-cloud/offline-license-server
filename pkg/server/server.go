@@ -347,7 +347,10 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	{
 		// avoid sending emails for know test emails
 		if !knowTestEmails.Has(info.Email) {
-			mailer := NewLicenseMailer(info)
+			mailer := NewLicenseMailer(LicenseMailData{
+				LicenseForm: info,
+				License:     string(crtLicense),
+			})
 			mailer.AttachmentBytes = map[string][]byte{
 				fmt.Sprintf("%s-license-%s.txt", info.Product, info.Cluster): crtLicense,
 			}

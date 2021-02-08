@@ -52,6 +52,11 @@ type LicenseForm struct {
 	Token   string `form:"token" json:"token"`
 }
 
+type LicenseMailData struct {
+	LicenseForm `json:",inline,omitempty"`
+	License     string
+}
+
 func (form LicenseForm) Validate() error {
 	_, err := uuid.Parse(form.Cluster)
 	if err != nil {

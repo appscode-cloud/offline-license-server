@@ -113,7 +113,10 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration
 	{
 		// avoid sending emails for know test emails
 		if !knowTestEmails.Has(info.Email) {
-			mailer := NewEnterpriseLicenseMailer(info)
+			mailer := NewEnterpriseLicenseMailer(LicenseMailData{
+				LicenseForm: info,
+				License:     string(crtLicense),
+			})
 			mailer.AttachmentBytes = map[string][]byte{
 				fmt.Sprintf("%s-license-%s.txt", info.Product, info.Cluster): crtLicense,
 			}

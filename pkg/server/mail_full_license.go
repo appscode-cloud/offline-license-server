@@ -18,9 +18,13 @@ package server
 
 import "fmt"
 
-func NewEnterpriseLicenseMailer(info LicenseForm) Mailer {
-	src := `Hi {{.Name}},
+func NewEnterpriseLicenseMailer(info LicenseMailData) Mailer {
+	src := fmt.Sprintf(`Hi {{.Name}},
 Thanks for purchasing license for {{.Product}}. The full license for Kubernetes cluster {{.Cluster}} is attached with this email. 
+
+%s
+{{ .License | trim }}
+%s
 
 Please let us know if you have any questions.
 
@@ -28,7 +32,8 @@ Regards,
 AppsCode Team
 
 [![Website](https://cdn.appscode.com/images/website.png)](https://appscode.com) [![Linkedin](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/ln.png)](https://www.linkedin.com/company/appscode/) [![Twitter](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/tt.png)](https://twitter.com/AppsCodeHQ) [![Youtube](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/yt.png)](https://www.youtube.com/c/AppsCodeInc)
-`
+`, "```", "```")
+
 	return Mailer{
 		Sender:          MailLicenseSender,
 		BCC:             MailLicenseTracker,
