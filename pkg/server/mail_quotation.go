@@ -30,9 +30,9 @@ type QuotationEmailData struct {
 func NewQuotationMailer(info QuotationEmailData) Mailer {
 	src := `Hello {{ .Name }},
 
-Thanks for your interest in licensing {{.Offer}}. We have prepared a quotation of the {{.Offer}} {{.FullPlan}} license for you.
+Thanks for your interest in licensing {{.Offer}}.
 
-1. We offer usage based pricing for {{.Offer}} {{.Plan}} edition. We have attached a quotation for {{.Offer}} {{.Plan}} edition for your reference.
+1. We have attached a quotation for {{.Offer}} {{.FullPlan}} edition for your reference.
 
 2. {{.Offer}} {{.Plan}} comes with a 30 day free trial. So, you don't need to purchase a license for ephemeral Kubernetes clusters (typically found in Dev or CI/CD environments).
 
