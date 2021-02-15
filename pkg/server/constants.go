@@ -44,9 +44,9 @@ var skipEmailDomains = sets.NewString("appscode.com")
 
 var supportedProducts = map[string][]string{
 	"kubedb-community":     {"kubedb-community"},
-	"kubedb-enterprise":    {"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler"},
+	"kubedb-enterprise":    {"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash"},
 	"stash-community":      {"stash-community"},
-	"stash-enterprise":     {"stash-enterprise", "stash-community"},
+	"stash-enterprise":     {"stash-enterprise", "stash-community", "kubedb-ext-stash"},
 	"kubevault-community":  {"kubevault-community"},
 	"kubevault-enterprise": {"kubevault-enterprise", "kubevault-community"},
 	"kubeform-community":   {"kubeform-community"},
