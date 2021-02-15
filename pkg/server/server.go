@@ -23,11 +23,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"path"
 	"time"
 
 	"github.com/appscodelabs/offline-license-server/templates"
 	"github.com/avct/uasurfer"
+	"github.com/go-macaron/auth"
 	"github.com/go-macaron/bindata"
 	"github.com/go-macaron/binding"
 	"github.com/go-macaron/cors"
@@ -173,7 +175,7 @@ func (s *Server) Run() error {
 		// ctx.Write([]byte("Your license has been emailed!"))
 	})
 
-	m.Get("/_/pricing/", func(ctx *macaron.Context) {
+	m.Get("/_/pricing/", auth.Basic(os.Getenv("APPSCODE_PRICING_USERNAME"), os.Getenv("APPSCODE_PRICING_PASSWORD")), func(ctx *macaron.Context) {
 		product := ctx.Query("p")
 		if product != "" && product != "kubedb-payg" && product != "stash-payg" {
 			ctx.Error(http.StatusBadRequest, fmt.Sprintf("unknown product: %s", product))
