@@ -20,36 +20,41 @@ import (
 	"fmt"
 )
 
-func NewKubeDBQuotationMailer(lead QuotationForm) Mailer {
+type QuotationEmailData struct {
+	QuotationForm
+	Offer    string // KubeDB, Stash
+	FullPlan string // Pay-As-You-Go (PAYG), Enterprise
+	Plan     string // PAYG, Enterprise
+}
+
+func NewQuotationMailer(info QuotationEmailData) Mailer {
 	src := `Hello {{ .Name }},
 
-Thanks for your interest in licensing KubeDB. We have prepared a quotation of the KubeDB PAYG license for you.
+Thanks for your interest in licensing {{.Offer}}. We have prepared a quotation of the {{.Offer}} {{.FullPlan}} license for you.
 
-1. We offer usage based pricing for KubeDB PAYG edition similar to AWS or Google cloud etc. and it includes the Stash backup support for no additional fees. We have attached the quotation for KubeDB PAYG edition for your reference. We have also included a kubedb_pricing_table.pdf file that shows the management fees for various common database sizes.
+1. We offer usage based pricing for {{.Offer}} {{.Plan}} edition. We have attached a quotation for {{.Offer}} {{.Plan}} edition for your reference.
 
-2. KubeDB PAYG comes with a 14 day free trial. So, you don't need to purchase a license for ephemeral Kubernetes clusters (typically found in Dev or CI/CD environments).
+2. {{.Offer}} {{.Plan}} comes with a 14 day free trial. So, you don't need to purchase a license for ephemeral Kubernetes clusters (typically found in Dev or CI/CD environments).
 
-3. The various support options are detailed in the kubedb-support-plans.pdf. We offer a Basic support level for free with our PAYG license. For SLA bound tickets, we charge extra and offer Gold / Platinum plans.
+3. The various support options are detailed in the attached quotation. We offer a Basic support level for free with our {{.Plan}} license. For SLA bound tickets, we charge extra and offer Gold / Platinum plans.
 
 If you have any questions or concerns, please do not hesitate to contact us. If you have any technical questions, someone from our product team will get back to you.
 
 Regards,
-AppsCode Team
+Team AppsCode
 
 [![Website](https://cdn.appscode.com/images/website.png)](https://appscode.com) [![Linkedin](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/ln.png)](https://www.linkedin.com/company/appscode/) [![Twitter](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/tt.png)](https://twitter.com/AppsCodeHQ) [![Youtube](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/yt.png)](https://www.youtube.com/c/AppsCodeInc)
 `
+
 	return Mailer{
 		Sender:          MailSales,
 		BCC:             MailSales,
 		ReplyTo:         MailSales,
-		Subject:         fmt.Sprintf("KubeDB PAYG Quotation - %s", lead.Company),
+		Subject:         fmt.Sprintf("%s %s Quotation - %s", info.Offer, info.Plan, info.Company),
 		Body:            src,
-		params:          lead,
+		params:          info,
 		AttachmentBytes: nil,
-		GDriveFiles: map[string]string{
-			"kubedb_pricing_table.pdf": "1-RRVPczOoPQZ21-BICtabrkpcfhLfJrQ",
-			"kubedb-support-plans.pdf": "1zDvN0KUcvKFrgY_0PZCj4lfxri6xnGgr",
-		},
-		EnableTracking: true,
+		GDriveFiles:     nil,
+		EnableTracking:  true,
 	}
 }

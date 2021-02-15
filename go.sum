@@ -135,6 +135,8 @@ github.com/go-ini/ini v1.25.4/go.mod h1:ByCAeIL28uOIIG0E3PJtZPDL8WnHpFKFOtgjp+3I
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-logfmt/logfmt v0.3.0/go.mod h1:Qt1PoO58o5twSAckw1HlFXLmHsOX5/0LbT9GBnD5lWE=
 github.com/go-logr/logr v0.1.0/go.mod h1:ixOQHD9gLJUVQQ2ZOR7zLEifBX6tGkNJF4QyIY7sIas=
+github.com/go-macaron/auth v0.0.0-20161228062157-884c0e6c9b92 h1:71YL0o1ch/APk7bmW9jWKBY7ibd9U8NQX2bQ25EJMHI=
+github.com/go-macaron/auth v0.0.0-20161228062157-884c0e6c9b92/go.mod h1:saPJfEeea+kiiZJF4GG7TSOao0T/Yrm5rpsqYglss6k=
 github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e h1:FcCaIjax+xgwA4gMXp0bzLzTqW7iD9/zK4NDdbxnupI=
 github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e/go.mod h1:NkmXhFuAlCOqgV5EWhU1DKLrgztCEIVXGmr2DZv/+sk=
 github.com/go-macaron/cors v0.0.0-20210206180111-00b7f53a9308 h1:WaAiZUUi6EXvFpHdCZlLFelHiisRHtS7veXTUcNnm18=

@@ -9,6 +9,7 @@ require (
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
 	github.com/davegardnerisme/phonegeocode v0.0.0-20160120101024-a49b977f8889
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
+	github.com/go-macaron/auth v0.0.0-20161228062157-884c0e6c9b92
 	github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e
 	github.com/go-macaron/binding v0.0.0-00010101000000-000000000000
 	github.com/go-macaron/cors v0.0.0-20210206180111-00b7f53a9308

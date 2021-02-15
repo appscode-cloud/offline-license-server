@@ -45,10 +45,10 @@ import (
 )
 
 var templateIds = map[string]string{
-	"kubedb-payg":   "1w0EeXotjL6PWNbFdlGH4cnPb_tckf_uZeWp14UwALRA",
-	"stash-payg":    "1ao-gnhco2KY6ETvgLEZBEjLDtA_O5t7yM-WKiT1--kM",
-	"stash-annual":  "1PDwas0A119L232ZyLi4reg3-sOXVagB5bhIz8acwaKY",
-	"kubedb-annual": "1oD9_jpzRL5djK7i9jQ74PvzFx2xN3O867DrWSiAZrSg",
+	"kubedb-payg":       "1w0EeXotjL6PWNbFdlGH4cnPb_tckf_uZeWp14UwALRA",
+	"stash-payg":        "1ao-gnhco2KY6ETvgLEZBEjLDtA_O5t7yM-WKiT1--kM",
+	"stash-enterprise":  "1PDwas0A119L232ZyLi4reg3-sOXVagB5bhIz8acwaKY",
+	"kubedb-enterprise": "1oD9_jpzRL5djK7i9jQ74PvzFx2xN3O867DrWSiAZrSg",
 }
 
 type QuotationForm struct {
@@ -63,7 +63,7 @@ type QuotationForm struct {
 }
 
 func (form QuotationForm) Validate() error {
-	if form.Product != "kubedb-payg" && form.Product != "stash-payg" {
+	if _, ok := templateIds[form.Product]; !ok {
 		return fmt.Errorf("unknown plan: %s", form.Product)
 	}
 	if agree, _ := strconv.ParseBool(form.Tos); !agree {
@@ -299,13 +299,38 @@ func (gen *QuotationGenerator) DocName(quote string) string {
 }
 
 func (gen *QuotationGenerator) GetMailer() Mailer {
-	doc := strings.ToLower(gen.cfg.TemplateDoc)
-	if strings.Contains(doc, "kubedb") {
-		return NewKubeDBQuotationMailer(gen.Lead)
-	} else if strings.Contains(doc, "stash") {
-		return NewStashQuotationMailer(gen.Lead)
+	switch strings.ToLower(gen.cfg.TemplateDoc) {
+	case "kubedb-payg":
+		return NewQuotationMailer(QuotationEmailData{
+			QuotationForm: gen.Lead,
+			Offer:         "KubeDB",
+			FullPlan:      "Pay-As-You-Go (PAYG)",
+			Plan:          "PAYG",
+		})
+	case "stash-payg":
+		return NewQuotationMailer(QuotationEmailData{
+			QuotationForm: gen.Lead,
+			Offer:         "Stash",
+			FullPlan:      "Pay-As-You-Go (PAYG)",
+			Plan:          "PAYG",
+		})
+	case "kubedb-enterprise":
+		return NewQuotationMailer(QuotationEmailData{
+			QuotationForm: gen.Lead,
+			Offer:         "KubeDB",
+			FullPlan:      "Enterprise",
+			Plan:          "Enterprise",
+		})
+	case "stash-enterprise":
+		return NewQuotationMailer(QuotationEmailData{
+			QuotationForm: gen.Lead,
+			Offer:         "Stash",
+			FullPlan:      "Enterprise",
+			Plan:          "Enterprise",
+		})
+	default:
+		panic(fmt.Errorf("unknown template doc %s", gen.cfg.TemplateDoc))
 	}
-	panic(fmt.Errorf("unknown template doc %s", gen.cfg.TemplateDoc))
 }
 
 func ExportPDF(srvDrive *drive.Service, docId, filename string) error {

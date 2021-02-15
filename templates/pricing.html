@@ -78,8 +78,10 @@
             <div class="control">
               <div class="select">
                 <select id="product" name="product">
-                  <option value="stash-payg" {{ if eq .Product "stash-payg" }}selected{{ end }}>Stash PAYG</option>
-                  <option value="kubedb-payg" {{ if eq .Product "kubedb-payg" }}selected{{ end }}>KubeDB PAYG</option>
+                  <option value="stash-payg" {{ if eq .Product "stash-payg" }}selected{{ end }}>Stash Pay-As-You-Go (PAYG)</option>
+                  <option value="kubedb-payg" {{ if eq .Product "kubedb-payg" }}selected{{ end }}>KubeDB Pay-As-You-Go (PAYG)</option>
+                  <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>Stash Enterprise (Annual)</option>
+                  <option value="kubedb-enterprise" {{ if eq .Product "kubedb-enterprise" }}selected{{ end }}>KubeDB Enterprise (Annual)</option>
                 </select>
               </div>
             </div>
