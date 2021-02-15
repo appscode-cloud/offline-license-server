@@ -34,7 +34,7 @@ Thanks for your interest in licensing {{.Offer}}. We have prepared a quotation o
 
 1. We offer usage based pricing for {{.Offer}} {{.Plan}} edition. We have attached a quotation for {{.Offer}} {{.Plan}} edition for your reference.
 
-2. {{.Offer}} {{.Plan}} comes with a 14 day free trial. So, you don't need to purchase a license for ephemeral Kubernetes clusters (typically found in Dev or CI/CD environments).
+2. {{.Offer}} {{.Plan}} comes with a 30 day free trial. So, you don't need to purchase a license for ephemeral Kubernetes clusters (typically found in Dev or CI/CD environments).
 
 3. The various support options are detailed in the attached quotation. We offer a Basic support level for free with our {{.Plan}} license. For SLA bound tickets, we charge extra and offer Gold / Platinum plans.
 

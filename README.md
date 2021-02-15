@@ -4,7 +4,7 @@ AppsCode License server. We call it `offline` license server because once you ha
 
 ## License Validity
 
-A License file is a valid for a given Kubernetes cluster. For the `community` edition, you will receive a license that is valid for 1 year. For the `enterprise` edition, this server will issue a 14 day trial license. If you are interested in purchasing Enterprise license, please contact us via sales@appscode.com for further discussion. You can also set up a meeting via our [calendly link](https://calendly.com/appscode/30min).
+A License file is a valid for a given Kubernetes cluster. For the `community` edition, you will receive a license that is valid for 1 year. For the `enterprise` edition, this server will issue a 30 day trial license. If you are interested in purchasing Enterprise license, please contact us via sales@appscode.com for further discussion. You can also set up a meeting via our [calendly link](https://calendly.com/appscode/30min).
 
 ## Cluster UID
 
@@ -116,7 +116,7 @@ offline-license-server issue-full-license \
   --name= \
   --product= \
   --cluster= \
-  --duration=(P14D | P1M | P1Y)
+  --duration=(P30D | P1M | P1Y)
 
 # --duration flag used https://pkg.go.dev/github.com/rickb777/date/period for parsing duration.
 ```

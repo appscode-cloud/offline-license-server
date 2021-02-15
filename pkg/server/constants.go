@@ -31,7 +31,7 @@ const (
 	MailSupport        = "support@appscode.com"
 	MailSales          = "sales@appscode.com"
 
-	DefaultTTLForEnterpriseProduct     = 14 * 24 * time.Hour
+	DefaultTTLForEnterpriseProduct     = 30 * 24 * time.Hour
 	DefaultFullTTLForEnterpriseProduct = 365 * 24 * time.Hour
 	DefaultTTLForCommunityProduct      = 365 * 24 * time.Hour
 

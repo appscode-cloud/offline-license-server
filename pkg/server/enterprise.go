@@ -71,11 +71,11 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration
 		}
 		ttl := certs[0].NotAfter.Sub(certs[0].NotBefore)
 		if ttl > DefaultTTLForEnterpriseProduct {
-			// if expires in next 14 days issue new license
+			// if expires in next 30 days issue new license
 			if time.Until(certs[0].NotAfter) < DefaultTTLForEnterpriseProduct {
 				license.Agreement.ExpiryDate = metav1.NewTime(certs[0].NotAfter.Add(extendBy).UTC())
 			} else {
-				// Original license is > 14 days valid. Keep using that.
+				// Original license is > 30 days valid. Keep using that.
 				crtLicense = cert.EncodeCertPEM(certs[0])
 			}
 		}
