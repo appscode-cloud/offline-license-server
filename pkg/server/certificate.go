@@ -23,13 +23,13 @@ import (
 	"crypto/x509/pkix"
 	"math"
 	"math/big"
+	"net"
 	"time"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/cert"
 )
 
-func getCN(sans cert.AltNames) string {
+func getCN(sans AltNames) string {
 	if len(sans.DNSNames) > 0 {
 		return sans.DNSNames[0]
 	}
@@ -39,11 +39,17 @@ func getCN(sans cert.AltNames) string {
 	return ""
 }
 
+type AltNames struct {
+	DNSNames       []string
+	IPs            []net.IP
+	EmailAddresses []string
+}
+
 // Config contains the basic fields required for creating a certificate
 type Config struct {
 	CommonName          string
 	Organization        []string
-	AltNames            cert.AltNames
+	AltNames            AltNames
 	Usages              []x509.ExtKeyUsage
 	NotBefore, NotAfter time.Time // Validity bounds.
 }
@@ -66,13 +72,14 @@ func NewSignedCert(cfg Config, key crypto.Signer, caCert *x509.Certificate, caKe
 			CommonName:   cfg.CommonName,
 			Organization: cfg.Organization,
 		},
-		DNSNames:     cfg.AltNames.DNSNames,
-		IPAddresses:  cfg.AltNames.IPs,
-		SerialNumber: serial,
-		NotBefore:    cfg.NotBefore,
-		NotAfter:     cfg.NotAfter,
-		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:  cfg.Usages,
+		DNSNames:       cfg.AltNames.DNSNames,
+		IPAddresses:    cfg.AltNames.IPs,
+		EmailAddresses: cfg.AltNames.EmailAddresses,
+		SerialNumber:   serial,
+		NotBefore:      cfg.NotBefore,
+		NotAfter:       cfg.NotAfter,
+		KeyUsage:       x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:    cfg.Usages,
 	}
 	certDERBytes, err := x509.CreateCertificate(rand.Reader, &certTmpl, caCert, key.Public(), caKey)
 	if err != nil {

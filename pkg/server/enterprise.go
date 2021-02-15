@@ -81,7 +81,7 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration
 		}
 	}
 	if len(crtLicense) == 0 {
-		crtLicense, err = s.CreateLicense(*license, info.Cluster)
+		crtLicense, err = s.CreateLicense(info, *license, info.Cluster)
 		if err != nil {
 			return err
 		}

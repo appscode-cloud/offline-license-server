@@ -41,7 +41,7 @@ require (
 	google.golang.org/genproto v0.0.0-20201203001206-6486ece9c497 // indirect
 	google.golang.org/grpc v1.34.0 // indirect
 	gopkg.in/macaron.v1 v1.4.0
-	k8s.io/apimachinery v0.18.8
+	k8s.io/apimachinery v0.18.9
 	sigs.k8s.io/yaml v1.2.0
 )
 

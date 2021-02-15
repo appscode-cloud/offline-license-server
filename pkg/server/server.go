@@ -300,7 +300,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	if err != nil {
 		return err
 	}
-	crtLicense, err := s.CreateOrRetrieveLicense(*license, info.Cluster)
+	crtLicense, err := s.CreateOrRetrieveLicense(info, *license, info.Cluster)
 	if err != nil {
 		return err
 	}
@@ -431,7 +431,7 @@ func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicens
 	return &opts, nil
 }
 
-func (s *Server) CreateOrRetrieveLicense(license ProductLicense, cluster string) ([]byte, error) {
+func (s *Server) CreateOrRetrieveLicense(info LicenseForm, license ProductLicense, cluster string) ([]byte, error) {
 	// Return existing license for enterprise products
 	if IsEnterpriseProduct(license.Product) {
 		exists, err := s.fs.Exists(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
@@ -442,13 +442,17 @@ func (s *Server) CreateOrRetrieveLicense(license ProductLicense, cluster string)
 			return s.fs.ReadFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
 		}
 	}
-	return s.CreateLicense(license, cluster)
+	return s.CreateLicense(info, license, cluster)
 }
 
-func (s *Server) CreateLicense(license ProductLicense, cluster string) ([]byte, error) {
+func (s *Server) CreateLicense(info LicenseForm, license ProductLicense, cluster string) ([]byte, error) {
 	// agreement, TTL
-	sans := cert.AltNames{
+	sans := AltNames{
 		DNSNames: []string{cluster},
+		EmailAddresses: []string{
+			fmt.Sprintf("%s <%s>", info.Name, info.Email),
+			info.Email,
+		},
 	}
 	cfg := Config{
 		CommonName:   getCN(sans),
