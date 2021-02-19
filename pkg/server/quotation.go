@@ -49,6 +49,7 @@ var templateIds = map[string]string{
 	"stash-payg":        "1ao-gnhco2KY6ETvgLEZBEjLDtA_O5t7yM-WKiT1--kM",
 	"stash-enterprise":  "1PDwas0A119L232ZyLi4reg3-sOXVagB5bhIz8acwaKY",
 	"kubedb-enterprise": "1oD9_jpzRL5djK7i9jQ74PvzFx2xN3O867DrWSiAZrSg",
+	"kubedb-reseller":   "1w46SFq9kA8ciibINOv7a4frzoogt-yQxmFegr9BWMcc",
 }
 
 type QuotationForm struct {
