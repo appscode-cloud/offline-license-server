@@ -34,13 +34,11 @@ require (
 	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.4
 	gomodules.xyz/freshsales-client-go v0.0.0-20210206154829-0dcd7e727722
-	gomodules.xyz/gdrive-utils v0.0.0-20210204225940-6681833950ff
+	gomodules.xyz/gdrive-utils v0.0.0-20210223120558-ff697d120ee1
 	gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
 	gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	google.golang.org/api v0.39.0
-	google.golang.org/genproto v0.0.0-20201203001206-6486ece9c497 // indirect
-	google.golang.org/grpc v1.34.0 // indirect
 	gopkg.in/macaron.v1 v1.4.0
 	k8s.io/apimachinery v0.18.9
 	sigs.k8s.io/yaml v1.2.0

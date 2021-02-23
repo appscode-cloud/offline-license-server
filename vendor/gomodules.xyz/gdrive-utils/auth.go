@@ -12,6 +12,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/calendar/v3"
 )
 
 func DefaultClient(dir string) (*http.Client, error) {
@@ -31,6 +32,9 @@ func DefaultClient(dir string) (*http.Client, error) {
 		"https://www.googleapis.com/auth/drive.readonly",
 		"https://www.googleapis.com/auth/spreadsheets",
 		"https://www.googleapis.com/auth/spreadsheets.readonly",
+		calendar.CalendarEventsScope,
+		calendar.CalendarEventsReadonlyScope,
+		calendar.CalendarReadonlyScope,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse client secret file to config: %v", err)
@@ -70,12 +74,12 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 // Retrieves a token from a local file.
 func tokenFromFile(file string) (*oauth2.Token, error) {
 	f, err := os.Open(file)
-	defer func() {
-		must(f.Close())
-	}()
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		must(f.Close())
+	}()
 	tok := &oauth2.Token{}
 	err = json.NewDecoder(f).Decode(tok)
 	return tok, err
@@ -85,12 +89,12 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 func saveToken(path string, token *oauth2.Token) {
 	fmt.Printf("Saving credential file to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	defer func() {
-		must(f.Close())
-	}()
 	if err != nil {
 		log.Fatalf("Unable to cache OAuth token: %v", err)
 	}
+	defer func() {
+		must(f.Close())
+	}()
 	must(json.NewEncoder(f).Encode(token))
 }
 
