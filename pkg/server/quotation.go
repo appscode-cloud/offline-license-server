@@ -498,8 +498,11 @@ func (s *Server) processQuotationRequest(gen *QuotationGenerator) error {
 				OS:     gen.UA.OS.Name.StringTrimPrefix(),
 				Device: gen.UA.DeviceType.StringTrimPrefix(),
 				Location: freshsalesclient.GeoLocation{
-					City:    gen.Location.City,
-					Country: gen.Location.Country,
+					IP:          gen.Location.IP,
+					Timezone:    gen.Location.Timezone,
+					City:        gen.Location.City,
+					Country:     gen.Location.Country,
+					Coordinates: gen.Location.Coordinates,
 				},
 			},
 		},

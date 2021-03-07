@@ -33,7 +33,7 @@ require (
 	gomodules.xyz/blobfs v0.1.7
 	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.4
-	gomodules.xyz/freshsales-client-go v0.0.0-20210206154829-0dcd7e727722
+	gomodules.xyz/freshsales-client-go v0.0.1
 	gomodules.xyz/gdrive-utils v0.0.0-20210223120558-ff697d120ee1
 	gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
 	gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799

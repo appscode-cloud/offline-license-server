@@ -75,8 +75,11 @@ func (s *Server) noteEventLicenseIssued(info LogEntry) error {
 				OS:     info.UA.OS.Name.StringTrimPrefix(),
 				Device: info.UA.DeviceType.StringTrimPrefix(),
 				Location: freshsalesclient.GeoLocation{
-					City:    info.City,
-					Country: info.Country,
+					IP:          info.IP,
+					Timezone:    info.Timezone,
+					City:        info.City,
+					Country:     info.Country,
+					Coordinates: info.Coordinates,
 				},
 			},
 		},
