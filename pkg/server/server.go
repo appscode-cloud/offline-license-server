@@ -141,7 +141,7 @@ func (s *Server) Run() error {
 	m.Use(cors.CORS(cors.Options{
 		Section:          "",
 		Scheme:           "*",
-		AllowDomain:      []string{"appscode.com", "kubedb.com", "stash.run", "kubevault.com", "kubeform.cloud"},
+		AllowDomain:      []string{"*"}, //{"appscode.com", "kubedb.com", "stash.run", "kubevault.com", "kubeform.cloud"},
 		AllowSubdomain:   true,
 		Methods:          []string{http.MethodGet, http.MethodPost},
 		MaxAgeSeconds:    600,
