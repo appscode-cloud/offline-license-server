@@ -12,6 +12,7 @@ require (
 	github.com/go-macaron/auth v0.0.0-20161228062157-884c0e6c9b92
 	github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e
 	github.com/go-macaron/binding v0.0.0-00010101000000-000000000000
+	github.com/go-macaron/cache v0.0.0-20200329073519-53bb48172687
 	github.com/go-macaron/cors v0.0.0-20210206180111-00b7f53a9308
 	github.com/gobuffalo/flect v0.2.2
 	github.com/gocarina/gocsv v0.0.0-20201208093247-67c824bc04d4

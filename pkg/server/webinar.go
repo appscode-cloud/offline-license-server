@@ -18,6 +18,7 @@ package server
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -25,6 +26,7 @@ import (
 
 	"github.com/go-macaron/auth"
 	"github.com/go-macaron/binding"
+	"github.com/go-macaron/cache"
 	"github.com/gocarina/gocsv"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"gomodules.xyz/sets"
@@ -69,13 +71,21 @@ func (date *DateTime) UnmarshalCSV(csv string) (err error) {
 }
 
 func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
-	m.Get("/_/webinars", func(ctx *macaron.Context) {
-		schedule, err := s.NextWebinarSchedule()
-		if err != nil {
-			ctx.Error(http.StatusInternalServerError, err.Error())
-			return
+	m.Get("/_/webinars", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
+		key := ctx.Req.URL.Path
+		out := c.Get(key)
+		if out == nil {
+			schedule, err := s.NextWebinarSchedule()
+			if err != nil {
+				ctx.Error(http.StatusInternalServerError, err.Error())
+				return
+			}
+			out = schedule
+			_ = c.Put(key, out, 60*60)
+		} else {
+			log.Println(key, "found")
 		}
-		ctx.JSON(http.StatusOK, schedule)
+		ctx.JSON(http.StatusOK, out)
 	})
 
 	m.Post("/_/webinars/:date/register", binding.Bind(WebinarRegistrationForm{}), func(ctx *macaron.Context, form WebinarRegistrationForm) {
