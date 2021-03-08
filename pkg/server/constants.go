@@ -37,6 +37,10 @@ const (
 
 	LicenseIssuerName = "AppsCode Inc."
 	LicenseBucket     = "licenses.appscode.com"
+
+	WebinarSpreadsheetId  = "1VW9K1yRLw6IFnr4o9ZJqaEamBahfqnjfl79EHeAZBzg"
+	WebinarScheduleFormat = "1/2/2006 15:04:05"
+	WebinarScheduleSheet  = "Schedule"
 )
 
 var knowTestEmails = sets.NewString("1gtm@appscode.com")

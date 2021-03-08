@@ -14,6 +14,7 @@ require (
 	github.com/go-macaron/binding v0.0.0-00010101000000-000000000000
 	github.com/go-macaron/cors v0.0.0-20210206180111-00b7f53a9308
 	github.com/gobuffalo/flect v0.2.2
+	github.com/gocarina/gocsv v0.0.0-20201208093247-67c824bc04d4
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
@@ -34,7 +35,7 @@ require (
 	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.4
 	gomodules.xyz/freshsales-client-go v0.0.1
-	gomodules.xyz/gdrive-utils v0.0.0-20210223120558-ff697d120ee1
+	gomodules.xyz/gdrive-utils v0.0.0-20210308095828-b88cd4482f26
 	gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
 	gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
