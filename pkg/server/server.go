@@ -45,6 +45,7 @@ import (
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
 	"gopkg.in/macaron.v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,13 +54,14 @@ import (
 type Server struct {
 	opts *Options
 
-	certs       *certstore.CertStore
-	fs          *blobfs.BlobFS
-	mg          mailgun.Mailgun
-	sheet       *gdrive.Spreadsheet
-	freshsales  *freshsalesclient.Client
-	geodb       *geoip2.Reader
-	driveClient *http.Client
+	certs         *certstore.CertStore
+	fs            *blobfs.BlobFS
+	mg            mailgun.Mailgun
+	sheet         *gdrive.Spreadsheet
+	freshsales    *freshsalesclient.Client
+	geodb         *geoip2.Reader
+	driveClient   *http.Client
+	sheetsService *sheets.Service
 }
 
 func New(opts *Options) (*Server, error) {
@@ -97,15 +99,23 @@ func New(opts *Options) (*Server, error) {
 		}
 	}
 
+	sheetsService, err := sheets.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		if err != nil {
+			return nil, fmt.Errorf("unable to retrieve Sheets client: %v", err)
+		}
+	}
+
 	return &Server{
-		opts:        opts,
-		certs:       certs,
-		fs:          fs,
-		mg:          mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
-		sheet:       sheet,
-		freshsales:  freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
-		geodb:       geodb,
-		driveClient: client,
+		opts:          opts,
+		certs:         certs,
+		fs:            fs,
+		mg:            mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
+		sheet:         sheet,
+		freshsales:    freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
+		geodb:         geodb,
+		driveClient:   client,
+		sheetsService: sheetsService,
 	}, nil
 }
 
@@ -198,6 +208,7 @@ func (s *Server) Run() error {
 			return
 		}
 	})
+	s.RegisterWebinarAPI(m)
 
 	m.Post("/_/webhooks/mailgun/", s.HandleMailgunWebhook)
 

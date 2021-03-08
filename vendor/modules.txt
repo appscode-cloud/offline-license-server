@@ -50,6 +50,9 @@ github.com/go-resty/resty/v2
 # github.com/gobuffalo/flect v0.2.2
 ## explicit
 github.com/gobuffalo/flect
+# github.com/gocarina/gocsv v0.0.0-20201208093247-67c824bc04d4
+## explicit
+github.com/gocarina/gocsv
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
@@ -265,7 +268,7 @@ gomodules.xyz/email-providers
 # gomodules.xyz/freshsales-client-go v0.0.1
 ## explicit
 gomodules.xyz/freshsales-client-go
-# gomodules.xyz/gdrive-utils v0.0.0-20210223120558-ff697d120ee1
+# gomodules.xyz/gdrive-utils v0.0.0-20210308095828-b88cd4482f26
 ## explicit
 gomodules.xyz/gdrive-utils
 # gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84

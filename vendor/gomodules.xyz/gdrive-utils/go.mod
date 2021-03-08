@@ -3,6 +3,7 @@ module gomodules.xyz/gdrive-utils
 go 1.15
 
 require (
+	github.com/gocarina/gocsv v0.0.0-20201208093247-67c824bc04d4
 	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
 	google.golang.org/api v0.36.0
