@@ -462,7 +462,8 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 		}
 	}()
 
-	respond(ctx, []byte("Thank you! Please check your email in a few minutes for price quotation. Don't forget to check spam folder."))
+	// respond(ctx, []byte("Thank you! Please check your email in a few minutes for price quotation. Don't forget to check spam folder."))
+	ctx.Redirect(ctx.Req.URL.String(), http.StatusSeeOther)
 	return nil
 }
 
