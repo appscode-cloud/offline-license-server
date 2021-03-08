@@ -32,6 +32,7 @@ import (
 	"github.com/go-macaron/auth"
 	"github.com/go-macaron/bindata"
 	"github.com/go-macaron/binding"
+	"github.com/go-macaron/cache"
 	"github.com/go-macaron/cors"
 	"github.com/google/uuid"
 	"github.com/mailgun/mailgun-go/v4"
@@ -136,6 +137,7 @@ func (s *Server) Run() error {
 	m := macaron.New()
 	m.Use(macaron.Logger())
 	m.Use(macaron.Recovery())
+	m.Use(cache.Cacher())
 	m.Use(cors.CORS(cors.Options{
 		Section:          "",
 		Scheme:           "*",
