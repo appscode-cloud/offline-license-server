@@ -76,7 +76,10 @@ func NewCmdEmailQuotation() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				return mailer.SendMail(mg, opts.Lead.Email, opts.Lead.CC, gen.DriveService)
+				err = mailer.SendMail(mg, opts.Lead.Email, opts.Lead.CC, gen.DriveService)
+				if err != nil {
+					return err
+				}
 			}
 			return nil
 		},
