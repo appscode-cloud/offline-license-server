@@ -21,7 +21,7 @@ import (
 )
 
 type QuotationEmailData struct {
-	QuotationForm
+	ProductQuotation
 	Offer    string // KubeDB, Stash
 	FullPlan string // Pay-As-You-Go (PAYG), Enterprise
 	Plan     string // PAYG, Enterprise

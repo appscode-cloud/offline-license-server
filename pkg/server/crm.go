@@ -96,7 +96,7 @@ func (s *Server) noteEventLicenseIssued(info LogEntry) error {
 	return err
 }
 
-func (s *Server) noteEventQuotation(form QuotationForm, e EventQuotationGenerated) error {
+func (s *Server) noteEventQuotation(form ProductQuotation, e EventQuotationGenerated) error {
 	result, err := s.freshsales.LookupByEmail(form.Email, freshsalesclient.EntityLead, freshsalesclient.EntityContact)
 	if err != nil {
 		return err

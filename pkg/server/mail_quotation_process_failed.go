@@ -27,7 +27,7 @@ func NewQuotationProcessFailedMailer(gen *QuotationGenerator, err error) Mailer 
 	var src string
 
 	info := struct {
-		Lead     QuotationForm       `json:"lead"`
+		Lead     ProductQuotation    `json:"lead"`
 		UA       *uasurfer.UserAgent `json:"ua"`
 		Location GeoLocation         `json:"location"`
 		Err      string              `json:"error"`

@@ -53,6 +53,17 @@ var templateIds = map[string]string{
 }
 
 type QuotationForm struct {
+	Name      string   `form:"name" binding:"Required" json:"name"`
+	Email     string   `form:"email" binding:"Required" json:"email"`
+	CC        string   `form:"cc" json:"cc"`
+	Title     string   `form:"title" binding:"Required" json:"title"`
+	Telephone string   `form:"telephone" binding:"Required" json:"telephone"`
+	Product   []string `form:"product" binding:"Required" json:"product"`
+	Company   string   `form:"company" binding:"Required" json:"company"`
+	Tos       string   `form:"tos" binding:"Required" json:"tos"`
+}
+
+type ProductQuotation struct {
 	Name      string `form:"name" binding:"Required" json:"name"`
 	Email     string `form:"email" binding:"Required" json:"email"`
 	CC        string `form:"cc" json:"cc"`
@@ -60,12 +71,13 @@ type QuotationForm struct {
 	Telephone string `form:"telephone" binding:"Required" json:"telephone"`
 	Product   string `form:"product" binding:"Required" json:"product"`
 	Company   string `form:"company" binding:"Required" json:"company"`
-	Tos       string `form:"tos" binding:"Required" json:"tos"`
 }
 
 func (form QuotationForm) Validate() error {
-	if _, ok := templateIds[form.Product]; !ok {
-		return fmt.Errorf("unknown plan: %s", form.Product)
+	for _, product := range form.Product {
+		if _, ok := templateIds[product]; !ok {
+			return fmt.Errorf("unknown plan: %s", form.Product)
+		}
 	}
 	if agree, _ := strconv.ParseBool(form.Tos); !agree {
 		return fmt.Errorf("user must agree to terms and services")
@@ -73,7 +85,7 @@ func (form QuotationForm) Validate() error {
 	return nil
 }
 
-func (form QuotationForm) Replacements() map[string]string {
+func (form ProductQuotation) Replacements() map[string]string {
 	data, err := json.Marshal(form)
 	if err != nil {
 		panic(err)
@@ -144,7 +156,7 @@ type QuotationGeneratorConfig struct {
 
 type QuotationGenerator struct {
 	cfg  QuotationGeneratorConfig
-	Lead QuotationForm
+	Lead ProductQuotation
 
 	Location GeoLocation
 	UA       *uasurfer.UserAgent
@@ -303,31 +315,31 @@ func (gen *QuotationGenerator) GetMailer() Mailer {
 	switch strings.ToLower(gen.cfg.TemplateDoc) {
 	case "kubedb-payg":
 		return NewQuotationMailer(QuotationEmailData{
-			QuotationForm: gen.Lead,
-			Offer:         "KubeDB",
-			FullPlan:      "Pay-As-You-Go (PAYG)",
-			Plan:          "PAYG",
+			ProductQuotation: gen.Lead,
+			Offer:            "KubeDB",
+			FullPlan:         "Pay-As-You-Go (PAYG)",
+			Plan:             "PAYG",
 		})
 	case "stash-payg":
 		return NewQuotationMailer(QuotationEmailData{
-			QuotationForm: gen.Lead,
-			Offer:         "Stash",
-			FullPlan:      "Pay-As-You-Go (PAYG)",
-			Plan:          "PAYG",
+			ProductQuotation: gen.Lead,
+			Offer:            "Stash",
+			FullPlan:         "Pay-As-You-Go (PAYG)",
+			Plan:             "PAYG",
 		})
 	case "kubedb-enterprise":
 		return NewQuotationMailer(QuotationEmailData{
-			QuotationForm: gen.Lead,
-			Offer:         "KubeDB",
-			FullPlan:      "Enterprise",
-			Plan:          "Enterprise",
+			ProductQuotation: gen.Lead,
+			Offer:            "KubeDB",
+			FullPlan:         "Enterprise",
+			Plan:             "Enterprise",
 		})
 	case "stash-enterprise":
 		return NewQuotationMailer(QuotationEmailData{
-			QuotationForm: gen.Lead,
-			Offer:         "Stash",
-			FullPlan:      "Enterprise",
-			Plan:          "Enterprise",
+			ProductQuotation: gen.Lead,
+			Offer:            "Stash",
+			FullPlan:         "Enterprise",
+			Plan:             "Enterprise",
 		})
 	default:
 		panic(fmt.Errorf("unknown template doc %s", gen.cfg.TemplateDoc))
@@ -435,39 +447,49 @@ func FolderName(email string) string {
 }
 
 func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) error {
-	cfg := QuotationGeneratorConfig{
-		AccountsFolderId:     AccountFolderId,
-		TemplateDocId:        templateIds[lead.Product],
-		TemplateDoc:          lead.Product,
-		LicenseSpreadsheetId: LicenseSpreadsheetId,
-	}
-
-	gen := NewQuotationGenerator(s.driveClient, cfg)
-	gen.Lead = lead
-	gen.UA = uasurfer.Parse(ctx.Req.UserAgent())
-	location := GeoLocation{
-		IP: GetIP(ctx.Req.Request),
-	}
-	DecorateGeoData(s.geodb, &location)
-	gen.Location = location
-
-	go func() {
-		if err := s.processQuotationRequest(gen); err != nil {
-			// email support@appscode.com failed to process request
-			mailer := NewQuotationProcessFailedMailer(gen, err)
-			e2 := mailer.SendMail(s.mg, MailSupport, "", nil)
-			if e2 != nil {
-				_, _ = fmt.Fprintf(os.Stderr, "failed send email %v", e2)
-			}
+	for _, product := range lead.Product {
+		cfg := QuotationGeneratorConfig{
+			AccountsFolderId:     AccountFolderId,
+			TemplateDocId:        templateIds[product],
+			TemplateDoc:          product,
+			LicenseSpreadsheetId: LicenseSpreadsheetId,
 		}
-	}()
+
+		gen := NewQuotationGenerator(s.driveClient, cfg)
+		gen.Lead = ProductQuotation{
+			Name:      lead.Name,
+			Email:     lead.Email,
+			CC:        lead.CC,
+			Title:     lead.Title,
+			Telephone: lead.Telephone,
+			Product:   product,
+			Company:   lead.Company,
+		}
+		gen.UA = uasurfer.Parse(ctx.Req.UserAgent())
+		location := GeoLocation{
+			IP: GetIP(ctx.Req.Request),
+		}
+		DecorateGeoData(s.geodb, &location)
+		gen.Location = location
+
+		go func() {
+			if err := s.processQuotationRequest(gen, ctx.QueryBool("generate_only")); err != nil {
+				// email support@appscode.com failed to process request
+				mailer := NewQuotationProcessFailedMailer(gen, err)
+				e2 := mailer.SendMail(s.mg, MailSupport, "", nil)
+				if e2 != nil {
+					_, _ = fmt.Fprintf(os.Stderr, "failed send email %v", e2)
+				}
+			}
+		}()
+	}
 
 	// respond(ctx, []byte("Thank you! Please check your email in a few minutes for price quotation. Don't forget to check spam folder."))
 	ctx.Redirect(ctx.Req.URL.String(), http.StatusSeeOther)
 	return nil
 }
 
-func (s *Server) processQuotationRequest(gen *QuotationGenerator) error {
+func (s *Server) processQuotationRequest(gen *QuotationGenerator, generateOnly bool) error {
 	quote, docId, err := gen.Generate()
 	if err != nil {
 		return err
@@ -483,13 +505,15 @@ func (s *Server) processQuotationRequest(gen *QuotationGenerator) error {
 		return err
 	}
 
-	mg, err := mailgun.NewMailgunFromEnv()
-	if err != nil {
-		return err
-	}
-	err = mailer.SendMail(mg, gen.Lead.Email, gen.Lead.CC, srvDrive)
-	if err != nil {
-		return err
+	if generateOnly {
+		mg, err := mailgun.NewMailgunFromEnv()
+		if err != nil {
+			return err
+		}
+		err = mailer.SendMail(mg, gen.Lead.Email, gen.Lead.CC, srvDrive)
+		if err != nil {
+			return err
+		}
 	}
 
 	return s.noteEventQuotation(gen.Lead, EventQuotationGenerated{
