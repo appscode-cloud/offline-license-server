@@ -18,8 +18,10 @@ require (
 	github.com/gocarina/gocsv v0.0.0-20201208093247-67c824bc04d4
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/schema v1.2.0 // indirect
+	github.com/himalayan-institute/zoom-lib-golang v1.0.0
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.5 // indirect
+	github.com/k3a/html2text v1.0.7
 	github.com/mailgun/mailgun-go/v4 v4.3.3
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/oschwald/geoip2-golang v1.4.0
@@ -36,9 +38,11 @@ require (
 	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.4
 	gomodules.xyz/freshsales-client-go v0.0.1
-	gomodules.xyz/gdrive-utils v0.0.0-20210308095828-b88cd4482f26
+	gomodules.xyz/gdrive-utils v0.0.0-20210313135106-78213dfc3fc4
 	gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
-	gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799
+	gomodules.xyz/password-generator v0.2.6
+	gomodules.xyz/pointer v0.0.0-20201105040656-991dd254b680
+	gomodules.xyz/sets v0.0.0-20210218105342-2efe2fb519a2
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	google.golang.org/api v0.39.0
 	gopkg.in/macaron.v1 v1.4.0

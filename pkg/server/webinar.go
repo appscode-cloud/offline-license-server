@@ -34,12 +34,23 @@ import (
 )
 
 type WebinarSchedule struct {
-	Title          string   `json:"title,omitempty" csv:"Title" form:"title"`
-	Schedule       DateTime `json:"schedule,omitempty" csv:"Schedule" form:"schedule"`
-	Summary        string   `json:"summary,omitempty" csv:"Summary" form:"summary"`
-	Speaker        string   `json:"speaker,omitempty" csv:"Speaker" form:"speaker"`
-	SpeakerBio     string   `json:"speaker_bio,omitempty" csv:"Speaker Bio" form:"speaker_bio"`
-	SpeakerPicture string   `json:"speaker_picture,omitempty" csv:"Speaker Picture" form:"speaker_picture"`
+	Title          string   `json:"title" csv:"Title" form:"title"`
+	Schedule       DateTime `json:"schedule" csv:"Schedule" form:"schedule"`
+	Summary        string   `json:"summary" csv:"Summary" form:"summary"`
+	Speaker        string   `json:"speaker" csv:"Speaker" form:"speaker"`
+	SpeakerBio     string   `json:"speaker_bio" csv:"Speaker Bio" form:"speaker_bio"`
+	SpeakerPicture string   `json:"speaker_picture" csv:"Speaker Picture" form:"speaker_picture"`
+}
+
+type WebinarMeetingID struct {
+	GoogleCalendarEventID string `json:"google_calendar_event_id" csv:"Google Calendar Event ID"`
+	ZoomMeetingID         int    `json:"zoom_meeting_id" csv:"Zoom Meeting ID"`
+	ZoomMeetingPassword   string `json:"zoom_meeting_password" csv:"Zoom Meeting Password"`
+}
+
+type WebinarInfo struct {
+	WebinarSchedule
+	WebinarMeetingID
 }
 
 type WebinarRegistrationForm struct {
@@ -130,42 +141,37 @@ func (s *Server) ListWebinarAttendees(date string) ([]string, error) {
 	return result.List(), nil
 }
 
-func (s *Server) RegisterForWebinar(date string, form WebinarRegistrationForm) error {
-	attendees := []*WebinarRegistrationForm{
-		&form,
-	}
-	writer := gdrive.NewWriter(s.sheetsService, WebinarSpreadsheetId, date)
-	return gocsv.MarshalCSV(attendees, writer)
-}
-
 func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
-	reader, err := gdrive.NewRowReader(s.sheetsService, WebinarSpreadsheetId, WebinarScheduleSheet, "Schedule", func(column []interface{}) (int, error) {
-		type TP struct {
-			Schedule time.Time
-			Pos      int
-		}
-		var upcoming []TP
-		now := time.Now()
-		for i, v := range column {
-			// 3/11/2021 3:00:00
-			t, err := time.Parse(WebinarScheduleFormat, v.(string))
-			if err != nil {
-				panic(err)
+	reader, err := gdrive.NewRowReader(s.sheetsService, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Filter{
+		Header: "Schedule",
+		By: func(column []interface{}) (int, error) {
+			type TP struct {
+				Schedule time.Time
+				Pos      int
 			}
-			if t.After(now) {
-				upcoming = append(upcoming, TP{
-					Schedule: t,
-					Pos:      i,
-				})
+			var upcoming []TP
+			now := time.Now()
+			for i, v := range column {
+				// 3/11/2021 3:00:00
+				t, err := time.Parse(WebinarScheduleFormat, v.(string))
+				if err != nil {
+					return -1, err
+				}
+				if t.After(now) {
+					upcoming = append(upcoming, TP{
+						Schedule: t,
+						Pos:      i,
+					})
+				}
 			}
-		}
-		if len(upcoming) == 0 {
-			return -1, io.EOF
-		}
-		sort.Slice(upcoming, func(i, j int) bool {
-			return upcoming[i].Schedule.Before(upcoming[j].Schedule)
-		})
-		return upcoming[0].Pos, nil
+			if len(upcoming) == 0 {
+				return -1, io.EOF
+			}
+			sort.Slice(upcoming, func(i, j int) bool {
+				return upcoming[i].Schedule.Before(upcoming[j].Schedule)
+			})
+			return upcoming[0].Pos, nil
+		},
 	})
 	if err == io.EOF {
 		return &WebinarSchedule{}, nil
@@ -175,11 +181,109 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 
 	schedules := []*WebinarSchedule{}
 	if err := gocsv.UnmarshalCSV(reader, &schedules); err != nil { // Load clients from file
-		panic(err)
+		return nil, err
 	}
 
 	if len(schedules) > 0 {
 		return schedules[0], nil
 	}
 	return &WebinarSchedule{}, nil
+}
+
+func (s *Server) RegisterForWebinar(date string, form WebinarRegistrationForm) error {
+	sheetName := date
+	clients := []*WebinarRegistrationForm{
+		&form,
+	}
+	writer := gdrive.NewWriter(s.sheetsService, WebinarSpreadsheetId, sheetName)
+	err := gocsv.MarshalCSV(clients, writer)
+	if err != nil {
+		return err
+	}
+
+	// create zoom, google calendar event if not exists,
+	// add attendant if google calendar meeting exists
+
+	tdate, err := time.Parse("2006-1-2", date)
+	if err != nil {
+		return err
+	}
+	yw, mw, dw := tdate.Date()
+
+	reader, err := gdrive.NewRowReader(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
+		Header: "Schedule",
+		By: func(values []interface{}) (int, error) {
+			for i, v := range values {
+				t2, err := time.Parse(WebinarScheduleFormat, v.(string))
+				if err != nil {
+					return -1, err
+				}
+				y2, m2, d2 := t2.Date()
+
+				if yw == y2 && mw == m2 && dw == d2 {
+					return i, nil
+				}
+			}
+			return -1, io.EOF
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	meetings := []*WebinarInfo{}
+	if err := gocsv.UnmarshalCSV(reader, &meetings); err != nil { // Load clients from file
+		return err
+	}
+
+	var result *WebinarInfo
+	if len(meetings) > 0 {
+		result = meetings[0]
+	}
+	if result != nil && result.GoogleCalendarEventID != "" {
+		wats, err := gdrive.NewColumnReader(s.sheetsService, WebinarSpreadsheetId, sheetName, "Work Email")
+		if err != nil {
+			return err
+		}
+		atts := []*WebinarRegistrationEmail{}
+		if err := gocsv.UnmarshalCSV(wats, &atts); err != nil { // Load clients from file
+			return err
+		}
+
+		emails := make([]string, len(atts))
+		for i, a := range atts {
+			emails[i] = a.WorkEmail
+		}
+		return AddEventAttendants(s.calendarService, WebinarCalendarId, result.GoogleCalendarEventID, emails)
+	}
+
+	ww := gdrive.NewRowWriter(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
+		Header: "Schedule",
+		By: func(values []interface{}) (int, error) {
+			for i, v := range values {
+				t2, err := time.Parse(WebinarScheduleFormat, v.(string))
+				if err != nil {
+					return -1, err
+				}
+				y2, m2, d2 := t2.Date()
+
+				if yw == y2 && mw == m2 && dw == d2 {
+					return i, nil
+				}
+			}
+			return -1, io.EOF
+		},
+	})
+
+	meetinginfo, err := CreateZoomMeeting(s.calendarService, s.zc, WebinarCalendarId, s.zoomAccountEmail, &result.WebinarSchedule, 60*time.Minute, []string{
+		form.WorkEmail,
+	})
+	if err != nil {
+		return err
+	}
+
+	meetings2 := []*WebinarMeetingID{
+		meetinginfo,
+	}
+	return gocsv.MarshalCSV(meetings2, ww)
 }
