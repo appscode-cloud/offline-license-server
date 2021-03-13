@@ -50,15 +50,26 @@ func NewCmdGenerateQuotation() *cobra.Command {
 				return err
 			}
 
-			gen := server.NewQuotationGenerator(client, opts.Complete())
-			gen.Lead = opts.Lead
-			quote, docId, err := gen.Generate()
-			if err != nil {
-				return err
-			}
+			for _, product := range opts.Lead.Product {
+				gen := server.NewQuotationGenerator(client, opts.Complete())
+				gen.Lead = server.ProductQuotation{
+					Name:      opts.Lead.Name,
+					Email:     opts.Lead.Email,
+					CC:        opts.Lead.CC,
+					Title:     opts.Lead.Title,
+					Telephone: opts.Lead.Telephone,
+					Product:   product,
+					Company:   opts.Lead.Company,
+				}
+				quote, docId, err := gen.Generate()
+				if err != nil {
+					return err
+				}
 
-			filename := filepath.Join(outDir, server.FolderName(opts.Lead.Email), gen.DocName(quote)+".pdf")
-			return server.ExportPDF(gen.DriveService, docId, filename)
+				filename := filepath.Join(outDir, server.FolderName(opts.Lead.Email), gen.DocName(quote)+".pdf")
+				return server.ExportPDF(gen.DriveService, docId, filename)
+			}
+			return nil
 		},
 	}
 
@@ -71,7 +82,7 @@ func NewCmdGenerateQuotation() *cobra.Command {
 	cmd.Flags().StringVar(&opts.Lead.Email, "lead.email", opts.Lead.Email, "Email of lead")
 	cmd.Flags().StringVar(&opts.Lead.Title, "lead.title", opts.Lead.Title, "Job title of lead")
 	cmd.Flags().StringVar(&opts.Lead.Telephone, "lead.telephone", opts.Lead.Telephone, "Telephone number of lead")
-	cmd.Flags().StringVar(&opts.Lead.Product, "lead.product", opts.Lead.Product, "Name of product for which quotation is requested")
+	cmd.Flags().StringSliceVar(&opts.Lead.Product, "lead.product", opts.Lead.Product, "Name of product for which quotation is requested")
 	cmd.Flags().StringVar(&opts.Lead.Company, "lead.company", opts.Lead.Company, "Name of company of the lead")
 
 	return cmd

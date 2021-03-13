@@ -51,23 +51,34 @@ func NewCmdEmailQuotation() *cobra.Command {
 				return err
 			}
 
-			gen := server.NewQuotationGenerator(client, opts.Complete())
-			gen.Lead = opts.Lead
-			quote, docId, err := gen.Generate()
-			if err != nil {
-				return err
-			}
+			for _, product := range opts.Lead.Product {
+				gen := server.NewQuotationGenerator(client, opts.Complete())
+				gen.Lead = server.ProductQuotation{
+					Name:      opts.Lead.Name,
+					Email:     opts.Lead.Email,
+					CC:        opts.Lead.CC,
+					Title:     opts.Lead.Title,
+					Telephone: opts.Lead.Telephone,
+					Product:   product,
+					Company:   opts.Lead.Company,
+				}
+				quote, docId, err := gen.Generate()
+				if err != nil {
+					return err
+				}
 
-			mailer := gen.GetMailer()
-			mailer.GoogleDocIds = map[string]string{
-				gen.DocName(quote) + ".pdf": docId,
-			}
+				mailer := gen.GetMailer()
+				mailer.GoogleDocIds = map[string]string{
+					gen.DocName(quote) + ".pdf": docId,
+				}
 
-			mg, err := mailgun.NewMailgunFromEnv()
-			if err != nil {
-				return err
+				mg, err := mailgun.NewMailgunFromEnv()
+				if err != nil {
+					return err
+				}
+				return mailer.SendMail(mg, opts.Lead.Email, opts.Lead.CC, gen.DriveService)
 			}
-			return mailer.SendMail(mg, opts.Lead.Email, opts.Lead.CC, gen.DriveService)
+			return nil
 		},
 	}
 
@@ -81,7 +92,7 @@ func NewCmdEmailQuotation() *cobra.Command {
 	cmd.Flags().StringVar(&opts.Lead.CC, "lead.cc", opts.Lead.CC, "CC the quotation to these command separated emails")
 	cmd.Flags().StringVar(&opts.Lead.Title, "lead.title", opts.Lead.Title, "Job title of lead")
 	cmd.Flags().StringVar(&opts.Lead.Telephone, "lead.telephone", opts.Lead.Telephone, "Telephone number of lead")
-	cmd.Flags().StringVar(&opts.Lead.Product, "lead.product", opts.Lead.Product, "Name of product for which quotation is requested")
+	cmd.Flags().StringSliceVar(&opts.Lead.Product, "lead.product", opts.Lead.Product, "Name of product for which quotation is requested")
 	cmd.Flags().StringVar(&opts.Lead.Company, "lead.company", opts.Lead.Company, "Name of company of the lead")
 
 	return cmd

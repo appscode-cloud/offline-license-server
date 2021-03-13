@@ -76,8 +76,8 @@
           <div class="field">
             <label class="label">Product</label>
             <div class="control">
-              <div class="select">
-                <select id="product" name="product">
+              <div class="select is-multiple">
+                <select id="product" name="product" multiple size="4">
                   <option value="stash-payg" {{ if eq .Product "stash-payg" }}selected{{ end }}>Stash Pay-As-You-Go (PAYG)</option>
                   <option value="kubedb-payg" {{ if eq .Product "kubedb-payg" }}selected{{ end }}>KubeDB Pay-As-You-Go (PAYG)</option>
                   <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>Stash Enterprise (Annual)</option>
@@ -100,7 +100,10 @@
           </div>
           <div class="field is-grouped">
             <div class="control">
-              <button class="button is-link">Submit</button>
+              <button class="button is-link" value="generate" onclick='this.form.action="/_/pricing?generate_only=true'>Generate Quotation</button>
+            </div>
+            <div class="control">
+              <button class="button is-link" value="email" onclick='this.form.action="/_/pricing?generate_only=false'>Email Quotation</button>
             </div>
           </div>
         </form>
