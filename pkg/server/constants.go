@@ -41,6 +41,7 @@ const (
 	WebinarSpreadsheetId  = "1VW9K1yRLw6IFnr4o9ZJqaEamBahfqnjfl79EHeAZBzg"
 	WebinarScheduleFormat = "1/2/2006 15:04:05"
 	WebinarScheduleSheet  = "Schedule"
+	WebinarCalendarId     = "c_gccijq3fpvbsgg68le9tq37pqs@group.calendar.google.com"
 )
 
 var knowTestEmails = sets.NewString("1gtm@appscode.com")

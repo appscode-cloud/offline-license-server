@@ -78,6 +78,8 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
+# github.com/google/go-querystring v1.0.0
+github.com/google/go-querystring/query
 # github.com/google/gofuzz v1.1.0
 github.com/google/gofuzz
 # github.com/google/uuid v1.1.2
@@ -92,6 +94,9 @@ github.com/googleapis/gax-go/v2
 # github.com/gorilla/schema v1.2.0
 ## explicit
 github.com/gorilla/schema
+# github.com/himalayan-institute/zoom-lib-golang v1.0.0
+## explicit
+github.com/himalayan-institute/zoom-lib-golang
 # github.com/huandu/xstrings v1.3.2
 ## explicit
 github.com/huandu/xstrings
@@ -106,6 +111,9 @@ github.com/json-iterator/go
 github.com/jstemmer/go-junit-report
 github.com/jstemmer/go-junit-report/formatter
 github.com/jstemmer/go-junit-report/parser
+# github.com/k3a/html2text v1.0.7
+## explicit
+github.com/k3a/html2text
 # github.com/mailgun/mailgun-go/v4 v4.3.3
 ## explicit
 github.com/mailgun/mailgun-go/v4
@@ -271,13 +279,19 @@ gomodules.xyz/email-providers
 # gomodules.xyz/freshsales-client-go v0.0.1
 ## explicit
 gomodules.xyz/freshsales-client-go
-# gomodules.xyz/gdrive-utils v0.0.0-20210308095828-b88cd4482f26
+# gomodules.xyz/gdrive-utils v0.0.0-20210313135106-78213dfc3fc4
 ## explicit
 gomodules.xyz/gdrive-utils
 # gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
 ## explicit
 gomodules.xyz/homedir
-# gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799
+# gomodules.xyz/password-generator v0.2.6
+## explicit
+gomodules.xyz/password-generator
+# gomodules.xyz/pointer v0.0.0-20201105040656-991dd254b680
+## explicit
+gomodules.xyz/pointer
+# gomodules.xyz/sets v0.0.0-20210218105342-2efe2fb519a2
 ## explicit
 gomodules.xyz/sets
 # gomodules.xyz/version v0.1.0
@@ -423,6 +437,8 @@ google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/pluginpb
+# gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
+gopkg.in/dgrijalva/jwt-go.v3
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
 # gopkg.in/ini.v1 v1.51.0

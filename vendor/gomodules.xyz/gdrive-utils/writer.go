@@ -3,6 +3,7 @@ package gdrive_utils
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/gocarina/gocsv"
@@ -19,6 +20,8 @@ type SheetWriter struct {
 
 	data [][]string
 	e    error
+
+	filter *Filter
 }
 
 var _ gocsv.CSVWriter = &SheetWriter{}
@@ -30,6 +33,17 @@ func NewWriter(srv *sheets.Service, spreadsheetId, sheetName string) *SheetWrite
 		sheetName:            sheetName,
 		ValueRenderOption:    "FORMATTED_VALUE",
 		DateTimeRenderOption: "SERIAL_NUMBER",
+	}
+}
+
+func NewRowWriter(srv *sheets.Service, spreadsheetId, sheetName string, filter *Filter) *SheetWriter {
+	return &SheetWriter{
+		srv:                  srv,
+		spreadsheetId:        spreadsheetId,
+		sheetName:            sheetName,
+		ValueRenderOption:    "FORMATTED_VALUE",
+		DateTimeRenderOption: "SERIAL_NUMBER",
+		filter:               filter,
 	}
 }
 
@@ -145,10 +159,75 @@ func (w *SheetWriter) Flush() {
 			}
 		}
 
-		vals = sheets.ValueRange{
-			MajorDimension: "ROWS",
-			Range:          fmt.Sprintf("%s!A%d", w.sheetName, 1+len(resp.Values[0])),
-			Values:         make([][]interface{}, len(w.data)-1), // skip header
+		if w.filter != nil {
+			// read column
+			// detect index
+
+			index, ok := headerMap[w.filter.Header]
+			if !ok {
+				w.e = fmt.Errorf("missing header %s", w.filter.Header)
+				return
+			}
+
+			var sb strings.Builder
+			sb.WriteRune(rune('A' + index.Before))
+
+			// read column
+			readRange := fmt.Sprintf("%s!%s2:%s", w.sheetName, sb.String(), sb.String())
+			resp, err := w.srv.Spreadsheets.Values.Get(w.spreadsheetId, readRange).
+				MajorDimension("COLUMNS").
+				ValueRenderOption("FORMATTED_VALUE").
+				DateTimeRenderOption("SERIAL_NUMBER").
+				Do()
+			if err != nil {
+				w.e = fmt.Errorf("unable to retrieve data from sheet: %v", err)
+				return
+			}
+			if len(resp.Values) == 0 {
+				// column only has header row
+				w.e = io.EOF
+				return
+			}
+
+			idx, err := w.filter.By(resp.Values[0])
+			if err != nil {
+				w.e = err
+				return
+			}
+			if idx == -1 {
+				w.e = io.EOF
+				return
+			}
+
+			vals = sheets.ValueRange{
+				MajorDimension: "ROWS",
+				Range:          fmt.Sprintf("%s!A%d", w.sheetName, idx+2),
+				Values:         make([][]interface{}, len(w.data)-1), // skip header
+			}
+			// reorder values as idmap
+			d22 := w.data[1:]
+			for i := range d22 {
+				vals.Values[i] = make([]interface{}, headerLength) // header length
+				for j := range d22[i] {
+					vals.Values[i][idmap[j]] = d22[i][j]
+				}
+			}
+			// update row in place
+			_, err = w.srv.Spreadsheets.Values.Update(w.spreadsheetId, vals.Range, &vals).
+				IncludeValuesInResponse(false).
+				ValueInputOption("USER_ENTERED").
+				Do()
+			if err != nil {
+				w.e = fmt.Errorf("unable to write data to sheet: %v", err)
+				return
+			}
+			return // Done
+		} else {
+			vals = sheets.ValueRange{
+				MajorDimension: "ROWS",
+				Range:          fmt.Sprintf("%s!A%d", w.sheetName, 1+len(resp.Values[0])),
+				Values:         make([][]interface{}, len(w.data)-1), // skip header
+			}
 		}
 		// reorder values as idmap
 		d22 := w.data[1:]

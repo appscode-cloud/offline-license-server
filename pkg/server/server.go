@@ -35,6 +35,7 @@ import (
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/cors"
 	"github.com/google/uuid"
+	"github.com/himalayan-institute/zoom-lib-golang"
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/oschwald/geoip2-golang"
 	"github.com/pkg/errors"
@@ -45,6 +46,7 @@ import (
 	. "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
+	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 	"gopkg.in/macaron.v1"
@@ -55,14 +57,17 @@ import (
 type Server struct {
 	opts *Options
 
-	certs         *certstore.CertStore
-	fs            *blobfs.BlobFS
-	mg            mailgun.Mailgun
-	sheet         *gdrive.Spreadsheet
-	freshsales    *freshsalesclient.Client
-	geodb         *geoip2.Reader
-	driveClient   *http.Client
-	sheetsService *sheets.Service
+	certs            *certstore.CertStore
+	fs               *blobfs.BlobFS
+	mg               mailgun.Mailgun
+	sheet            *gdrive.Spreadsheet
+	freshsales       *freshsalesclient.Client
+	geodb            *geoip2.Reader
+	driveClient      *http.Client
+	sheetsService    *sheets.Service
+	calendarService  *calendar.Service
+	zc               *zoom.Client
+	zoomAccountEmail string
 }
 
 func New(opts *Options) (*Server, error) {
@@ -107,16 +112,24 @@ func New(opts *Options) (*Server, error) {
 		}
 	}
 
+	srvCalendar, err := calendar.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Calendar gc: %v", err)
+	}
+
 	return &Server{
-		opts:          opts,
-		certs:         certs,
-		fs:            fs,
-		mg:            mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
-		sheet:         sheet,
-		freshsales:    freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
-		geodb:         geodb,
-		driveClient:   client,
-		sheetsService: sheetsService,
+		opts:             opts,
+		certs:            certs,
+		fs:               fs,
+		mg:               mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
+		sheet:            sheet,
+		freshsales:       freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
+		geodb:            geodb,
+		driveClient:      client,
+		sheetsService:    sheetsService,
+		calendarService:  srvCalendar,
+		zc:               zoom.NewClient(os.Getenv("ZOOM_API_KEY"), os.Getenv("ZOOM_API_SECRET")),
+		zoomAccountEmail: os.Getenv("ZOOM_ACCOUNT_EMAIL"),
 	}, nil
 }
 

@@ -9,6 +9,11 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
+type Filter struct {
+	Header string
+	By     func(v []interface{}) (int, error)
+}
+
 type SheetReader struct {
 	srv           *sheets.Service
 	spreadsheetId string
@@ -101,7 +106,7 @@ func NewColumnReader(srv *sheets.Service, spreadsheetId, sheetName, header strin
 	return r, nil
 }
 
-func NewRowReader(srv *sheets.Service, spreadsheetId, sheetName, header string, filterBy func(v []interface{}) (int, error)) (*SheetReader, error) {
+func NewRowReader(srv *sheets.Service, spreadsheetId, sheetName string, filter *Filter) (*SheetReader, error) {
 	r := &SheetReader{
 		srv:                  srv,
 		spreadsheetId:        spreadsheetId,
@@ -123,13 +128,13 @@ func NewRowReader(srv *sheets.Service, spreadsheetId, sheetName, header string, 
 
 	sb.Reset()
 	for i, v := range values[0] {
-		if v.(string) == header {
+		if v.(string) == filter.Header {
 			sb.WriteRune(rune('A' + i))
 			break
 		}
 	}
 	if sb.Len() == 0 {
-		return nil, fmt.Errorf("missing header %s", header)
+		return nil, fmt.Errorf("missing header %s", filter.Header)
 	}
 
 	// read column
@@ -147,7 +152,7 @@ func NewRowReader(srv *sheets.Service, spreadsheetId, sheetName, header string, 
 		return nil, io.EOF
 	}
 
-	idx, err := filterBy(resp.Values[0])
+	idx, err := filter.By(resp.Values[0])
 	if err != nil {
 		return nil, err
 	}
