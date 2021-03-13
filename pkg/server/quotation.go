@@ -505,7 +505,7 @@ func (s *Server) processQuotationRequest(gen *QuotationGenerator, generateOnly b
 		return err
 	}
 
-	if generateOnly {
+	if !generateOnly {
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
 			return err
