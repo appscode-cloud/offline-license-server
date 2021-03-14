@@ -132,3 +132,11 @@ offline-license-server quotation generate \
   --lead.telephone='***' \
   --template-doc-id=***
 ```
+
+## Webinar signup
+
+```bash
+curl -X POST \
+  -d "first_name=Tamal&last_name=Saha&phone=+1-1234567890&job_title=CEO&work_email=tamal@appscode.com&company=AppsCode&cluster_provider=aws&experience_level=tried&marketing_reach=word" \
+  http://localhost:4000/_/webinars/2021-3-15/register
+```
