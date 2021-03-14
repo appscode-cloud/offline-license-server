@@ -64,9 +64,9 @@ type WebinarRegistrationForm struct {
 	Company   string `json:"company" csv:"Company" form:"company"`
 	WorkEmail string `json:"work_email" csv:"Work Email" form:"work_email"`
 
-	ClusterProvider string `json:"cluster_provider" csv:"Cluster Provider" form:"cluster_provider"`
-	ExperienceLevel string `json:"experience_level" csv:"Experience Level" form:"experience_level"`
-	MarketingReach  string `json:"marketing_reach" csv:"Marketing Reach" form:"marketing_reach"`
+	ClusterProvider []string `json:"cluster_provider,omitempty" csv:"Cluster Provider" form:"cluster_provider"`
+	ExperienceLevel string   `json:"experience_level,omitempty" csv:"Experience Level" form:"experience_level"`
+	MarketingReach  string   `json:"marketing_reach,omitempty" csv:"Marketing Reach" form:"marketing_reach"`
 }
 
 type WebinarRegistrationEmail struct {

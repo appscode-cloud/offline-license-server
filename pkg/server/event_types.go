@@ -60,7 +60,7 @@ type WebinarRecord struct {
 	Schedule DateTime `json:"schedule" csv:"Schedule" form:"schedule"`
 	Speaker  string   `json:"speaker" csv:"Speaker" form:"speaker"`
 
-	ClusterProvider string `json:"cluster_provider" csv:"Cluster Provider" form:"cluster_provider"`
-	ExperienceLevel string `json:"experience_level" csv:"Experience Level" form:"experience_level"`
-	MarketingReach  string `json:"marketing_reach" csv:"Marketing Reach" form:"marketing_reach"`
+	ClusterProvider []string `json:"cluster_provider,omitempty" csv:"Cluster Provider" form:"cluster_provider"`
+	ExperienceLevel string   `json:"experience_level,omitempty" csv:"Experience Level" form:"experience_level"`
+	MarketingReach  string   `json:"marketing_reach,omitempty" csv:"Marketing Reach" form:"marketing_reach"`
 }
