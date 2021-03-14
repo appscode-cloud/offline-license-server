@@ -48,20 +48,20 @@ func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomE
 		Agenda:         html2text.HTML2Text(schedule.Summary),
 		TrackingFields: nil,
 		Settings: zoom.MeetingSettings{
-			HostVideo:         false,
-			ParticipantVideo:  false,
-			ChinaMeeting:      false,
-			IndiaMeeting:      false,
-			JoinBeforeHost:    true,
-			MuteUponEntry:     true,
-			Watermark:         false,
-			UsePMI:            false,
-			ApprovalType:      zoom.ApprovalTypeManuallyApprove,
-			RegistrationType:  zoom.RegistrationTypeRegisterEachTime,
+			HostVideo:        false,
+			ParticipantVideo: false,
+			ChinaMeeting:     false,
+			IndiaMeeting:     false,
+			JoinBeforeHost:   true,
+			MuteUponEntry:    true,
+			Watermark:        false,
+			UsePMI:           false,
+			ApprovalType:     zoom.ApprovalTypeNoRegistrationRequired,
+			// RegistrationType:  zoom.RegistrationTypeRegisterEachTime,
 			Audio:             zoom.AudioBoth,
 			AutoRecording:     zoom.AutoRecordingLocal,
 			CloseRegistration: false,
-			WaitingRoom:       false,
+			WaitingRoom:       true,
 		},
 	})
 	if err != nil {
@@ -153,18 +153,22 @@ func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomE
 }
 
 func AddEventAttendants(srv *calendar.Service, calendarId, eventId string, emails []string) error {
-	sortEmails := sets.NewString(emails...)
-
 	e2, err := srv.Events.Get(calendarId, eventId).Do()
 	if err != nil {
 		return err
 	}
+	existing := sets.NewString(emails...)
 	for _, a := range e2.Attendees {
-		sortEmails.Insert(a.Email)
+		existing.Insert(a.Email)
 	}
+	if existing.HasAll(emails...) {
+		// duplicate signup, skip api calls
+		return nil
+	}
+	existing.Insert(emails...)
 
-	attendees := make([]*calendar.EventAttendee, len(emails))
-	for i, email := range sortEmails.List() {
+	attendees := make([]*calendar.EventAttendee, existing.Len())
+	for i, email := range existing.List() {
 		attendees[i] = &calendar.EventAttendee{
 			Email: email,
 		}
