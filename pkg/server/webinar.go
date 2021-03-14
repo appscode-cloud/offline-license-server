@@ -17,6 +17,7 @@ limitations under the License.
 package server
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -24,10 +25,12 @@ import (
 	"sort"
 	"time"
 
+	"github.com/avct/uasurfer"
 	"github.com/go-macaron/auth"
 	"github.com/go-macaron/binding"
 	"github.com/go-macaron/cache"
 	"github.com/gocarina/gocsv"
+	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"gomodules.xyz/sets"
 	"gopkg.in/macaron.v1"
@@ -54,12 +57,16 @@ type WebinarInfo struct {
 }
 
 type WebinarRegistrationForm struct {
-	FirstName       string `json:"first_name" csv:"First Name" form:"first_name"`
-	LastName        string `json:"last_name" csv:"Last Name" form:"last_name"`
-	Phone           string `json:"phone" csv:"Phone" form:"phone"`
-	JobTitle        string `json:"job_title" csv:"Job Title" form:"job_title"`
-	WorkEmail       string `json:"work_email" csv:"Work Email" form:"work_email"`
-	KnowsKubernetes bool   `json:"knows_kubernetes" csv:"Knows Kubernetes" form:"knows_kubernetes"`
+	FirstName string `json:"first_name" csv:"First Name" form:"first_name"`
+	LastName  string `json:"last_name" csv:"Last Name" form:"last_name"`
+	Phone     string `json:"phone" csv:"Phone" form:"phone"`
+	JobTitle  string `json:"job_title" csv:"Job Title" form:"job_title"`
+	Company   string `json:"company" csv:"Company" form:"company"`
+	WorkEmail string `json:"work_email" csv:"Work Email" form:"work_email"`
+
+	ClusterProvider string `json:"cluster_provider" csv:"Cluster Provider" form:"cluster_provider"`
+	ExperienceLevel string `json:"experience_level" csv:"Experience Level" form:"experience_level"`
+	MarketingReach  string `json:"marketing_reach" csv:"Marketing Reach" form:"marketing_reach"`
 }
 
 type WebinarRegistrationEmail struct {
@@ -101,7 +108,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 
 	m.Post("/_/webinars/:date/register", binding.Bind(WebinarRegistrationForm{}), func(ctx *macaron.Context, form WebinarRegistrationForm) {
 		date := ctx.Params("date")
-		err := s.RegisterForWebinar(date, form)
+		err := s.RegisterForWebinar(ctx, date, form)
 		if err != nil {
 			ctx.Error(http.StatusInternalServerError, err.Error())
 			return
@@ -190,7 +197,7 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 	return &WebinarSchedule{}, nil
 }
 
-func (s *Server) RegisterForWebinar(date string, form WebinarRegistrationForm) error {
+func (s *Server) RegisterForWebinar(ctx *macaron.Context, date string, form WebinarRegistrationForm) error {
 	sheetName := date
 	clients := []*WebinarRegistrationForm{
 		&form,
@@ -240,7 +247,45 @@ func (s *Server) RegisterForWebinar(date string, form WebinarRegistrationForm) e
 	if len(meetings) > 0 {
 		result = meetings[0]
 	}
-	if result != nil && result.GoogleCalendarEventID != "" {
+	if result == nil {
+		return fmt.Errorf("can't find webinar schedule")
+	}
+
+	{
+		// record in CRM
+		ua := uasurfer.Parse(ctx.Req.UserAgent())
+		location := GeoLocation{
+			IP: GetIP(ctx.Req.Request),
+		}
+		DecorateGeoData(s.geodb, &location)
+
+		_ = s.noteEventWebinarRegistration(form, EventWebinarRegistration{
+			BaseNoteDescription: freshsalesclient.BaseNoteDescription{
+				Event: "webinar_registration",
+				Client: freshsalesclient.ClientInfo{
+					OS:     ua.OS.Name.StringTrimPrefix(),
+					Device: ua.DeviceType.StringTrimPrefix(),
+					Location: freshsalesclient.GeoLocation{
+						IP:          location.IP,
+						Timezone:    location.Timezone,
+						City:        location.City,
+						Country:     location.Country,
+						Coordinates: location.Coordinates,
+					},
+				},
+			},
+			Webinar: WebinarRecord{
+				Title:           result.Title,
+				Schedule:        result.Schedule,
+				Speaker:         result.Speaker,
+				ClusterProvider: form.ClusterProvider,
+				ExperienceLevel: form.ExperienceLevel,
+				MarketingReach:  form.MarketingReach,
+			},
+		})
+	}
+
+	if result.GoogleCalendarEventID != "" {
 		wats, err := gdrive.NewColumnReader(s.sheetsService, WebinarSpreadsheetId, sheetName, "Work Email")
 		if err != nil {
 			return err

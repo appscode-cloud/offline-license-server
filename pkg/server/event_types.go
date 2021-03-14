@@ -48,3 +48,19 @@ type Message struct {
 	Subject   string `json:"subject,omitempty"`
 	Url       string `json:"url,omitempty"`
 }
+
+type EventWebinarRegistration struct {
+	freshsalesclient.BaseNoteDescription `json:",inline,omitempty"`
+
+	Webinar WebinarRecord `json:"webinar,omitempty"`
+}
+
+type WebinarRecord struct {
+	Title    string   `json:"title" csv:"Title" form:"title"`
+	Schedule DateTime `json:"schedule" csv:"Schedule" form:"schedule"`
+	Speaker  string   `json:"speaker" csv:"Speaker" form:"speaker"`
+
+	ClusterProvider string `json:"cluster_provider" csv:"Cluster Provider" form:"cluster_provider"`
+	ExperienceLevel string `json:"experience_level" csv:"Experience Level" form:"experience_level"`
+	MarketingReach  string `json:"marketing_reach" csv:"Marketing Reach" form:"marketing_reach"`
+}

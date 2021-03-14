@@ -220,3 +220,103 @@ func (s *Server) noteEventMailgun(email string, e EventMailgun) error {
 	_, err = s.freshsales.AddNote(id, et, string(desc))
 	return err
 }
+
+func (s *Server) noteEventWebinarRegistration(form WebinarRegistrationForm, e EventWebinarRegistration) error {
+	result, err := s.freshsales.LookupByEmail(form.WorkEmail, freshsalesclient.EntityLead, freshsalesclient.EntityContact)
+	if err != nil {
+		return err
+	}
+
+	var et freshsalesclient.EntityType
+	var id int64
+	if len(result.Contacts.Contacts) > 0 {
+		// contact found
+		et = freshsalesclient.EntityContact
+		contact := result.Contacts.Contacts[0]
+		id = contact.ID
+
+		var changed bool
+		name := form.FirstName + " " + form.LastName
+		if contact.DisplayName != name {
+			contact.DisplayName = name
+			changed = true
+		}
+		if contact.JobTitle != form.JobTitle {
+			contact.JobTitle = form.JobTitle
+			changed = true
+		}
+		if contact.WorkNumber != form.Phone {
+			contact.WorkNumber = form.Phone
+			changed = true
+		}
+		//if contact.Company.Name == "" {
+		//	contact.Company.Name = form.Company
+		//	changed = true
+		//}
+
+		if changed {
+			_, err = s.freshsales.UpdateContact(&contact)
+			if err != nil {
+				return err
+			}
+		}
+	} else if len(result.Leads.Leads) > 0 {
+		// lead found
+		et = freshsalesclient.EntityLead
+		lead := result.Leads.Leads[0]
+		id = lead.ID
+
+		var changed bool
+		name := form.FirstName + " " + form.LastName
+		if lead.DisplayName != name {
+			lead.DisplayName = name
+			changed = true
+		}
+		if lead.JobTitle != form.JobTitle {
+			lead.JobTitle = form.JobTitle
+			changed = true
+		}
+		if lead.WorkNumber != form.Phone {
+			lead.WorkNumber = form.Phone
+			changed = true
+		}
+		if lead.Company.Name != form.Company {
+			lead.Company.Name = form.Company
+			changed = true
+		}
+
+		if changed {
+			_, err = s.freshsales.UpdateLead(&lead)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		// create lead
+		lead := &freshsalesclient.Lead{
+			Email:       form.WorkEmail,
+			DisplayName: form.FirstName + " " + form.LastName,
+			FirstName:   form.FirstName,
+			LastName:    form.LastName,
+			JobTitle:    form.JobTitle,
+			WorkNumber:  form.Phone,
+			Company: freshsalesclient.Company{
+				Name: form.Company,
+			},
+		}
+		lead, err := s.freshsales.CreateLead(lead)
+		if err != nil {
+			return err
+		}
+		et = freshsalesclient.EntityLead
+		id = lead.ID
+	}
+
+	// add note
+	desc, err := yaml.Marshal(e)
+	if err != nil {
+		return err
+	}
+	_, err = s.freshsales.AddNote(id, et, string(desc))
+	return err
+}
