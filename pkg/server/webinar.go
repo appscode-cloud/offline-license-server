@@ -138,8 +138,9 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 			ctx.Error(http.StatusInternalServerError, err.Error())
 			return
 		}
+		ctx.WriteHeader(http.StatusOK)
 		// ctx.JSON(http.StatusOK, form)
-		ctx.Redirect("https://appscode.com", http.StatusSeeOther)
+		// ctx.Redirect("https://appscode.com", http.StatusSeeOther)
 	})
 
 	m.Get("/_/webinars/:date/emails", auth.Basic(os.Getenv("APPSCODE_PRICING_USERNAME"), os.Getenv("APPSCODE_PRICING_PASSWORD")), func(ctx *macaron.Context) {
