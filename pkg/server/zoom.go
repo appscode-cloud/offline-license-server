@@ -157,7 +157,7 @@ func AddEventAttendants(srv *calendar.Service, calendarId, eventId string, email
 	if err != nil {
 		return err
 	}
-	existing := sets.NewString(emails...)
+	existing := sets.NewString()
 	for _, a := range e2.Attendees {
 		existing.Insert(a.Email)
 	}
