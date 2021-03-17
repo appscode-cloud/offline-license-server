@@ -473,7 +473,7 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 		gen.Location = location
 
 		go func() {
-			if err := s.processQuotationRequest(gen, ctx.QueryBool("generate_only")); err != nil {
+			if err := s.processQuotationRequest(gen, ctx.QueryBool("email")); err != nil {
 				// email support@appscode.com failed to process request
 				mailer := NewQuotationProcessFailedMailer(gen, err)
 				e2 := mailer.SendMail(s.mg, MailSupport, "", nil)
@@ -489,7 +489,7 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 	return nil
 }
 
-func (s *Server) processQuotationRequest(gen *QuotationGenerator, generateOnly bool) error {
+func (s *Server) processQuotationRequest(gen *QuotationGenerator, sendEmail bool) error {
 	quote, docId, err := gen.Generate()
 	if err != nil {
 		return err
@@ -505,7 +505,7 @@ func (s *Server) processQuotationRequest(gen *QuotationGenerator, generateOnly b
 		return err
 	}
 
-	if !generateOnly {
+	if sendEmail {
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
 			return err
