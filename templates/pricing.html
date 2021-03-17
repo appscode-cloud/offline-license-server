@@ -13,7 +13,7 @@
     <section class="section">
       <div class="container">
         <h1 class="title">AppsCode Product Pricing List</h1>
-        <form action="/_/pricing" method="post">
+        <form action="" method="post">
           <div class="field">
             <label class="label">Name</label>
             <div class="control">
@@ -100,10 +100,10 @@
           </div>
           <div class="field is-grouped">
             <div class="control">
-              <button class="button is-link" value="generate" onclick='this.form.action="/_/pricing?generate_only=true'>Generate Quotation</button>
+              <button class="button is-link" value="generate" onclick='this.form.action="/_/pricing"'>Generate Quotation</button>
             </div>
             <div class="control">
-              <button class="button is-link" value="email" onclick='this.form.action="/_/pricing?generate_only=false'>Email Quotation</button>
+              <button class="button is-danger" value="email" onclick='this.form.action="/_/pricing?email=true"'>Email Quotation</button>
             </div>
           </div>
         </form>
