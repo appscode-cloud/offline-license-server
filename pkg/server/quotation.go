@@ -45,11 +45,13 @@ import (
 )
 
 var templateIds = map[string]string{
-	"kubedb-payg":       "1w0EeXotjL6PWNbFdlGH4cnPb_tckf_uZeWp14UwALRA",
-	"stash-payg":        "1ao-gnhco2KY6ETvgLEZBEjLDtA_O5t7yM-WKiT1--kM",
-	"stash-enterprise":  "1PDwas0A119L232ZyLi4reg3-sOXVagB5bhIz8acwaKY",
 	"kubedb-enterprise": "1oD9_jpzRL5djK7i9jQ74PvzFx2xN3O867DrWSiAZrSg",
+	"kubedb-payg":       "1w0EeXotjL6PWNbFdlGH4cnPb_tckf_uZeWp14UwALRA",
 	"kubedb-reseller":   "1w46SFq9kA8ciibINOv7a4frzoogt-yQxmFegr9BWMcc",
+	"kubedb-unlimited":  "13_Z2EGGdS8WASXqjMusojum0Do3U4nXytXxgZmQkxRU",
+	"stash-enterprise":  "1PDwas0A119L232ZyLi4reg3-sOXVagB5bhIz8acwaKY",
+	"stash-payg":        "1ao-gnhco2KY6ETvgLEZBEjLDtA_O5t7yM-WKiT1--kM",
+	"stash-unlimited":   "1iqaj1GOzo4Bj_kb3y4eondlqD7PfTmVQx4l_ECczILM",
 }
 
 type QuotationForm struct {
