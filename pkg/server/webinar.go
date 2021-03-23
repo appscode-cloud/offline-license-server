@@ -42,6 +42,7 @@ type WebinarSchedule struct {
 	Schedule       DateTime `json:"schedule" csv:"Schedule" form:"schedule"`
 	Summary        string   `json:"summary" csv:"Summary" form:"summary"`
 	Speaker        string   `json:"speaker" csv:"Speaker" form:"speaker"`
+	SpeakerTitle   string   `json:"speaker_title" csv:"Speaker Title" form:"speaker_title"`
 	SpeakerBio     string   `json:"speaker_bio" csv:"Speaker Bio" form:"speaker_bio"`
 	SpeakerPicture string   `json:"speaker_picture" csv:"Speaker Picture" form:"speaker_picture"`
 }
@@ -240,7 +241,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, date string, form Webi
 	// These api calls take too long to front proxies like Cloudflare to think server is unresponsive.
 	// So, we return as soon as attendee name is recorded in a the Google spreadsheet.
 
-	// errcheck
+	// nolint:errcheck
 	go func() error {
 		tdate, err := time.Parse("2006-1-2", date)
 		if err != nil {
