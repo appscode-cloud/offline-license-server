@@ -47,6 +47,7 @@ const (
 var knowTestEmails = sets.NewString("1gtm@appscode.com")
 var skipEmailDomains = sets.NewString("appscode.com")
 
+// plan name => features
 var supportedProducts = map[string][]string{
 	"kubedb-community":     {"kubedb-community"},
 	"kubedb-enterprise":    {"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash"},
