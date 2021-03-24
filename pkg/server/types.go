@@ -28,7 +28,7 @@ import (
 
 type ProductLicense struct {
 	Domain    string            `json:"domain"`
-	Product   string            `json:"product"`
+	Product   string            `json:"product"` // This is now called plan in a parsed LicenseInfo
 	TTL       *metav1.Duration  `json:"ttl,omitempty"`
 	Agreement *LicenseAgreement `json:"agreement,omitempty"`
 }
@@ -46,7 +46,7 @@ type LicenseForm struct {
 	Name    string `form:"name" binding:"Required" json:"name"`
 	Email   string `form:"email" binding:"Required;Email" json:"email"`
 	CC      string `form:"cc" json:"cc"`
-	Product string `form:"product" binding:"Required" json:"product"`
+	Product string `form:"product" binding:"Required" json:"product"` // This is now called plan in a parsed LicenseInfo
 	Cluster string `form:"cluster" binding:"Required" json:"cluster"`
 	Tos     string `form:"tos" binding:"Required" json:"tos"`
 	Token   string `form:"token" json:"token"`

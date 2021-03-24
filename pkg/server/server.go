@@ -483,10 +483,11 @@ func (s *Server) CreateLicense(info LicenseForm, license ProductLicense, cluster
 		},
 	}
 	cfg := Config{
-		CommonName:   getCN(sans),
-		Organization: supportedProducts[license.Product],
-		AltNames:     sans,
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+		CommonName:         getCN(sans),
+		Organization:       supportedProducts[license.Product],
+		OrganizationalUnit: license.Product,
+		AltNames:           sans,
+		Usages:             []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 	now := time.Now()
 	cfg.NotBefore = now

@@ -49,6 +49,7 @@ type AltNames struct {
 type Config struct {
 	CommonName          string
 	Organization        []string
+	OrganizationalUnit  string
 	AltNames            AltNames
 	Usages              []x509.ExtKeyUsage
 	NotBefore, NotAfter time.Time // Validity bounds.
@@ -69,8 +70,9 @@ func NewSignedCert(cfg Config, key crypto.Signer, caCert *x509.Certificate, caKe
 
 	certTmpl := x509.Certificate{
 		Subject: pkix.Name{
-			CommonName:   cfg.CommonName,
-			Organization: cfg.Organization,
+			CommonName:         cfg.CommonName,
+			Organization:       cfg.Organization,
+			OrganizationalUnit: []string{cfg.OrganizationalUnit},
 		},
 		DNSNames:       cfg.AltNames.DNSNames,
 		IPAddresses:    cfg.AltNames.IPs,
