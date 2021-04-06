@@ -27,8 +27,8 @@ License server
 `
 
 	return Mailer{
-		Sender:          MailSales,
-		BCC:             "",
+		Sender:          MailLicenseSender,
+		BCC:             MailLicenseTracker,
 		ReplyTo:         MailSales,
 		Subject:         fmt.Sprintf("[LICENSE_BLOCKED] plan:%s email:%s", info.Product, info.Email),
 		Body:            src,
