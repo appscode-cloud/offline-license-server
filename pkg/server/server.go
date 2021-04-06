@@ -323,7 +323,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		mailer := NewBlockedLicenseMailer(LicenseMailData{
 			LicenseForm: info,
 		})
-		err := mailer.SendMail(s.mg, info.Email, info.CC, nil)
+		err := mailer.SendMail(s.mg, MailSales, info.CC, nil)
 		if err != nil {
 			return err
 		}
