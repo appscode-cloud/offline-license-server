@@ -48,6 +48,9 @@ type Options struct {
 	freshsalesAPIToken string
 
 	GoogleCredentialDir string
+
+	BlockedDomains []string
+	BlockedEmails  []string
 }
 
 func NewOptions() *Options {
@@ -90,4 +93,7 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.freshsalesAPIToken, "freshsales.token", s.freshsalesAPIToken, "Freshsales api token")
 
 	fs.StringVar(&s.GoogleCredentialDir, "google.credential-dir", s.GoogleCredentialDir, "Directory used to store Google credential")
+
+	fs.StringSliceVar(&s.BlockedDomains, "blocked-domains", s.BlockedDomains, "Domains blocked from downloading license automatically")
+	fs.StringSliceVar(&s.BlockedEmails, "blocked-emails", s.BlockedEmails, "Emails blocked from downloading license automatically")
 }

@@ -61,7 +61,14 @@ func (s *Server) createLead(email string, name string) *freshsalesclient.Lead {
 	}
 }
 
-func (s *Server) noteEventLicenseIssued(info LogEntry) error {
+type LicenseEventType string
+
+const (
+	EventTypeLicenseIssued  = "license_issued"
+	EventTypeLicenseBlocked = "license_blocked"
+)
+
+func (s *Server) noteEventLicenseIssued(info LogEntry, event LicenseEventType) error {
 	et, id, err := s.ensureCRMEntity(s.createLead(info.Email, info.Name))
 	if err != nil {
 		return err
@@ -70,7 +77,7 @@ func (s *Server) noteEventLicenseIssued(info LogEntry) error {
 	// add note
 	e := EventLicenseIssued{
 		BaseNoteDescription: freshsalesclient.BaseNoteDescription{
-			Event: "license_issued",
+			Event: string(event),
 			Client: freshsalesclient.ClientInfo{
 				OS:     info.UA.OS.Name.StringTrimPrefix(),
 				Device: info.UA.DeviceType.StringTrimPrefix(),

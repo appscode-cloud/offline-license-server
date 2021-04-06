@@ -52,6 +52,7 @@ import (
 	"gopkg.in/macaron.v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type Server struct {
@@ -68,6 +69,9 @@ type Server struct {
 	calendarService  *calendar.Service
 	zc               *zoom.Client
 	zoomAccountEmail string
+
+	blockedDomains sets.String
+	blockedEmails  sets.String
 }
 
 func New(opts *Options) (*Server, error) {
@@ -130,6 +134,8 @@ func New(opts *Options) (*Server, error) {
 		calendarService:  srvCalendar,
 		zc:               zoom.NewClient(os.Getenv("ZOOM_API_KEY"), os.Getenv("ZOOM_API_SECRET")),
 		zoomAccountEmail: os.Getenv("ZOOM_ACCOUNT_EMAIL"),
+		blockedDomains:   sets.NewString(opts.BlockedDomains...),
+		blockedEmails:    sets.NewString(opts.BlockedEmails...),
 	}, nil
 }
 
@@ -311,6 +317,23 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		return fmt.Errorf("disposable email %s is not supported", info.Email)
 	}
 
+	timestamp := time.Now().UTC().Format(time.RFC3339)
+
+	if s.blockedDomains.Has(domain) || s.blockedEmails.Has(info.Email) {
+		mailer := NewBlockedLicenseMailer(LicenseMailData{
+			LicenseForm: info,
+		})
+		err := mailer.SendMail(s.mg, info.Email, info.CC, nil)
+		if err != nil {
+			return err
+		}
+		err = s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseBlocked)
+		if err != nil {
+			return err
+		}
+		return errors.New("Please contact support@appscode.com to acquire license. Thanks!")
+	}
+
 	if exists, err := s.fs.Exists(context.TODO(), EmailBannedPath(domain, info.Email)); err == nil && exists {
 		return fmt.Errorf("email %s is banned", info.Email)
 	}
@@ -333,42 +356,10 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		return err
 	}
 
-	timestamp := time.Now().UTC().Format(time.RFC3339)
 	if !skipEmailDomains.Has(Domain(info.Email)) {
-		// record request
-		accesslog := LogEntry{
-			LicenseForm: info,
-			GeoLocation: GeoLocation{
-				IP: GetIP(ctx.Req.Request),
-			},
-			Timestamp: timestamp,
-			UA:        uasurfer.Parse(ctx.Req.UserAgent()),
-		}
-		DecorateGeoData(s.geodb, &accesslog.GeoLocation)
-
-		data, err := json.MarshalIndent(accesslog, "", "  ")
-		if err != nil {
-			return err
-		}
-
-		err = s.fs.WriteFile(context.TODO(), ProductAccessLogPath(domain, info.Product, info.Cluster, timestamp), data)
-		if err != nil {
-			return err
-		}
-
-		err = s.fs.WriteFile(context.TODO(), EmailAccessLogPath(domain, info.Email, info.Product, timestamp), data)
-		if err != nil {
-			return err
-		}
-
-		err = LogLicense(s.sheet, accesslog)
-		if err != nil {
-			return err
-		}
-
-		err = s.noteEventLicenseIssued(accesslog)
-		if err != nil {
-			return err
+		err2 := s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseIssued)
+		if err2 != nil {
+			return err2
 		}
 	}
 
@@ -405,6 +396,43 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	}
 
 	return nil
+}
+
+func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, timestamp string, event LicenseEventType) error {
+	domain := Domain(info.Email)
+
+	// record request
+	accesslog := LogEntry{
+		LicenseForm: info,
+		GeoLocation: GeoLocation{
+			IP: GetIP(ctx.Req.Request),
+		},
+		Timestamp: timestamp,
+		UA:        uasurfer.Parse(ctx.Req.UserAgent()),
+	}
+	DecorateGeoData(s.geodb, &accesslog.GeoLocation)
+
+	data, err := json.MarshalIndent(accesslog, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	err = s.fs.WriteFile(context.TODO(), ProductAccessLogPath(domain, info.Product, info.Cluster, timestamp), data)
+	if err != nil {
+		return err
+	}
+
+	err = s.fs.WriteFile(context.TODO(), EmailAccessLogPath(domain, info.Email, info.Product, timestamp), data)
+	if err != nil {
+		return err
+	}
+
+	err = LogLicense(s.sheet, accesslog)
+	if err != nil {
+		return err
+	}
+
+	return s.noteEventLicenseIssued(accesslog, event)
 }
 
 func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicense, error) {
