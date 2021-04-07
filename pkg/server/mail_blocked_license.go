@@ -20,7 +20,7 @@ import "fmt"
 
 func NewBlockedLicenseMailer(info LicenseMailData) Mailer {
 	src := `Hello,
-FYI, an attempt was issue license for {{.Product}} from blocked email/domain {{.Email}}. Please review for further action.
+FYI, an attempt was made to issue a {{.Product}} license for cluster {{.Cluster}} by {{.Email}}. Please review for further action.
 
 Regards,
 License server
@@ -30,7 +30,7 @@ License server
 		Sender:          MailLicenseSender,
 		BCC:             MailLicenseTracker,
 		ReplyTo:         MailSales,
-		Subject:         fmt.Sprintf("[LICENSE_BLOCKED] plan:%s email:%s", info.Product, info.Email),
+		Subject:         fmt.Sprintf("[LICENSE_BLOCKED] plan:%s email:%s cluster:%s", info.Product, info.Email, info.Cluster),
 		Body:            src,
 		params:          info,
 		AttachmentBytes: nil,
