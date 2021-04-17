@@ -48,7 +48,7 @@ var knowTestEmails = sets.NewString("1gtm@appscode.com")
 var skipEmailDomains = sets.NewString("appscode.com")
 
 const (
-	MailingListSubscriptionURL = "https://listmonk-testing.appscode.com/subscription/form"
+	MailingListSubscriptionURL = "https://listmonk.appscode.com/subscription/form"
 
 	MailingList_KubeDB    = "a5f00cb2-f398-4408-a13a-28b6db8a32ba"
 	MailingList_Stash     = "3ab3161e-d02c-42cf-ad96-bb406620d693"
