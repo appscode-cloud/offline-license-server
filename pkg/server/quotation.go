@@ -44,14 +44,40 @@ import (
 	"gopkg.in/macaron.v1"
 )
 
-var templateIds = map[string]string{
-	"kubedb-enterprise": "1oD9_jpzRL5djK7i9jQ74PvzFx2xN3O867DrWSiAZrSg",
-	"kubedb-payg":       "1w0EeXotjL6PWNbFdlGH4cnPb_tckf_uZeWp14UwALRA",
-	"kubedb-reseller":   "1w46SFq9kA8ciibINOv7a4frzoogt-yQxmFegr9BWMcc",
-	"kubedb-unlimited":  "13_Z2EGGdS8WASXqjMusojum0Do3U4nXytXxgZmQkxRU",
-	"stash-enterprise":  "1PDwas0A119L232ZyLi4reg3-sOXVagB5bhIz8acwaKY",
-	"stash-payg":        "1ao-gnhco2KY6ETvgLEZBEjLDtA_O5t7yM-WKiT1--kM",
-	"stash-unlimited":   "1iqaj1GOzo4Bj_kb3y4eondlqD7PfTmVQx4l_ECczILM",
+type QuoteInfo struct {
+	TemplateDocId string
+	MailingLists  []string
+}
+
+var templateIds = map[string]QuoteInfo{
+	"kubedb-enterprise": {
+		TemplateDocId: "1oD9_jpzRL5djK7i9jQ74PvzFx2xN3O867DrWSiAZrSg",
+		MailingLists:  []string{MailingList_KubeDB, MailingList_Stash},
+	},
+	"kubedb-payg": {
+		TemplateDocId: "1w0EeXotjL6PWNbFdlGH4cnPb_tckf_uZeWp14UwALRA",
+		MailingLists:  []string{MailingList_KubeDB, MailingList_Stash},
+	},
+	"kubedb-reseller": {
+		TemplateDocId: "1w46SFq9kA8ciibINOv7a4frzoogt-yQxmFegr9BWMcc",
+		MailingLists:  []string{MailingList_KubeDB, MailingList_Stash},
+	},
+	"kubedb-unlimited": {
+		TemplateDocId: "13_Z2EGGdS8WASXqjMusojum0Do3U4nXytXxgZmQkxRU",
+		MailingLists:  []string{MailingList_KubeDB, MailingList_Stash},
+	},
+	"stash-enterprise": {
+		TemplateDocId: "1PDwas0A119L232ZyLi4reg3-sOXVagB5bhIz8acwaKY",
+		MailingLists:  []string{MailingList_Stash},
+	},
+	"stash-payg": {
+		TemplateDocId: "1ao-gnhco2KY6ETvgLEZBEjLDtA_O5t7yM-WKiT1--kM",
+		MailingLists:  []string{MailingList_Stash},
+	},
+	"stash-unlimited": {
+		TemplateDocId: "1iqaj1GOzo4Bj_kb3y4eondlqD7PfTmVQx4l_ECczILM",
+		MailingLists:  []string{MailingList_Stash},
+	},
 }
 
 type QuotationForm struct {
@@ -143,7 +169,7 @@ func (opts QuotationGeneratorOptions) Complete() QuotationGeneratorConfig {
 	}
 
 	if id, ok := templateIds[cfg.TemplateDocId]; ok {
-		cfg.TemplateDocId = id
+		cfg.TemplateDocId = id.TemplateDocId
 	}
 
 	return cfg
@@ -452,7 +478,7 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 	for _, product := range lead.Product {
 		cfg := QuotationGeneratorConfig{
 			AccountsFolderId:     AccountFolderId,
-			TemplateDocId:        templateIds[product],
+			TemplateDocId:        templateIds[product].TemplateDocId,
 			TemplateDoc:          product,
 			LicenseSpreadsheetId: LicenseSpreadsheetId,
 		}
@@ -518,6 +544,11 @@ func (s *Server) processQuotationRequest(gen *QuotationGenerator, sendEmail bool
 		if err != nil {
 			return err
 		}
+	}
+
+	err = SubscribeToMailingList(gen.Lead.Email, gen.Lead.Name, templateIds[gen.Lead.Product].MailingLists)
+	if err != nil {
+		return err
 	}
 
 	return s.noteEventQuotation(gen.Lead, EventQuotationGenerated{

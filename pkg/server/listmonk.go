@@ -27,18 +27,16 @@ import (
 	"moul.io/http2curl"
 )
 
-func SubscribeToMailingList(info LicenseForm) error {
+func SubscribeToMailingList(email, name string, mailingLists []string) error {
 	params := url.Values{}
-	params.Add("email", info.Email)
-	params.Add("name", info.Name)
-	if plan, ok := supportedProducts[info.Product]; ok {
-		if len(plan.MailingLists) == 0 {
-			return nil
-		}
+	params.Add("email", email)
+	params.Add("name", name)
+	if len(mailingLists) == 0 {
+		return nil
+	}
 
-		for _, listID := range plan.MailingLists {
-			params.Add("l", listID)
-		}
+	for _, listID := range mailingLists {
+		params.Add("l", listID)
 	}
 	body := strings.NewReader(params.Encode())
 

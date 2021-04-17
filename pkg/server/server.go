@@ -432,7 +432,7 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
-	err = SubscribeToMailingList(info)
+	err = SubscribeToMailingList(info.Email, info.Name, supportedProducts[info.Product].MailingLists)
 	if err != nil {
 		return err
 	}
