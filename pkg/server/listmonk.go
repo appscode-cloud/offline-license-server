@@ -17,9 +17,14 @@ limitations under the License.
 package server
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"moul.io/http2curl"
 )
 
 func SubscribeToMailingList(info LicenseForm) error {
@@ -43,11 +48,21 @@ func SubscribeToMailingList(info LicenseForm) error {
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
+	command, _ := http2curl.GetCurlCommand(req)
+	fmt.Println(command)
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
-	_ = resp.Body.Close()
+	defer resp.Body.Close()
+
+	var buf bytes.Buffer
+	_, err = io.Copy(&buf, resp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(buf.String())
 
 	return nil
 }

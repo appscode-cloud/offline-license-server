@@ -47,6 +47,7 @@ require (
 	google.golang.org/api v0.39.0
 	gopkg.in/macaron.v1 v1.4.0
 	k8s.io/apimachinery v0.18.9
+	moul.io/http2curl v1.0.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
