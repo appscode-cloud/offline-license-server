@@ -432,6 +432,11 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
+	err = SubscribeToMailingList(info)
+	if err != nil {
+		return err
+	}
+
 	return s.noteEventLicenseIssued(accesslog, event)
 }
 
@@ -512,7 +517,7 @@ func (s *Server) CreateLicense(info LicenseForm, license ProductLicense, cluster
 	}
 	cfg := Config{
 		CommonName:         getCN(sans),
-		Organization:       supportedProducts[license.Product],
+		Organization:       supportedProducts[license.Product].Features,
 		OrganizationalUnit: license.Product,
 		AltNames:           sans,
 		Usages:             []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
