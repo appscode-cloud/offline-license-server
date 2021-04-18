@@ -177,8 +177,8 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 		ctx.JSON(http.StatusOK, out)
 	})
 
-	m.Post("/_/webinars/register", binding.Bind(WebinarRegistrationForm{}), func(ctx *macaron.Context, form WebinarRegistrationForm) {
-		err := s.RegisterForWebinar(ctx, form)
+	m.Post("/_/webinars/register", binding.Bind(WebinarRegistrationForm{}), func(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) {
+		err := s.RegisterForWebinar(ctx, form, log)
 		if err != nil {
 			ctx.Error(http.StatusInternalServerError, err.Error())
 			return
@@ -283,7 +283,7 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 	return &WebinarSchedule{}, nil
 }
 
-func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrationForm) error {
+func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) error {
 	sheetName := form.Schedule.Format("2006-1-2")
 	clients := []*WebinarRegistrationForm{
 		&form,
@@ -301,158 +301,154 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 	// So, we return as soon as attendee name is recorded in a the Google spreadsheet.
 
 	// nolint:errcheck
-	go func() error {
-		yw, mw, dw := form.Schedule.Date()
+	go func() {
+		err := func() error {
+			yw, mw, dw := form.Schedule.Date()
 
-		reader, err := gdrive.NewRowReader(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
-			Header: "Schedules",
-			By: func(values []interface{}) (int, error) {
-				for i, v := range values {
-					schedules := Dates{}
-					err := schedules.UnmarshalCSV(v.(string))
-					if err != nil {
-						return -1, err
+			reader, err := gdrive.NewRowReader(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
+				Header: "Schedules",
+				By: func(values []interface{}) (int, error) {
+					for i, v := range values {
+						schedules := Dates{}
+						err := schedules.UnmarshalCSV(v.(string))
+						if err != nil {
+							return -1, err
+						}
+						for _, t2 := range schedules {
+							y2, m2, d2 := t2.Date()
+
+							if yw == y2 && mw == m2 && dw == d2 {
+								return i, nil
+							}
+						}
 					}
-					for _, t2 := range schedules {
+					return -1, io.EOF
+				},
+			})
+			if err != nil {
+				return err
+			}
+
+			meetings := []*WebinarInfo{}
+			if err := gocsv.UnmarshalCSV(reader, &meetings); err != nil { // Load clients from file
+				return err
+			}
+
+			var result *WebinarInfo
+			if len(meetings) > 0 {
+				result = meetings[0]
+			}
+			if result == nil {
+				return fmt.Errorf("can't find webinar schedule")
+			}
+
+			{
+				// record in listmonk
+				ml, err := s.listmonk.CreateListIfMissing(listmonkclient.MailingListRequest{
+					Name:  fmt.Sprintf("webinar-%s", sheetName),
+					Type:  listmonkclient.ListTypePrivate,
+					Optin: listmonkclient.OptinModeSingle,
+					Tags: []string{
+						"webinar",
+					},
+				})
+				if err != nil {
+					return err
+				}
+				err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
+					Email:        form.WorkEmail,
+					Name:         form.FirstName + " " + form.LastName,
+					MailingLists: []string{ml.UUID},
+				})
+				if err != nil {
+					return err
+				}
+			}
+
+			{
+				// record in CRM
+				ua := uasurfer.Parse(ctx.Req.UserAgent())
+				location := GeoLocation{
+					IP: GetIP(ctx.Req.Request),
+				}
+				DecorateGeoData(s.geodb, &location)
+
+				_ = s.noteEventWebinarRegistration(form, EventWebinarRegistration{
+					BaseNoteDescription: freshsalesclient.BaseNoteDescription{
+						Event: "webinar_registration",
+						Client: freshsalesclient.ClientInfo{
+							OS:     ua.OS.Name.StringTrimPrefix(),
+							Device: ua.DeviceType.StringTrimPrefix(),
+							Location: freshsalesclient.GeoLocation{
+								IP:          location.IP,
+								Timezone:    location.Timezone,
+								City:        location.City,
+								Country:     location.Country,
+								Coordinates: location.Coordinates,
+							},
+						},
+					},
+					Webinar: WebinarRecord{
+						Title:           result.Title,
+						Schedule:        DateTime{form.Schedule},
+						Speaker:         result.Speaker,
+						ClusterProvider: form.ClusterProvider,
+						ExperienceLevel: form.ExperienceLevel,
+						MarketingReach:  form.MarketingReach,
+					},
+				})
+			}
+
+			if result.GoogleCalendarEventID != "" {
+				wats, err := gdrive.NewColumnReader(s.sheetsService, WebinarSpreadsheetId, sheetName, "Work Email")
+				if err != nil {
+					return err
+				}
+				atts := []*WebinarRegistrationEmail{}
+				if err := gocsv.UnmarshalCSV(wats, &atts); err != nil { // Load clients from file
+					return err
+				}
+
+				emails := make([]string, len(atts))
+				for i, a := range atts {
+					emails[i] = a.WorkEmail
+				}
+				return AddEventAttendants(s.calendarService, WebinarCalendarId, result.GoogleCalendarEventID, emails)
+			}
+
+			ww := gdrive.NewRowWriter(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
+				Header: "Schedule",
+				By: func(values []interface{}) (int, error) {
+					for i, v := range values {
+						t2, err := time.Parse(WebinarScheduleFormat, v.(string))
+						if err != nil {
+							return -1, err
+						}
 						y2, m2, d2 := t2.Date()
 
 						if yw == y2 && mw == m2 && dw == d2 {
 							return i, nil
 						}
 					}
-				}
-				return -1, io.EOF
-			},
-		})
+					return -1, io.EOF
+				},
+			})
+
+			meetinginfo, err := CreateZoomMeeting(s.calendarService, s.zc, WebinarCalendarId, s.zoomAccountEmail, &result.WebinarSchedule, form.Schedule, 60*time.Minute, []string{
+				form.WorkEmail,
+			})
+			if err != nil {
+				return err
+			}
+
+			meetings2 := []*WebinarMeetingID{
+				meetinginfo,
+			}
+			return gocsv.MarshalCSV(meetings2, ww)
+		}()
 		if err != nil {
-			return err
+			log.Printf("failed to register for request: %+v, reason: %v", form, err)
 		}
-
-		meetings := []*WebinarInfo{}
-		if err := gocsv.UnmarshalCSV(reader, &meetings); err != nil { // Load clients from file
-			return err
-		}
-
-		var result *WebinarInfo
-		if len(meetings) > 0 {
-			result = meetings[0]
-		}
-		if result == nil {
-			return fmt.Errorf("can't find webinar schedule")
-		}
-
-		var sch DateTime
-		for _, t2 := range result.Schedules {
-			y2, m2, d2 := t2.Date()
-
-			if yw == y2 && mw == m2 && dw == d2 {
-				sch = DateTime{t2}
-			}
-		}
-
-		{
-			// record in listmonk
-			ml, err := s.listmonk.CreateListIfMissing(listmonkclient.MailingListRequest{
-				Name:  fmt.Sprintf("webinar-%s", sheetName),
-				Type:  listmonkclient.ListTypePrivate,
-				Optin: listmonkclient.OptinModeSingle,
-				Tags: []string{
-					"webinar",
-				},
-			})
-			if err != nil {
-				return err
-			}
-			err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
-				Email:        form.WorkEmail,
-				Name:         form.FirstName + " " + form.LastName,
-				MailingLists: []string{ml.UUID},
-			})
-			if err != nil {
-				return err
-			}
-		}
-
-		{
-			// record in CRM
-			ua := uasurfer.Parse(ctx.Req.UserAgent())
-			location := GeoLocation{
-				IP: GetIP(ctx.Req.Request),
-			}
-			DecorateGeoData(s.geodb, &location)
-
-			_ = s.noteEventWebinarRegistration(form, EventWebinarRegistration{
-				BaseNoteDescription: freshsalesclient.BaseNoteDescription{
-					Event: "webinar_registration",
-					Client: freshsalesclient.ClientInfo{
-						OS:     ua.OS.Name.StringTrimPrefix(),
-						Device: ua.DeviceType.StringTrimPrefix(),
-						Location: freshsalesclient.GeoLocation{
-							IP:          location.IP,
-							Timezone:    location.Timezone,
-							City:        location.City,
-							Country:     location.Country,
-							Coordinates: location.Coordinates,
-						},
-					},
-				},
-				Webinar: WebinarRecord{
-					Title:           result.Title,
-					Schedule:        sch,
-					Speaker:         result.Speaker,
-					ClusterProvider: form.ClusterProvider,
-					ExperienceLevel: form.ExperienceLevel,
-					MarketingReach:  form.MarketingReach,
-				},
-			})
-		}
-
-		if result.GoogleCalendarEventID != "" {
-			wats, err := gdrive.NewColumnReader(s.sheetsService, WebinarSpreadsheetId, sheetName, "Work Email")
-			if err != nil {
-				return err
-			}
-			atts := []*WebinarRegistrationEmail{}
-			if err := gocsv.UnmarshalCSV(wats, &atts); err != nil { // Load clients from file
-				return err
-			}
-
-			emails := make([]string, len(atts))
-			for i, a := range atts {
-				emails[i] = a.WorkEmail
-			}
-			return AddEventAttendants(s.calendarService, WebinarCalendarId, result.GoogleCalendarEventID, emails)
-		}
-
-		ww := gdrive.NewRowWriter(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
-			Header: "Schedule",
-			By: func(values []interface{}) (int, error) {
-				for i, v := range values {
-					t2, err := time.Parse(WebinarScheduleFormat, v.(string))
-					if err != nil {
-						return -1, err
-					}
-					y2, m2, d2 := t2.Date()
-
-					if yw == y2 && mw == m2 && dw == d2 {
-						return i, nil
-					}
-				}
-				return -1, io.EOF
-			},
-		})
-
-		meetinginfo, err := CreateZoomMeeting(s.calendarService, s.zc, WebinarCalendarId, s.zoomAccountEmail, &result.WebinarSchedule, sch.Time, 60*time.Minute, []string{
-			form.WorkEmail,
-		})
-		if err != nil {
-			return err
-		}
-
-		meetings2 := []*WebinarMeetingID{
-			meetinginfo,
-		}
-		return gocsv.MarshalCSV(meetings2, ww)
 	}()
 
 	return nil
