@@ -421,17 +421,20 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 			}
 
 			ww := gdrive.NewRowWriter(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
-				Header: "Schedule",
+				Header: "Schedules",
 				By: func(values []interface{}) (int, error) {
 					for i, v := range values {
-						t2, err := time.Parse(WebinarScheduleFormat, v.(string))
+						schedules := Dates{}
+						err := schedules.UnmarshalCSV(v.(string))
 						if err != nil {
 							return -1, err
 						}
-						y2, m2, d2 := t2.Date()
+						for _, t2 := range schedules {
+							y2, m2, d2 := t2.Date()
 
-						if yw == y2 && mw == m2 && dw == d2 {
-							return i, nil
+							if yw == y2 && mw == m2 && dw == d2 {
+								return i, nil
+							}
 						}
 					}
 					return -1, io.EOF
