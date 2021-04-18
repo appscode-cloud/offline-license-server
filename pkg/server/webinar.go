@@ -177,7 +177,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 		ctx.JSON(http.StatusOK, out)
 	})
 
-	m.Post("/_/webinars/:date/register", binding.Bind(WebinarRegistrationForm{}), func(ctx *macaron.Context, form WebinarRegistrationForm) {
+	m.Post("/_/webinars/register", binding.Bind(WebinarRegistrationForm{}), func(ctx *macaron.Context, form WebinarRegistrationForm) {
 		err := s.RegisterForWebinar(ctx, form)
 		if err != nil {
 			ctx.Error(http.StatusInternalServerError, err.Error())
