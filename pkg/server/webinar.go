@@ -60,7 +60,7 @@ type WebinarInfo struct {
 }
 
 type WebinarRegistrationForm struct {
-	Schedule time.Time `json:"schedules" csv:"-" form:"schedules"`
+	Schedule time.Time `json:"schedule" csv:"-" form:"schedule"`
 
 	FirstName string `json:"first_name" csv:"First Name" form:"first_name"`
 	LastName  string `json:"last_name" csv:"Last Name" form:"last_name"`
