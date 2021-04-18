@@ -38,6 +38,7 @@ import (
 	. "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
+	listmonkclient "gomodules.xyz/listmonk-client-go"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
@@ -52,31 +53,31 @@ type QuoteInfo struct {
 var templateIds = map[string]QuoteInfo{
 	"kubedb-enterprise": {
 		TemplateDocId: "1oD9_jpzRL5djK7i9jQ74PvzFx2xN3O867DrWSiAZrSg",
-		MailingLists:  []string{MailingList_KubeDB, MailingList_Stash},
+		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
 	},
 	"kubedb-payg": {
 		TemplateDocId: "1w0EeXotjL6PWNbFdlGH4cnPb_tckf_uZeWp14UwALRA",
-		MailingLists:  []string{MailingList_KubeDB, MailingList_Stash},
+		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
 	},
 	"kubedb-reseller": {
 		TemplateDocId: "1w46SFq9kA8ciibINOv7a4frzoogt-yQxmFegr9BWMcc",
-		MailingLists:  []string{MailingList_KubeDB, MailingList_Stash},
+		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
 	},
 	"kubedb-unlimited": {
 		TemplateDocId: "13_Z2EGGdS8WASXqjMusojum0Do3U4nXytXxgZmQkxRU",
-		MailingLists:  []string{MailingList_KubeDB, MailingList_Stash},
+		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
 	},
 	"stash-enterprise": {
 		TemplateDocId: "1PDwas0A119L232ZyLi4reg3-sOXVagB5bhIz8acwaKY",
-		MailingLists:  []string{MailingList_Stash},
+		MailingLists:  []string{listmonkclient.MailingList_Stash},
 	},
 	"stash-payg": {
 		TemplateDocId: "1ao-gnhco2KY6ETvgLEZBEjLDtA_O5t7yM-WKiT1--kM",
-		MailingLists:  []string{MailingList_Stash},
+		MailingLists:  []string{listmonkclient.MailingList_Stash},
 	},
 	"stash-unlimited": {
 		TemplateDocId: "1iqaj1GOzo4Bj_kb3y4eondlqD7PfTmVQx4l_ECczILM",
-		MailingLists:  []string{MailingList_Stash},
+		MailingLists:  []string{listmonkclient.MailingList_Stash},
 	},
 }
 
@@ -546,7 +547,11 @@ func (s *Server) processQuotationRequest(gen *QuotationGenerator, sendEmail bool
 		}
 	}
 
-	err = SubscribeToMailingList(gen.Lead.Email, gen.Lead.Name, templateIds[gen.Lead.Product].MailingLists)
+	err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
+		Email:        gen.Lead.Email,
+		Name:         gen.Lead.Name,
+		MailingLists: templateIds[gen.Lead.Product].MailingLists,
+	})
 	if err != nil {
 		return err
 	}

@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/spf13/pflag"
+	listmonkclient "gomodules.xyz/listmonk-client-go"
 )
 
 type Options struct {
@@ -47,6 +48,10 @@ type Options struct {
 	freshsalesHost     string
 	freshsalesAPIToken string
 
+	listmonkHost     string
+	listmonkUsername string
+	listmonkPassword string
+
 	GoogleCredentialDir string
 
 	BlockedDomains []string
@@ -68,6 +73,9 @@ func NewOptions() *Options {
 		MailgunPrivateAPIKey: os.Getenv("MG_API_KEY"),
 		freshsalesHost:       "https://appscode.freshsales.io",
 		freshsalesAPIToken:   os.Getenv("CRM_API_TOKEN"),
+		listmonkHost:         listmonkclient.ListmonkProd,
+		listmonkUsername:     os.Getenv("LISTMONK_USERNAME"),
+		listmonkPassword:     os.Getenv("LISTMONK_PASSWORD"),
 		GoogleCredentialDir:  cwd,
 	}
 }
@@ -91,6 +99,10 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 
 	fs.StringVar(&s.freshsalesHost, "freshsales.host", s.freshsalesHost, "Freshsales host url")
 	fs.StringVar(&s.freshsalesAPIToken, "freshsales.token", s.freshsalesAPIToken, "Freshsales api token")
+
+	fs.StringVar(&s.listmonkHost, "listmonk.host", s.listmonkHost, "Listmonk host url")
+	fs.StringVar(&s.listmonkUsername, "listmonk.username", s.listmonkUsername, "Listmonk username")
+	fs.StringVar(&s.listmonkPassword, "listmonk.password", s.listmonkPassword, "Listmonk password")
 
 	fs.StringVar(&s.GoogleCredentialDir, "google.credential-dir", s.GoogleCredentialDir, "Directory used to store Google credential")
 

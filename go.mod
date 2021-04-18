@@ -33,13 +33,14 @@ require (
 	github.com/yuin/goldmark v1.2.1
 	gocloud.dev v0.20.0
 	golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c
-	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 	gomodules.xyz/blobfs v0.1.7
 	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.4
 	gomodules.xyz/freshsales-client-go v0.0.1
 	gomodules.xyz/gdrive-utils v0.0.0-20210313135106-78213dfc3fc4
 	gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
+	gomodules.xyz/listmonk-client-go v0.0.1
 	gomodules.xyz/password-generator v0.2.6
 	gomodules.xyz/pointer v0.0.0-20201105040656-991dd254b680
 	gomodules.xyz/sets v0.0.0-20210218105342-2efe2fb519a2
@@ -47,7 +48,6 @@ require (
 	google.golang.org/api v0.39.0
 	gopkg.in/macaron.v1 v1.4.0
 	k8s.io/apimachinery v0.18.9
-	moul.io/http2curl v1.0.0
 	sigs.k8s.io/yaml v1.2.0
 )
 

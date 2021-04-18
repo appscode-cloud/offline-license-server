@@ -19,6 +19,7 @@ package server
 import (
 	"time"
 
+	listmonkclient "gomodules.xyz/listmonk-client-go"
 	"gomodules.xyz/sets"
 )
 
@@ -47,15 +48,6 @@ const (
 var knowTestEmails = sets.NewString("1gtm@appscode.com")
 var skipEmailDomains = sets.NewString("appscode.com")
 
-const (
-	MailingListSubscriptionURL = "https://listmonk.appscode.com/subscription/form"
-
-	MailingList_KubeDB    = "a5f00cb2-f398-4408-a13a-28b6db8a32ba"
-	MailingList_Stash     = "3ab3161e-d02c-42cf-ad96-bb406620d693"
-	MailingList_Kubeform  = "cd797afa-04d4-45c8-86e0-642a59b2d7f4"
-	MailingList_KubeVault = "b0a46c28-43c3-4048-8059-c3897474b577"
-)
-
 type PlanInfo struct {
 	Features     []string
 	MailingLists []string
@@ -65,34 +57,34 @@ type PlanInfo struct {
 var supportedProducts = map[string]PlanInfo{
 	"kubedb-community": {
 		Features:     []string{"kubedb-community"},
-		MailingLists: []string{MailingList_KubeDB, MailingList_Stash},
+		MailingLists: []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
 	},
 	"kubedb-enterprise": {
 		Features:     []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash"},
-		MailingLists: []string{MailingList_KubeDB, MailingList_Stash},
+		MailingLists: []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
 	},
 	"stash-community": {
 		Features:     []string{"stash-community"},
-		MailingLists: []string{MailingList_Stash},
+		MailingLists: []string{listmonkclient.MailingList_Stash},
 	},
 	"stash-enterprise": {
 		Features:     []string{"stash-enterprise", "stash-community", "kubedb-ext-stash"},
-		MailingLists: []string{MailingList_Stash},
+		MailingLists: []string{listmonkclient.MailingList_Stash},
 	},
 	"kubevault-community": {
 		Features:     []string{"kubevault-community"},
-		MailingLists: []string{MailingList_KubeVault},
+		MailingLists: []string{listmonkclient.MailingList_KubeVault},
 	},
 	"kubevault-enterprise": {
 		Features:     []string{"kubevault-enterprise", "kubevault-community"},
-		MailingLists: []string{MailingList_KubeVault},
+		MailingLists: []string{listmonkclient.MailingList_KubeVault},
 	},
 	"kubeform-community": {
 		Features:     []string{"kubeform-community"},
-		MailingLists: []string{MailingList_Kubeform},
+		MailingLists: []string{listmonkclient.MailingList_Kubeform},
 	},
 	"kubeform-enterprise": {
 		Features:     []string{"kubeform-enterprise", "kubeform-community"},
-		MailingLists: []string{MailingList_Kubeform},
+		MailingLists: []string{listmonkclient.MailingList_Kubeform},
 	},
 }

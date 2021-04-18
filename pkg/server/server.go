@@ -46,6 +46,7 @@ import (
 	. "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
+	listmonkclient "gomodules.xyz/listmonk-client-go"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
@@ -63,6 +64,7 @@ type Server struct {
 	mg               mailgun.Mailgun
 	sheet            *gdrive.Spreadsheet
 	freshsales       *freshsalesclient.Client
+	listmonk         *listmonkclient.Client
 	geodb            *geoip2.Reader
 	driveClient      *http.Client
 	sheetsService    *sheets.Service
@@ -128,6 +130,7 @@ func New(opts *Options) (*Server, error) {
 		mg:               mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
 		sheet:            sheet,
 		freshsales:       freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
+		listmonk:         listmonkclient.New(opts.listmonkHost, opts.listmonkUsername, opts.listmonkPassword),
 		geodb:            geodb,
 		driveClient:      client,
 		sheetsService:    sheetsService,
@@ -432,7 +435,11 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
-	err = SubscribeToMailingList(info.Email, info.Name, supportedProducts[info.Product].MailingLists)
+	err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
+		Email:        info.Email,
+		Name:         info.Name,
+		MailingLists: supportedProducts[info.Product].MailingLists,
+	})
 	if err != nil {
 		return err
 	}
