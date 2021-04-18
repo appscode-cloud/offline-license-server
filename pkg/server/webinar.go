@@ -33,6 +33,7 @@ import (
 	"github.com/gocarina/gocsv"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
+	listmonkclient "gomodules.xyz/listmonk-client-go"
 	"gomodules.xyz/sets"
 	"gopkg.in/macaron.v1"
 )
@@ -281,6 +282,29 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, date string, form Webi
 		}
 		if result == nil {
 			return fmt.Errorf("can't find webinar schedule")
+		}
+
+		{
+			// record in listmonk
+			ml, err := s.listmonk.CreateListIfMissing(listmonkclient.MailingListRequest{
+				Name:  fmt.Sprintf("webinar-%s", date),
+				Type:  listmonkclient.ListTypePrivate,
+				Optin: listmonkclient.OptinModeSingle,
+				Tags: []string{
+					"webinar",
+				},
+			})
+			if err != nil {
+				return err
+			}
+			err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
+				Email:        form.WorkEmail,
+				Name:         form.FirstName + " " + form.LastName,
+				MailingLists: []string{ml.UUID},
+			})
+			if err != nil {
+				return err
+			}
 		}
 
 		{
