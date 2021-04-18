@@ -29,7 +29,7 @@ import (
 	"google.golang.org/api/calendar/v3"
 )
 
-func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomEmail string, schedule *WebinarSchedule, duration time.Duration, attendees []string) (*WebinarMeetingID, error) {
+func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomEmail string, schedule *WebinarSchedule, sch time.Time, duration time.Duration, attendees []string) (*WebinarMeetingID, error) {
 	user, err := zc.GetUser(zoom.GetUserOpts{EmailOrID: zoomEmail})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get zoom user: %v", err)
@@ -40,10 +40,10 @@ func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomE
 		Topic:  schedule.Title,
 		Type:   zoom.MeetingTypeScheduled,
 		StartTime: &zoom.Time{
-			Time: schedule.Schedule.Time,
+			Time: sch,
 		},
 		Duration:       25,
-		Timezone:       schedule.Schedule.Location().String(),
+		Timezone:       sch.Location().String(),
 		Password:       passgen.GenerateForCharset(10, passgen.AlphaNum),
 		Agenda:         html2text.HTML2Text(schedule.Summary),
 		TrackingFields: nil,
@@ -86,12 +86,12 @@ func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomE
 		Summary:     "AppsCode Webinar: " + schedule.Title,
 		Description: html2text.HTML2Text(schedule.Summary),
 		Start: &calendar.EventDateTime{
-			DateTime: schedule.Schedule.UTC().Format(time.RFC3339),
-			TimeZone: schedule.Schedule.Location().String(),
+			DateTime: sch.UTC().Format(time.RFC3339),
+			TimeZone: sch.Location().String(),
 		},
 		End: &calendar.EventDateTime{
-			DateTime: schedule.Schedule.Add(duration).Format(time.RFC3339),
-			TimeZone: schedule.Schedule.Location().String(),
+			DateTime: sch.Add(duration).Format(time.RFC3339),
+			TimeZone: sch.Location().String(),
 		},
 		GuestsCanInviteOthers:   pointer.TrueP(),
 		GuestsCanModify:         false,
