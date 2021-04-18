@@ -60,7 +60,7 @@ type WebinarInfo struct {
 }
 
 type WebinarRegistrationForm struct {
-	Schedule time.Time `json:"schedule" csv:"-" form:"schedule"`
+	Schedule string `json:"schedule" csv:"-" form:"schedule"`
 
 	FirstName string `json:"first_name" csv:"First Name" form:"first_name"`
 	LastName  string `json:"last_name" csv:"Last Name" form:"last_name"`
@@ -284,12 +284,16 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 }
 
 func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) error {
-	sheetName := form.Schedule.Format("2006-1-2")
+	schedule, err := time.Parse(time.RFC3339, form.Schedule)
+	if err != nil {
+		return err
+	}
+	sheetName := schedule.Format("2006-1-2")
 	clients := []*WebinarRegistrationForm{
 		&form,
 	}
 	writer := gdrive.NewWriter(s.sheetsService, WebinarSpreadsheetId, sheetName)
-	err := gocsv.MarshalCSV(clients, writer)
+	err = gocsv.MarshalCSV(clients, writer)
 	if err != nil {
 		return err
 	}
@@ -303,7 +307,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 	// nolint:errcheck
 	go func() {
 		err := func() error {
-			yw, mw, dw := form.Schedule.Date()
+			yw, mw, dw := schedule.Date()
 
 			reader, err := gdrive.NewRowReader(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
 				Header: "Schedules",
@@ -390,7 +394,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 					},
 					Webinar: WebinarRecord{
 						Title:           result.Title,
-						Schedule:        DateTime{form.Schedule},
+						Schedule:        DateTime{schedule},
 						Speaker:         result.Speaker,
 						ClusterProvider: form.ClusterProvider,
 						ExperienceLevel: form.ExperienceLevel,
@@ -434,7 +438,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 				},
 			})
 
-			meetinginfo, err := CreateZoomMeeting(s.calendarService, s.zc, WebinarCalendarId, s.zoomAccountEmail, &result.WebinarSchedule, form.Schedule, 60*time.Minute, []string{
+			meetinginfo, err := CreateZoomMeeting(s.calendarService, s.zc, WebinarCalendarId, s.zoomAccountEmail, &result.WebinarSchedule, schedule, 60*time.Minute, []string{
 				form.WorkEmail,
 			})
 			if err != nil {
