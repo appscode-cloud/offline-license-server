@@ -10,6 +10,7 @@ const (
 	MailingList_Stash     = "3ab3161e-d02c-42cf-ad96-bb406620d693"
 	MailingList_Kubeform  = "cd797afa-04d4-45c8-86e0-642a59b2d7f4"
 	MailingList_KubeVault = "b0a46c28-43c3-4048-8059-c3897474b577"
+	MailingList_Voyager   = "6c6d1338-bb38-40f6-bab4-ff09c2f6e184"
 )
 
 type ListType string

@@ -285,7 +285,7 @@ gomodules.xyz/gdrive-utils
 # gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
 ## explicit
 gomodules.xyz/homedir
-# gomodules.xyz/listmonk-client-go v0.0.1
+# gomodules.xyz/listmonk-client-go v0.0.2
 ## explicit
 gomodules.xyz/listmonk-client-go
 # gomodules.xyz/password-generator v0.2.6

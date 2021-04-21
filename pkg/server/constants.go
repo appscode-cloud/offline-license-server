@@ -87,4 +87,12 @@ var supportedProducts = map[string]PlanInfo{
 		Features:     []string{"kubeform-enterprise", "kubeform-community"},
 		MailingLists: []string{listmonkclient.MailingList_Kubeform},
 	},
+	"voyager-community": {
+		Features:     []string{"voyager-community"},
+		MailingLists: []string{listmonkclient.MailingList_Voyager},
+	},
+	"voyager-enterprise": {
+		Features:     []string{"voyager-enterprise", "voyager-community"},
+		MailingLists: []string{listmonkclient.MailingList_Voyager},
+	},
 }
