@@ -95,4 +95,12 @@ var supportedProducts = map[string]PlanInfo{
 		Features:     []string{"voyager-enterprise", "voyager-community"},
 		MailingLists: []string{listmonkclient.MailingList_Voyager},
 	},
+	"console-community": {
+		Features:     []string{"console-community"},
+		MailingLists: []string{listmonkclient.MailingList_Console},
+	},
+	"console-enterprise": {
+		Features:     []string{"console-enterprise", "console-community"},
+		MailingLists: []string{listmonkclient.MailingList_Console},
+	},
 }
