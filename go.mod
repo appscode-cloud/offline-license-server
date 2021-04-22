@@ -40,7 +40,7 @@ require (
 	gomodules.xyz/freshsales-client-go v0.0.1
 	gomodules.xyz/gdrive-utils v0.0.0-20210313135106-78213dfc3fc4
 	gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
-	gomodules.xyz/listmonk-client-go v0.0.2
+	gomodules.xyz/listmonk-client-go v0.0.3
 	gomodules.xyz/password-generator v0.2.6
 	gomodules.xyz/pointer v0.0.0-20201105040656-991dd254b680
 	gomodules.xyz/sets v0.0.0-20210218105342-2efe2fb519a2
