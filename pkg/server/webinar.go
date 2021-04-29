@@ -403,7 +403,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 				})
 			}
 
-			if result.GoogleCalendarEventID != "" {
+			if strings.TrimSpace(result.GoogleCalendarEventID) != "" {
 				wats, err := gdrive.NewColumnReader(s.sheetsService, WebinarSpreadsheetId, sheetName, "Work Email")
 				if err != nil {
 					return err
