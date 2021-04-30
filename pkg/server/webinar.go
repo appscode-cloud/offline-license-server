@@ -170,7 +170,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 				return
 			}
 			out = schedule
-			_ = c.Put(key, out, 30)
+			_ = c.Put(key, out, 60) // cache for 60 seconds
 		} else {
 			log.Println(key, "found")
 		}
