@@ -225,7 +225,7 @@ func (s *Server) Run() error {
 		// ctx.Write([]byte("Your license has been emailed!"))
 	})
 
-	m.Get("/_/pricing/", auth.Basic(os.Getenv("APPSCODE_PRICING_USERNAME"), os.Getenv("APPSCODE_PRICING_PASSWORD")), func(ctx *macaron.Context) {
+	m.Get("/_/pricing/", auth.Basic(os.Getenv("APPSCODE_SALES_USERNAME"), os.Getenv("APPSCODE_SALES_PASSWORD")), func(ctx *macaron.Context) {
 		product := ctx.Query("p")
 		if product != "" && product != "kubedb-payg" && product != "stash-payg" {
 			ctx.Error(http.StatusBadRequest, fmt.Sprintf("unknown product: %s", product))
