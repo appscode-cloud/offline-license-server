@@ -12,104 +12,108 @@
   <body>
     <section class="section">
       <div class="container">
-        <h1 class="title">AppsCode Product Pricing List</h1>
-        <form action="" method="post">
-          <div class="field">
-            <label class="label">Name</label>
-            <div class="control">
-              <input
-                name="name"
-                class="input"
-                type="text"
-                placeholder=""
-              />
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label">Work Email</label>
-            <div class="control">
-              <input
-                name="email"
-                class="input"
-                type="email"
-                placeholder=""
-                value=""
-              />
-            </div>
-            <!-- <p class="help is-danger">This email is invalid</p> -->
-          </div>
-
-          <div class="field">
-            <label class="label">CC</label>
-            <div class="control">
-              <input name="cc" class="input" type="text" placeholder="" />
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label">Job title</label>
-            <div class="control">
-              <input name="title" class="input" type="text" placeholder="" />
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label">Phone</label>
-            <div class="control">
-              <input name="telephone" class="input" type="text" placeholder="" />
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label">Company name</label>
-            <div class="control">
-              <input
-                name="company"
-                class="input"
-                type="text"
-                placeholder=""
-              />
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label">Product</label>
-            <div class="control">
-              <div class="select is-multiple">
-                <select id="product" name="product" multiple size="7">
-                  <option value="kubedb-enterprise" {{ if eq .Product "kubedb-enterprise" }}selected{{ end }}>KubeDB Enterprise (Annual)</option>
-                  <option value="kubedb-payg" {{ if eq .Product "kubedb-payg" }}selected{{ end }}>KubeDB Pay-As-You-Go (PAYG)</option>
-                  <option value="kubedb-reseller" {{ if eq .Product "kubedb-reseller" }}selected{{ end }}>KubeDB Reseller</option>
-                  <option value="kubedb-unlimited" {{ if eq .Product "kubedb-unlimited" }}selected{{ end }}>KubeDB Unlimited (Annual)</option>
-                  <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>Stash Enterprise (Annual)</option>
-                  <option value="stash-payg" {{ if eq .Product "stash-payg" }}selected{{ end }}>Stash Pay-As-You-Go (PAYG)</option>
-                  <option value="stash-unlimited" {{ if eq .Product "stash-unlimited" }}selected{{ end }}>Stash Unlimited (Annual)</option>
-                </select>
+        <div class="columns is-mobile is-centered">
+          <div class="column is-half">
+            <h1 class="title">AppsCode Product Pricing List</h1>
+            <form action="" method="post">
+              <div class="field">
+                <label class="label">Name</label>
+                <div class="control">
+                  <input
+                    name="name"
+                    class="input"
+                    type="text"
+                    placeholder=""
+                  />
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div class="field">
-            <div class="control">
-              <label class="checkbox">
-                <input name="tos" type="checkbox" value="true"/>
-                I agree to the
-                <a href="https://appscode.com/legal/tos/"
-                  >terms and conditions</a
-                >
-              </label>
-            </div>
+              <div class="field">
+                <label class="label">Work Email</label>
+                <div class="control">
+                  <input
+                    name="email"
+                    class="input"
+                    type="email"
+                    placeholder=""
+                    value=""
+                  />
+                </div>
+                <!-- <p class="help is-danger">This email is invalid</p> -->
+              </div>
+
+              <div class="field">
+                <label class="label">CC</label>
+                <div class="control">
+                  <input name="cc" class="input" type="text" placeholder="" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Job title</label>
+                <div class="control">
+                  <input name="title" class="input" type="text" placeholder="" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Phone</label>
+                <div class="control">
+                  <input name="telephone" class="input" type="text" placeholder="" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Company name</label>
+                <div class="control">
+                  <input
+                    name="company"
+                    class="input"
+                    type="text"
+                    placeholder=""
+                  />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Product</label>
+                <div class="control">
+                  <div class="select is-multiple">
+                    <select id="product" name="product" multiple size="7">
+                      <option value="kubedb-enterprise" {{ if eq .Product "kubedb-enterprise" }}selected{{ end }}>KubeDB Enterprise (Annual)</option>
+                      <option value="kubedb-payg" {{ if eq .Product "kubedb-payg" }}selected{{ end }}>KubeDB Pay-As-You-Go (PAYG)</option>
+                      <option value="kubedb-reseller" {{ if eq .Product "kubedb-reseller" }}selected{{ end }}>KubeDB Reseller</option>
+                      <option value="kubedb-unlimited" {{ if eq .Product "kubedb-unlimited" }}selected{{ end }}>KubeDB Unlimited (Annual)</option>
+                      <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>Stash Enterprise (Annual)</option>
+                      <option value="stash-payg" {{ if eq .Product "stash-payg" }}selected{{ end }}>Stash Pay-As-You-Go (PAYG)</option>
+                      <option value="stash-unlimited" {{ if eq .Product "stash-unlimited" }}selected{{ end }}>Stash Unlimited (Annual)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="control">
+                  <label class="checkbox">
+                    <input name="tos" type="checkbox" value="true"/>
+                    I agree to the
+                    <a href="https://appscode.com/legal/tos/"
+                      >terms and conditions</a
+                    >
+                  </label>
+                </div>
+              </div>
+              <div class="field is-grouped">
+                <div class="control">
+                  <button class="button is-link" value="generate" onclick='this.form.action="/_/pricing"'>Generate Quotation</button>
+                </div>
+                <div class="control">
+                  <button class="button is-danger" value="email" onclick='this.form.action="/_/pricing?send_email=true"'>Email Quotation</button>
+                </div>
+              </div>
+            </form>
           </div>
-          <div class="field is-grouped">
-            <div class="control">
-              <button class="button is-link" value="generate" onclick='this.form.action="/_/pricing"'>Generate Quotation</button>
-            </div>
-            <div class="control">
-              <button class="button is-danger" value="email" onclick='this.form.action="/_/pricing?send_email=true"'>Email Quotation</button>
-            </div>
-          </div>
-        </form>
+        </div>
       </div>
     </section>
   </body>

@@ -200,7 +200,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 }
 
 func (s *Server) ListWebinarAttendees(date string) ([]string, error) {
-	reader, err := gdrive.NewColumnReader(s.sheetsService, WebinarSpreadsheetId, date, "Work Email")
+	reader, err := gdrive.NewColumnReader(s.srvSheets, WebinarSpreadsheetId, date, "Work Email")
 	if err == io.EOF {
 		return nil, nil
 	} else if err != nil {
@@ -222,7 +222,7 @@ func (s *Server) ListWebinarAttendees(date string) ([]string, error) {
 func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 	now := time.Now()
 
-	reader, err := gdrive.NewRowReader(s.sheetsService, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Filter{
+	reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Filter{
 		Header: "Schedules",
 		By: func(column []interface{}) (int, error) {
 			type TP struct {
@@ -292,7 +292,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 	clients := []*WebinarRegistrationForm{
 		&form,
 	}
-	writer := gdrive.NewWriter(s.sheetsService, WebinarSpreadsheetId, sheetName)
+	writer := gdrive.NewWriter(s.srvSheets, WebinarSpreadsheetId, sheetName)
 	err = gocsv.MarshalCSV(clients, writer)
 	if err != nil {
 		return err
@@ -309,7 +309,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 		err := func() error {
 			yw, mw, dw := schedule.Date()
 
-			reader, err := gdrive.NewRowReader(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
+			reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
 				Header: "Schedules",
 				By: func(values []interface{}) (int, error) {
 					for i, v := range values {
@@ -404,7 +404,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 			}
 
 			if strings.TrimSpace(result.GoogleCalendarEventID) != "" {
-				wats, err := gdrive.NewColumnReader(s.sheetsService, WebinarSpreadsheetId, sheetName, "Work Email")
+				wats, err := gdrive.NewColumnReader(s.srvSheets, WebinarSpreadsheetId, sheetName, "Work Email")
 				if err != nil {
 					return err
 				}
@@ -417,10 +417,10 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 				for i, a := range atts {
 					emails[i] = a.WorkEmail
 				}
-				return AddEventAttendants(s.calendarService, WebinarCalendarId, result.GoogleCalendarEventID, emails)
+				return AddEventAttendants(s.srvCalendar, WebinarCalendarId, result.GoogleCalendarEventID, emails)
 			}
 
-			ww := gdrive.NewRowWriter(s.sheetsService, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
+			ww := gdrive.NewRowWriter(s.srvSheets, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
 				Header: "Schedules",
 				By: func(values []interface{}) (int, error) {
 					for i, v := range values {
@@ -441,7 +441,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 				},
 			})
 
-			meetinginfo, err := CreateZoomMeeting(s.calendarService, s.zc, WebinarCalendarId, s.zoomAccountEmail, &result.WebinarSchedule, schedule, 60*time.Minute, []string{
+			meetinginfo, err := CreateZoomMeeting(s.srvCalendar, s.zc, WebinarCalendarId, s.zoomAccountEmail, &result.WebinarSchedule, schedule, 60*time.Minute, []string{
 				form.WorkEmail,
 			})
 			if err != nil {

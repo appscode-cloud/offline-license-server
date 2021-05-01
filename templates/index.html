@@ -12,105 +12,109 @@
   <body>
     <section class="section">
       <div class="container">
-        <h1 class="title">AppsCode License Server</h1>
-        <form action="/issue-license" method="post">
-          <div class="field">
-            <label class="label">Name</label>
-            <div class="control">
-              <input name="name" class="input" type="text" placeholder="" />
-            </div>
-          </div>
-          <div class="field">
-            <label class="label">Work Email</label>
-            <div class="control">
-              <input
-                name="email"
-                class="input"
-                type="email"
-                placeholder=""
-                value=""
-              />
-            </div>
-            <!-- <p class="help is-danger">This email is invalid</p> -->
-          </div>
-          <div class="field">
-            <label class="label">Product</label>
-            <div class="control">
-              <div class="select">
-                <select id="product" name="product">
-                  <option value="stash-enterprise">
-                    Stash Enterprise Edition
-                  </option>
-                  <option value="stash-community">
-                    Stash Community Edition
-                  </option>
-                  <option value="kubedb-enterprise">
-                    KubeDB Enterprise Edition
-                  </option>
-                  <option value="kubedb-community">
-                    KubeDB Community Edition
-                  </option>
-                  <option value="kubevault-enterprise">
-                    KubeVault Enterprise Edition
-                  </option>
-                  <option value="kubevault-community">
-                    KubeVault Community Edition
-                  </option>
-                  <option value="kubeform-enterprise">
-                    Kubeform Enterprise Edition
-                  </option>
-                  <option value="kubeform-community">
-                    Kubeform Community Edition
-                  </option>
-                  <!--
-                  <option value="voyager-enterprise">
-                    Voyager Enterprise Edition
-                  </option>
-                  -->
-                  <option value="voyager-community">
-                    Voyager Community Edition
-                  </option>
-                  <option value="console-enterprise">
-                    Console Enterprise Edition
-                  </option>
-                  <!--
-                  <option value="console-community">
-                    Console Community Edition
-                  </option>
-                  -->
-                </select>
+        <div class="columns is-mobile is-centered">
+          <div class="column is-half">
+            <h1 class="title">AppsCode License Server</h1>
+            <form action="/issue-license" method="post">
+              <div class="field">
+                <label class="label">Name</label>
+                <div class="control">
+                  <input name="name" class="input" type="text" placeholder="" />
+                </div>
               </div>
-            </div>
+              <div class="field">
+                <label class="label">Work Email</label>
+                <div class="control">
+                  <input
+                    name="email"
+                    class="input"
+                    type="email"
+                    placeholder=""
+                    value=""
+                  />
+                </div>
+                <!-- <p class="help is-danger">This email is invalid</p> -->
+              </div>
+              <div class="field">
+                <label class="label">Product</label>
+                <div class="control">
+                  <div class="select">
+                    <select id="product" name="product">
+                      <option value="stash-enterprise">
+                        Stash Enterprise Edition
+                      </option>
+                      <option value="stash-community">
+                        Stash Community Edition
+                      </option>
+                      <option value="kubedb-enterprise">
+                        KubeDB Enterprise Edition
+                      </option>
+                      <option value="kubedb-community">
+                        KubeDB Community Edition
+                      </option>
+                      <option value="kubevault-enterprise">
+                        KubeVault Enterprise Edition
+                      </option>
+                      <option value="kubevault-community">
+                        KubeVault Community Edition
+                      </option>
+                      <option value="kubeform-enterprise">
+                        Kubeform Enterprise Edition
+                      </option>
+                      <option value="kubeform-community">
+                        Kubeform Community Edition
+                      </option>
+                      <!--
+                      <option value="voyager-enterprise">
+                        Voyager Enterprise Edition
+                      </option>
+                      -->
+                      <option value="voyager-community">
+                        Voyager Community Edition
+                      </option>
+                      <option value="console-enterprise">
+                        Console Enterprise Edition
+                      </option>
+                      <!--
+                      <option value="console-community">
+                        Console Community Edition
+                      </option>
+                      -->
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Kubernetes Cluster ID</label>
+                <div class="control">
+                  <input name="cluster" class="input" type="text" placeholder="" />
+                </div>
+                <p class="help is-info">
+                  Run command:
+                  <code
+                    >kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'</code
+                  >
+                </p>
+              </div>
+              <div class="field">
+                <div class="control">
+                  <label class="checkbox">
+                    <input name="tos" type="checkbox" value="true" />
+                    I agree to the
+                    <a href="https://appscode.com/legal/tos/"
+                      >terms and conditions</a
+                    >
+                  </label>
+                </div>
+              </div>
+              <div class="field is-grouped">
+                <div class="control">
+                  <button class="button is-link">Submit</button>
+                </div>
+              </div>
+            </form>
           </div>
-          <div class="field">
-            <label class="label">Kubernetes Cluster ID</label>
-            <div class="control">
-              <input name="cluster" class="input" type="text" placeholder="" />
-            </div>
-            <p class="help is-info">
-              Run command:
-              <code
-                >kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'</code
-              >
-            </p>
-          </div>
-          <div class="field">
-            <div class="control">
-              <label class="checkbox">
-                <input name="tos" type="checkbox" value="true" />
-                I agree to the
-                <a href="https://appscode.com/legal/tos/"
-                  >terms and conditions</a
-                >
-              </label>
-            </div>
-          </div>
-          <div class="field is-grouped">
-            <div class="control">
-              <button class="button is-link">Submit</button>
-            </div>
-          </div>
-        </form>
+        </div>
       </div>
     </section>
   </body>
