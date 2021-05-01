@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AppsCode Offer Letter Generator</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css"
+    />
+    <link href="~bulma-calendar/dist/css/bulma-calendar.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <section class="section">
+      <div class="container">
+        <div class="columns is-mobile is-centered">
+          <div class="column is-half">
+            <h1 class="title">AppsCode Offer Letter Generator</h1>
+            <form action="" method="post">
+              <div class="field">
+                <label class="label">Name</label>
+                <div class="control">
+                  <input
+                    name="name"
+                    class="input"
+                    type="text"
+                    placeholder=""
+                  />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Email</label>
+                <div class="control">
+                  <input
+                    name="email"
+                    class="input"
+                    type="email"
+                    placeholder=""
+                    value=""
+                  />
+                </div>
+                <!-- <p class="help is-danger">This email is invalid</p> -->
+              </div>
+
+              <div class="field">
+                <label class="label">Telephone</label>
+                <div class="control">
+                  <input name="tel" class="input" type="text" placeholder="" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Address</label>
+                <div class="control">
+                  <input name="address-line-1" class="input" type="text" placeholder="Street Address" />
+                </div>
+              </div>
+
+
+              <div class="field">
+                <label class="label">Address (line 2)</label>
+                <div class="control">
+                  <input name="address-line-2" class="input" type="text" placeholder="Town" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Address (line 3)</label>
+                <div class="control">
+                  <input name="address-line-3" class="input" type="text" placeholder="City, Zip Code" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Job Title</label>
+                <div class="control">
+                  <input
+                    name="title"
+                    class="input"
+                    type="text"
+                    placeholder="Software Engineer"
+                  />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Salary</label>
+                <div class="control">
+                  <input name="salary" class="input" type="number" placeholder="50000" min="1" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Job Start Date</label>
+                <div class="control">
+                  <input name="start-date" class="input" type="date" placeholder="" />
+                </div>
+              </div>
+
+              <!--
+              <div class="field">
+                <label class="label">Job Offer Valid From</label>
+                <div class="control">
+                  <input name="offer-start-date" class="input" type="date" placeholder="" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label">Job offer Valid To</label>
+                <div class="control">
+                  <input name="offer-end-date" class="input" type="date" placeholder="" />
+                </div>
+              </div>
+              -->
+
+              <div class="field is-grouped">
+                <div class="control">
+                  <button class="button is-link" value="submit">Generate Offer Letter</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="~bulma-calendar/dist/js/bulma-calendar.min.js"></script>
+    <!--Start of bulma-calendar Script-->
+    <script type="text/javascript">
+      (function () {
+        bulmaCalendar.attach('[type="date"]', options);
+      })();
+    </script>
+    <!--End of bulma-calendar Script-->
+  </body>
+</html>

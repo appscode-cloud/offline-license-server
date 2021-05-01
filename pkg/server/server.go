@@ -48,6 +48,8 @@ import (
 	gdrive "gomodules.xyz/gdrive-utils"
 	listmonkclient "gomodules.xyz/listmonk-client-go"
 	"google.golang.org/api/calendar/v3"
+	"google.golang.org/api/docs/v1"
+	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 	"gopkg.in/macaron.v1"
@@ -59,16 +61,20 @@ import (
 type Server struct {
 	opts *Options
 
-	certs            *certstore.CertStore
-	fs               *blobfs.BlobFS
-	mg               mailgun.Mailgun
-	sheet            *gdrive.Spreadsheet
-	freshsales       *freshsalesclient.Client
-	listmonk         *listmonkclient.Client
-	geodb            *geoip2.Reader
-	driveClient      *http.Client
-	sheetsService    *sheets.Service
-	calendarService  *calendar.Service
+	certs      *certstore.CertStore
+	fs         *blobfs.BlobFS
+	mg         mailgun.Mailgun
+	freshsales *freshsalesclient.Client
+	listmonk   *listmonkclient.Client
+	geodb      *geoip2.Reader
+
+	driveClient *http.Client
+	srvDrive    *drive.Service
+	srvDoc      *docs.Service
+	srvSheets   *sheets.Service
+	sheet       *gdrive.Spreadsheet
+	srvCalendar *calendar.Service
+
 	zc               *zoom.Client
 	zoomAccountEmail string
 
@@ -111,11 +117,19 @@ func New(opts *Options) (*Server, error) {
 		}
 	}
 
+	srvDrive, err := drive.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Drive client: %v", err)
+	}
+
+	srvDoc, err := docs.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Docs client: %v", err)
+	}
+
 	sheetsService, err := sheets.NewService(context.TODO(), option.WithHTTPClient(client))
 	if err != nil {
-		if err != nil {
-			return nil, fmt.Errorf("unable to retrieve Sheets client: %v", err)
-		}
+		return nil, fmt.Errorf("unable to retrieve Sheets client: %v", err)
 	}
 
 	srvCalendar, err := calendar.NewService(context.TODO(), option.WithHTTPClient(client))
@@ -133,8 +147,10 @@ func New(opts *Options) (*Server, error) {
 		listmonk:         listmonkclient.New(opts.listmonkHost, opts.listmonkUsername, opts.listmonkPassword),
 		geodb:            geodb,
 		driveClient:      client,
-		sheetsService:    sheetsService,
-		calendarService:  srvCalendar,
+		srvDrive:         srvDrive,
+		srvDoc:           srvDoc,
+		srvSheets:        sheetsService,
+		srvCalendar:      srvCalendar,
 		zc:               zoom.NewClient(os.Getenv("ZOOM_API_KEY"), os.Getenv("ZOOM_API_SECRET")),
 		zoomAccountEmail: os.Getenv("ZOOM_ACCOUNT_EMAIL"),
 		blockedDomains:   sets.NewString(opts.BlockedDomains...),
@@ -232,8 +248,29 @@ func (s *Server) Run() error {
 			return
 		}
 	})
-	s.RegisterWebinarAPI(m)
 
+	// auth.Basic(os.Getenv("APPSCODE_HR_USERNAME"), os.Getenv("APPSCODE_HR_PASSWORD")),
+	m.Get("/_/offerletter/", func(ctx *macaron.Context) {
+		ctx.HTML(200, "offerletter") // 200 is the response code.
+	})
+	m.Post("/_/offerletter/", binding.Bind(CandidateInfo{}), func(ctx *macaron.Context, form CandidateInfo) {
+		form.Complete()
+		if err := form.Validate(); err != nil {
+			ctx.WriteHeader(http.StatusBadRequest)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+
+		folderId, err := s.GenerateOfferLetter(&form)
+		if err != nil {
+			ctx.WriteHeader(http.StatusInternalServerError)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+		ctx.Redirect(fmt.Sprintf("https://drive.google.com/drive/folders/%s", folderId))
+	})
+
+	s.RegisterWebinarAPI(m)
 	m.Post("/_/webhooks/mailgun/", s.HandleMailgunWebhook)
 
 	if !s.opts.EnableSSL {
