@@ -101,8 +101,6 @@ chmod +x offline-license-server.service
 #    - set MG_API_KEY
 #    - set APPSCODE_SALES_USERNAME
 #    - set APPSCODE_SALES_PASSWORD
-#    - set APPSCODE_HR_USERNAME
-#    - set APPSCODE_HR_PASSWORD
 #    - add `--ssl`
 #    - add --spreadsheet-id=1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA --geo-city-database-file=/root/maxmind/GeoLite2-City.mmdb
 
