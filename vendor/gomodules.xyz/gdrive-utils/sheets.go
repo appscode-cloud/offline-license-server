@@ -144,7 +144,7 @@ func (si *Spreadsheet) getSheetId(name string) (int64, error) {
 	if err != nil {
 		return -1, fmt.Errorf("unable to retrieve data from sheet: %v", err)
 	}
-	var id int64
+	var id int64 = -1
 	for _, sheet := range resp.Sheets {
 		if sheet.Properties.Title == name {
 			id = sheet.Properties.SheetId
@@ -179,9 +179,9 @@ func (si *Spreadsheet) addNewSheet(name string) error {
 func (si *Spreadsheet) EnsureSheet(name string, headers []string) (int64, error) {
 	sheetId, err := si.getSheetId(name)
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
-	if sheetId != 0 {
+	if sheetId >= 0 {
 		return sheetId, nil
 	}
 
@@ -194,12 +194,12 @@ func (si *Spreadsheet) EnsureSheet(name string, headers []string) (int64, error)
 
 	sheetId, err = si.getSheetId(name)
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 
 	err = si.ensureHeader(sheetId, headers)
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 
 	return sheetId, nil

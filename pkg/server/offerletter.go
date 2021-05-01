@@ -33,9 +33,8 @@ import (
 
 const (
 	offerLetterSpreadsheetId = "1fZ3KEebljFOPUW01Yf-I-_idsWz6OZ1RPlZzudgL1GE"
-	offerLetterFolderId      = "1NeEserE_VNUJIhwbDi575CauWXvxuRXr"
-	// offerLetterFolderId      = "1NuIlHI-IwtjJREkFhMeT9lAtOLCl7NKa"
-	MailHR = "hr.bd@appscode.com"
+	offerLetterFolderId      = "1NuIlHI-IwtjJREkFhMeT9lAtOLCl7NKa"
+	MailHR                   = "hr.bd@appscode.com"
 )
 
 var offerLetterTemplateDocIds = map[string]string{
@@ -168,8 +167,7 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 			return
 		}
 
-		// mail hr.bd@appscode.com
-
+		// mail HR
 		mailer := NewOfferLetterMailer(info, candidateFolderId)
 		fmt.Println("sending email for generated offer letter", info.Email)
 		mg, err := mailgun.NewMailgunFromEnv()
@@ -177,7 +175,7 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 			log.Warningln(err)
 			return
 		}
-		err = mailer.SendMail(mg, "tamal@appscode.com", "", nil)
+		err = mailer.SendMail(mg, MailHR, "", nil)
 		if err != nil {
 			log.Warningln(err)
 			return

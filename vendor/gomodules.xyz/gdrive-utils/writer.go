@@ -259,7 +259,7 @@ func (w *SheetWriter) getSheetId(name string) (int64, error) {
 	if err != nil {
 		return -1, fmt.Errorf("unable to retrieve data from sheet: %v", err)
 	}
-	var id int64
+	var id int64 = -1
 	for _, sheet := range resp.Sheets {
 		if sheet.Properties.Title == name {
 			id = sheet.Properties.SheetId
@@ -296,7 +296,7 @@ func (w *SheetWriter) ensureSheet(name string) error {
 	if err != nil {
 		return err
 	}
-	if sheetId != 0 {
+	if sheetId >= 0 {
 		return nil
 	}
 	return w.addNewSheet(name)

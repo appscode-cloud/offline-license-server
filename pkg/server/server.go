@@ -249,8 +249,7 @@ func (s *Server) Run() error {
 		}
 	})
 
-	// auth.Basic(os.Getenv("APPSCODE_HR_USERNAME"), os.Getenv("APPSCODE_HR_PASSWORD")),
-	m.Get("/_/offerletter/", func(ctx *macaron.Context) {
+	m.Get("/_/offerletter/", auth.Basic(os.Getenv("APPSCODE_HR_USERNAME"), os.Getenv("APPSCODE_HR_PASSWORD")), func(ctx *macaron.Context) {
 		ctx.HTML(200, "offerletter") // 200 is the response code.
 	})
 	m.Post("/_/offerletter/", binding.Bind(CandidateInfo{}), func(ctx *macaron.Context, form CandidateInfo) {

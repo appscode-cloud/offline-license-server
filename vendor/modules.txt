@@ -292,7 +292,7 @@ gomodules.xyz/email-providers
 # gomodules.xyz/freshsales-client-go v0.0.1
 ## explicit
 gomodules.xyz/freshsales-client-go
-# gomodules.xyz/gdrive-utils v0.0.0-20210313135106-78213dfc3fc4
+# gomodules.xyz/gdrive-utils v0.0.0-20210501111906-9a849ceff5b3
 ## explicit
 gomodules.xyz/gdrive-utils
 # gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
