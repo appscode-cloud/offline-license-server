@@ -129,7 +129,10 @@
     <!--Start of bulma-calendar Script-->
     <script type="text/javascript">
       (function () {
-        bulmaCalendar.attach('[type="date"]', options);
+        bulmaCalendar.attach('[type="date"]', {
+          type: "date",
+          dateFormat: "MMM D, YYYY"
+        });
       })();
     </script>
     <!--End of bulma-calendar Script-->

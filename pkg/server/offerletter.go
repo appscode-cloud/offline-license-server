@@ -47,14 +47,17 @@ var offerLetterTemplateDocIds = map[string]string{
 var numfmt = message.NewPrinter(language.AmericanEnglish)
 
 type CandidateInfo struct {
-	Email          string    `form:"email" binding:"Required;Email" csv:"email"`
-	Name           string    `form:"name" binding:"Required" csv:"name"`
-	Tel            string    `form:"tel" binding:"Required" csv:"tel"`
-	AddressLine1   string    `form:"address-line-1" binding:"Required" csv:"address-line-1"`
-	AddressLine2   string    `form:"address-line-2" binding:"Required" csv:"address-line-2"`
-	AddressLine3   string    `form:"address-line-3" binding:"Required" csv:"address-line-3"`
-	Title          string    `form:"title" binding:"Required" csv:"title"`
-	Salary         int       `form:"salary" binding:"Required" csv:"salary"`
+	Email        string `form:"email" binding:"Required;Email" csv:"email"`
+	Name         string `form:"name" binding:"Required" csv:"name"`
+	Tel          string `form:"tel" binding:"Required" csv:"tel"`
+	AddressLine1 string `form:"address-line-1" binding:"Required" csv:"address-line-1"`
+	AddressLine2 string `form:"address-line-2" binding:"Required" csv:"address-line-2"`
+	AddressLine3 string `form:"address-line-3" binding:"Required" csv:"address-line-3"`
+	Title        string `form:"title" binding:"Required" csv:"title"`
+	Salary       int    `form:"salary" binding:"Required" csv:"salary"`
+
+	// https://bulma-calendar.onrender.com/#content
+	// format: MM/DD/YYYY 01/02/2006
 	StartDate      OfferDate `form:"start-date" binding:"Required" csv:"start-date"`
 	OfferStartDate OfferDate `form:"-" csv:"offer-start-date"`
 	OfferEndDate   OfferDate `form:"-" csv:"offer-end-date"`
@@ -70,39 +73,31 @@ func (form CandidateInfo) Data() map[string]string {
 		"{{address-line-3}}":   form.AddressLine3,
 		"{{title}}":            form.Title,
 		"{{salary}}":           numfmt.Sprintf("%d", form.Salary),
-		"{{start-date}}":       form.StartDate.Format("January 2, 2006"),
-		"{{offer-start-date}}": form.OfferStartDate.Format("January 2, 2006"),
-		"{{offer-end-date}}":   form.OfferEndDate.Format("January 2, 2006"),
+		"{{start-date}}":       string(form.StartDate),
+		"{{offer-start-date}}": string(form.OfferStartDate),
+		"{{offer-end-date}}":   string(form.OfferEndDate),
 	}
 }
 
 func (form *CandidateInfo) Complete() {
 	now := time.Now()
-	form.OfferStartDate = OfferDate{now}
-	form.OfferEndDate = OfferDate{now.Add(3 * 24 * time.Hour)} // 3 days
+	form.OfferStartDate = NewOfferOfferDate(now)
+	form.OfferEndDate = NewOfferOfferDate(now.Add(3 * 24 * time.Hour)) // 3 days
 }
 
 func (form CandidateInfo) Validate() error {
-	return nil
-}
-
-type OfferDate struct {
-	time.Time
-}
-
-func (date *OfferDate) MarshalCSV() (string, error) {
-	return date.Time.Format("Jan 2, 2006"), nil
-}
-
-func (date *OfferDate) String() string {
-	return date.Time.Format(time.RFC3339) // Redundant, just for example
-}
-
-func (date *OfferDate) UnmarshalCSV(csv string) (err error) {
-	if csv != "" {
-		date.Time, err = time.Parse("Jan 2, 2006", csv)
-	}
+	_, err := form.StartDate.Parse()
 	return err
+}
+
+type OfferDate string
+
+func NewOfferOfferDate(t time.Time) OfferDate {
+	return OfferDate(t.Format("Jan 2, 2006"))
+}
+
+func (date OfferDate) Parse() (time.Time, error) {
+	return time.Parse("Jan 2, 2006", string(date))
 }
 
 func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
@@ -157,7 +152,12 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 		fmt.Println("Handbook docId:", docId)
 
 		// record in spreadsheet
-		sheetName := strconv.Itoa(info.StartDate.Year())
+		startDate, err := info.StartDate.Parse()
+		if err != nil {
+			log.Warningln(err)
+			return
+		}
+		sheetName := strconv.Itoa(startDate.Year())
 		clients := []*CandidateInfo{
 			info,
 		}
