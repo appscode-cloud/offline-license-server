@@ -471,13 +471,15 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
-	err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
-		Email:        info.Email,
-		Name:         info.Name,
-		MailingLists: supportedProducts[info.Product].MailingLists,
-	})
-	if err != nil {
-		return err
+	if len(supportedProducts[info.Product].MailingLists) > 0 {
+		err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
+			Email:        info.Email,
+			Name:         info.Name,
+			MailingLists: supportedProducts[info.Product].MailingLists,
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return s.noteEventLicenseIssued(accesslog, event)
