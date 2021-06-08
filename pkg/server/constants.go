@@ -43,13 +43,14 @@ const (
 	WebinarScheduleSheet  = "Schedule"
 	WebinarCalendarId     = "c_gccijq3fpvbsgg68le9tq37pqs@group.calendar.google.com"
 
-	MailingList_Console   = "06a84456-bfdf-4edf-97c1-7e7d4ad48f67"
-	MailingList_KubeDB    = "a5f00cb2-f398-4408-a13a-28b6db8a32ba"
-	MailingList_Kubeform  = "cd797afa-04d4-45c8-86e0-642a59b2d7f4"
-	MailingList_KubeVault = "b0a46c28-43c3-4048-8059-c3897474b577"
-	MailingList_Stash     = "3ab3161e-d02c-42cf-ad96-bb406620d693"
-	MailingList_Voyager   = "6c6d1338-bb38-40f6-bab4-ff09c2f6e184"
-	MailingList_Auditor   = "65e961d0-d60e-4bf5-8a22-3a5ec28a32c5"
+	MailingList_Console    = "06a84456-bfdf-4edf-97c1-7e7d4ad48f67"
+	MailingList_KubeDB     = "a5f00cb2-f398-4408-a13a-28b6db8a32ba"
+	MailingList_Kubeform   = "cd797afa-04d4-45c8-86e0-642a59b2d7f4"
+	MailingList_KubeVault  = "b0a46c28-43c3-4048-8059-c3897474b577"
+	MailingList_Stash      = "3ab3161e-d02c-42cf-ad96-bb406620d693"
+	MailingList_Voyager    = "6c6d1338-bb38-40f6-bab4-ff09c2f6e184"
+	MailingList_Auditor    = "65e961d0-d60e-4bf5-8a22-3a5ec28a32c5"
+	MailingList_Panopticon = "47ae2f13-5034-483e-be9a-682b32b39315"
 )
 
 var knowTestEmails = sets.NewString("1gtm@appscode.com")
@@ -67,7 +68,7 @@ var supportedProducts = map[string]PlanInfo{
 		MailingLists: []string{MailingList_KubeDB, MailingList_Stash},
 	},
 	"kubedb-enterprise": {
-		Features:     []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash"},
+		Features:     []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash", "panopticon"},
 		MailingLists: []string{MailingList_KubeDB, MailingList_Stash},
 	},
 	"stash-community": {
@@ -75,7 +76,7 @@ var supportedProducts = map[string]PlanInfo{
 		MailingLists: []string{MailingList_Stash},
 	},
 	"stash-enterprise": {
-		Features:     []string{"stash-enterprise", "stash-community", "kubedb-ext-stash"},
+		Features:     []string{"stash-enterprise", "stash-community", "kubedb-ext-stash", "panopticon"},
 		MailingLists: []string{MailingList_Stash},
 	},
 	"kubevault-community": {
@@ -83,7 +84,7 @@ var supportedProducts = map[string]PlanInfo{
 		MailingLists: []string{MailingList_KubeVault},
 	},
 	"kubevault-enterprise": {
-		Features:     []string{"kubevault-enterprise", "kubevault-community"},
+		Features:     []string{"kubevault-enterprise", "kubevault-community", "panopticon"},
 		MailingLists: []string{MailingList_KubeVault},
 	},
 	"kubeform-community": {
@@ -91,7 +92,7 @@ var supportedProducts = map[string]PlanInfo{
 		MailingLists: []string{MailingList_Kubeform},
 	},
 	"kubeform-enterprise": {
-		Features:     []string{"kubeform-enterprise", "kubeform-community"},
+		Features:     []string{"kubeform-enterprise", "kubeform-community", "panopticon"},
 		MailingLists: []string{MailingList_Kubeform},
 	},
 	"voyager-community": {
@@ -99,19 +100,19 @@ var supportedProducts = map[string]PlanInfo{
 		MailingLists: []string{MailingList_Voyager},
 	},
 	"voyager-enterprise": {
-		Features:     []string{"voyager-enterprise", "voyager-community"},
+		Features:     []string{"voyager-enterprise", "voyager-community", "panopticon"},
 		MailingLists: []string{MailingList_Voyager},
 	},
-	"console-community": {
-		Features:     []string{"console-community"},
-		MailingLists: []string{MailingList_Console},
-	},
-	"console-enterprise": {
-		Features:     []string{"console-enterprise", "console-community"},
+	"console": {
+		Features:     []string{"console", "panopticon"},
 		MailingLists: []string{MailingList_Console},
 	},
 	"auditor": {
-		Features:     []string{"auditor"},
+		Features:     []string{"auditor", "panopticon"},
 		MailingLists: []string{MailingList_Auditor},
+	},
+	"panopticon": {
+		Features:     []string{"panopticon"},
+		MailingLists: []string{MailingList_Panopticon},
 	},
 }
