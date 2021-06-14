@@ -78,7 +78,8 @@ func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomE
 	atts := make([]*calendar.EventAttendee, len(attendees))
 	for _, email := range attendees {
 		atts = append(atts, &calendar.EventAttendee{
-			Email: email,
+			Email:          email,
+			ResponseStatus: "accepted",
 		})
 	}
 
@@ -173,7 +174,8 @@ func AddEventAttendants(srv *calendar.Service, calendarId, eventId string, email
 	attendees := make([]*calendar.EventAttendee, existing.Len())
 	for i, email := range existing.List() {
 		attendees[i] = &calendar.EventAttendee{
-			Email: email,
+			Email:          email,
+			ResponseStatus: "accepted",
 		}
 	}
 	event := &calendar.Event{
