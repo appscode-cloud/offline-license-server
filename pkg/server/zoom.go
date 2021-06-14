@@ -140,7 +140,10 @@ func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomE
 		},
 	}
 
-	event, err = srv.Events.Insert(calendarId, event).ConferenceDataVersion(1).Do()
+	event, err = srv.Events.Insert(calendarId, event).
+		SendUpdates("all").
+		ConferenceDataVersion(1).
+		Do()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to create event. %v\n", err)
 	}
@@ -177,6 +180,9 @@ func AddEventAttendants(srv *calendar.Service, calendarId, eventId string, email
 		Id:        eventId,
 		Attendees: attendees,
 	}
-	_, err = srv.Events.Patch(calendarId, event.Id, event).ConferenceDataVersion(1).Do()
+	_, err = srv.Events.Patch(calendarId, event.Id, event).
+		SendUpdates("all").
+		ConferenceDataVersion(1).
+		Do()
 	return err
 }
