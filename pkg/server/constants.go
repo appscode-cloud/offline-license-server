@@ -95,10 +95,10 @@ var supportedProducts = map[string]PlanInfo{
 		Features:     []string{"kubeform-enterprise", "kubeform-community", "panopticon-enterprise"},
 		MailingLists: []string{MailingList_Kubeform},
 	},
-	// "voyager-community": {
-	// 	Features:     []string{"voyager-community"},
-	// 	MailingLists: []string{MailingList_Voyager},
-	// },
+	"voyager-community": {
+		Features:     []string{"voyager-community"},
+		MailingLists: []string{MailingList_Voyager},
+	},
 	"voyager-enterprise": {
 		Features:     []string{"voyager-enterprise", "voyager-community", "panopticon-enterprise"},
 		MailingLists: []string{MailingList_Voyager},
