@@ -79,6 +79,30 @@ var templateIds = map[string]QuoteInfo{
 		TemplateDocId: "1iqaj1GOzo4Bj_kb3y4eondlqD7PfTmVQx4l_ECczILM",
 		MailingLists:  []string{listmonkclient.MailingList_Stash},
 	},
+	"kubeform-enterprise": {
+		TemplateDocId: "1ERPvo8KrTL6Cmk067guyqPYyrGuKTQsZUUJAakeMYa4",
+		MailingLists:  []string{listmonkclient.MailingList_Kubeform},
+	},
+	"kubeform-payg": {
+		TemplateDocId: "1w0KkMno6HIe33iefjTfijCKGBQZ3LIrVRAJRAdGYhVo",
+		MailingLists:  []string{listmonkclient.MailingList_Kubeform},
+	},
+	"kubevault-enterprise": {
+		TemplateDocId: "1iDocKQPUDADVMj3cBcReW6fE-1RD6usS9MjjS8RF0EY",
+		MailingLists:  []string{listmonkclient.MailingList_KubeVault},
+	},
+	"kubevault-payg": {
+		TemplateDocId: "1Z_z3VxxiBDHF4aB9UkbjvH74P6PGGJSzhZuMsOGxJ1o",
+		MailingLists:  []string{listmonkclient.MailingList_KubeVault},
+	},
+	"voyager-enterprise": {
+		TemplateDocId: "1GQ8UocSIgYhWRD-Zulnz4USOP9yg0K4pTRAp1fWjg8E",
+		MailingLists:  []string{listmonkclient.MailingList_Voyager},
+	},
+	"voyager-payg": {
+		TemplateDocId: "1NuOO2cpH89GKFNBNxvayLXcXOcbfcH6eIMJF2t-JCeo",
+		MailingLists:  []string{listmonkclient.MailingList_Voyager},
+	},
 }
 
 type QuotationForm struct {
