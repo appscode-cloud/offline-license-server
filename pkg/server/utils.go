@@ -30,6 +30,13 @@ func IsEnterpriseProduct(product string) bool {
 	return strings.HasSuffix(strings.ToLower(product), "-enterprise")
 }
 
+func IsPAYGProduct(product string) bool {
+	if _, ok := templateIds[strings.ToLower(product)]; !ok {
+		return false
+	}
+	return strings.HasSuffix(strings.ToLower(product), "-payg")
+}
+
 // GetIP gets a requests IP address by reading off the forwarded-for
 // header (for proxies) and falls back to use the remote address.
 func GetIP(r *http.Request) string {

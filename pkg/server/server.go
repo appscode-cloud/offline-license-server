@@ -227,7 +227,7 @@ func (s *Server) Run() error {
 
 	m.Get("/_/pricing/", auth.Basic(os.Getenv("APPSCODE_SALES_USERNAME"), os.Getenv("APPSCODE_SALES_PASSWORD")), func(ctx *macaron.Context) {
 		product := ctx.Query("p")
-		if product != "" && product != "kubedb-payg" && product != "stash-payg" {
+		if product != "" && IsPAYGProduct(product) {
 			ctx.Error(http.StatusBadRequest, fmt.Sprintf("unknown product: %s", product))
 			return
 		}

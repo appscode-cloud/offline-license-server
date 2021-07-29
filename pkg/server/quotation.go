@@ -373,13 +373,6 @@ func (gen *QuotationGenerator) GetMailer() Mailer {
 			FullPlan:         "Pay-As-You-Go (PAYG)",
 			Plan:             "PAYG",
 		})
-	case "stash-payg":
-		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
-			Offer:            "Stash",
-			FullPlan:         "Pay-As-You-Go (PAYG)",
-			Plan:             "PAYG",
-		})
 	case "kubedb-enterprise":
 		return NewQuotationMailer(QuotationEmailData{
 			ProductQuotation: gen.Lead,
@@ -387,10 +380,59 @@ func (gen *QuotationGenerator) GetMailer() Mailer {
 			FullPlan:         "Enterprise",
 			Plan:             "Enterprise",
 		})
+	case "stash-payg":
+		return NewQuotationMailer(QuotationEmailData{
+			ProductQuotation: gen.Lead,
+			Offer:            "Stash",
+			FullPlan:         "Pay-As-You-Go (PAYG)",
+			Plan:             "PAYG",
+		})
 	case "stash-enterprise":
 		return NewQuotationMailer(QuotationEmailData{
 			ProductQuotation: gen.Lead,
 			Offer:            "Stash",
+			FullPlan:         "Enterprise",
+			Plan:             "Enterprise",
+		})
+	case "kubeform-payg":
+		return NewQuotationMailer(QuotationEmailData{
+			ProductQuotation: gen.Lead,
+			Offer:            "Kubeform",
+			FullPlan:         "Pay-As-You-Go (PAYG)",
+			Plan:             "PAYG",
+		})
+	case "kubeform-enterprise":
+		return NewQuotationMailer(QuotationEmailData{
+			ProductQuotation: gen.Lead,
+			Offer:            "Kubeform",
+			FullPlan:         "Enterprise",
+			Plan:             "Enterprise",
+		})
+	case "kubevault-payg":
+		return NewQuotationMailer(QuotationEmailData{
+			ProductQuotation: gen.Lead,
+			Offer:            "KubeVault",
+			FullPlan:         "Pay-As-You-Go (PAYG)",
+			Plan:             "PAYG",
+		})
+	case "kubevault-enterprise":
+		return NewQuotationMailer(QuotationEmailData{
+			ProductQuotation: gen.Lead,
+			Offer:            "KubeVault",
+			FullPlan:         "Enterprise",
+			Plan:             "Enterprise",
+		})
+	case "voyager-payg":
+		return NewQuotationMailer(QuotationEmailData{
+			ProductQuotation: gen.Lead,
+			Offer:            "Voyager",
+			FullPlan:         "Pay-As-You-Go (PAYG)",
+			Plan:             "PAYG",
+		})
+	case "voyager-enterprise":
+		return NewQuotationMailer(QuotationEmailData{
+			ProductQuotation: gen.Lead,
+			Offer:            "Voyager",
 			FullPlan:         "Enterprise",
 			Plan:             "Enterprise",
 		})
