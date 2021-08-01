@@ -41,43 +41,43 @@
                 <div class="control">
                   <div class="select">
                     <select id="product" name="product">
-                      <option value="stash-enterprise">
+                      <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>
                         Stash Enterprise Edition
                       </option>
-                      <option value="stash-community">
+                      <option value="stash-community" {{ if eq .Product "stash-community" }}selected{{ end }}>
                         Stash Community Edition
                       </option>
-                      <option value="kubedb-enterprise">
+                      <option value="kubedb-enterprise" {{ if eq .Product "kubedb-enterprise" }}selected{{ end }}>
                         KubeDB Enterprise Edition
                       </option>
-                      <option value="kubedb-community">
+                      <option value="kubedb-community" {{ if eq .Product "kubedb-community" }}selected{{ end }}>
                         KubeDB Community Edition
                       </option>
-                      <option value="kubevault-enterprise">
+                      <option value="kubevault-enterprise" {{ if eq .Product "kubevault-enterprise" }}selected{{ end }}>
                         KubeVault Enterprise Edition
                       </option>
-                      <option value="kubevault-community">
+                      <option value="kubevault-community" {{ if eq .Product "kubevault-community" }}selected{{ end }}>
                         KubeVault Community Edition
                       </option>
-                      <option value="kubeform-enterprise">
+                      <option value="kubeform-enterprise" {{ if eq .Product "kubeform-enterprise" }}selected{{ end }}>
                         Kubeform Enterprise Edition
                       </option>
-                      <option value="kubeform-community">
+                      <option value="kubeform-community" {{ if eq .Product "kubeform-community" }}selected{{ end }}>
                         Kubeform Community Edition
                       </option>
-                      <option value="voyager-enterprise">
+                      <option value="voyager-enterprise" {{ if eq .Product "voyager-enterprise" }}selected{{ end }}>
                         Voyager Enterprise Edition
                       </option>
-                      <option value="voyager-community">
+                      <option value="voyager-community" {{ if eq .Product "voyager-community" }}selected{{ end }}>
                         Voyager Community Edition
                       </option>
-                      <option value="console-enterprise">
+                      <option value="console-enterprise" {{ if eq .Product "console-enterprise" }}selected{{ end }}>
                         Console License
                       </option>
-                      <option value="auditor-enterprise">
+                      <option value="auditor-enterprise" {{ if eq .Product "auditor-enterprise" }}selected{{ end }}>
                         Auditor License
                       </option>
-                      <option value="panopticon-enterprise">
+                      <option value="panopticon-enterprise" {{ if eq .Product "panopticon-enterprise" }}selected{{ end }}>
                         Panopticon License
                       </option>
                     </select>
