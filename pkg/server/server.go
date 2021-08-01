@@ -195,6 +195,7 @@ func (s *Server) Run() error {
 	}))
 	// m.Use(macaron.Static("public"))
 	m.Get("/", func(ctx *macaron.Context) {
+		ctx.Data["Product"] = ctx.Query("p")
 		ctx.HTML(200, "index") // 200 is the response code.
 	})
 
