@@ -217,6 +217,8 @@ type QuotationGenerator struct {
 	DriveService *drive.Service
 	DocService   *docs.Service
 	SheetService *gdrive.Spreadsheet
+
+	FolderChan chan<- string
 }
 
 func NewQuotationGenerator(client *http.Client, cfg QuotationGeneratorConfig) *QuotationGenerator {
@@ -326,6 +328,9 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 		domainFolderId = folder.Id
 	}
 	fmt.Println("Using domain folder id:", domainFolderId)
+	if gen.FolderChan != nil {
+		gen.FolderChan <- domainFolderId
+	}
 
 	// https://developers.google.com/docs/api/how-tos/documents#copying_an_existing_document
 	copyMetadata := &drive.File{
@@ -542,7 +547,9 @@ func FolderName(email string) string {
 }
 
 func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) error {
-	for _, product := range lead.Product {
+	folderChan := make(chan string)
+
+	for idx, product := range lead.Product {
 		cfg := QuotationGeneratorConfig{
 			AccountsFolderId:     AccountFolderId,
 			TemplateDocId:        templateIds[product].TemplateDocId,
@@ -566,6 +573,9 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 		}
 		DecorateGeoData(s.geodb, &location)
 		gen.Location = location
+		if idx == 0 {
+			gen.FolderChan = folderChan
+		}
 
 		go func() {
 			sendEmail := ctx.QueryBool("send_email")
@@ -580,8 +590,14 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 		}()
 	}
 
-	// respond(ctx, []byte("Thank you! Please check your email in a few minutes for price quotation. Don't forget to check spam folder."))
-	ctx.Redirect(ctx.Req.URL.String(), http.StatusSeeOther)
+	select {
+	case folderId := <-folderChan:
+		ctx.Redirect(fmt.Sprintf("https://drive.google.com/drive/folders/%s", folderId))
+	case <-time.After(30 * time.Second):
+		// can't wait too long. Cloudflare does not like that
+		// respond(ctx, []byte("Thank you! Please check your email in a few minutes for price quotation. Don't forget to check spam folder."))
+		ctx.Redirect(ctx.Req.URL.String(), http.StatusSeeOther)
+	}
 	return nil
 }
 
