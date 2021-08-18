@@ -41,17 +41,17 @@
                 <div class="control">
                   <div class="select">
                     <select id="product" name="product">
-                      <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>
-                        Stash Enterprise Edition
-                      </option>
-                      <option value="stash-community" {{ if eq .Product "stash-community" }}selected{{ end }}>
-                        Stash Community Edition
-                      </option>
                       <option value="kubedb-enterprise" {{ if eq .Product "kubedb-enterprise" }}selected{{ end }}>
                         KubeDB Enterprise Edition
                       </option>
                       <option value="kubedb-community" {{ if eq .Product "kubedb-community" }}selected{{ end }}>
                         KubeDB Community Edition
+                      </option>
+                      <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>
+                        Stash Enterprise Edition
+                      </option>
+                      <option value="stash-community" {{ if eq .Product "stash-community" }}selected{{ end }}>
+                        Stash Community Edition
                       </option>
                       <option value="kubevault-enterprise" {{ if eq .Product "kubevault-enterprise" }}selected{{ end }}>
                         KubeVault Enterprise Edition
