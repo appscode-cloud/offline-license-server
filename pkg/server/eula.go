@@ -150,14 +150,14 @@ func (s *Server) GenerateEULA(info *EULAInfo) (string, error) {
 			log.Warningln(err)
 			return
 		}
-		info.EULADocLink = docId
+		info.EULADocLink = fmt.Sprintf("https://docs.google.com/document/d/%s/edit", docId)
 		fmt.Println("EULA docId:", docId)
 
 		// record in spreadsheet
 		clients := []*EULAInfo{
 			info,
 		}
-		writer := gdrive.NewWriter(s.srvSheets, LicenseSpreadsheetId, "EULA")
+		writer := gdrive.NewWriter(s.srvSheets, LicenseSpreadsheetId, "EULA Log")
 		err = gocsv.MarshalCSV(clients, writer)
 		if err != nil {
 			log.Warningln(err)
@@ -165,7 +165,7 @@ func (s *Server) GenerateEULA(info *EULAInfo) (string, error) {
 		}
 
 		// mail HR
-		mailer := NewEULAMailer(info, domainFolderId)
+		mailer := NewEULAMailer(info)
 		fmt.Println("sending email for generated EULA", info.Domain)
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {

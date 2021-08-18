@@ -22,7 +22,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func NewEULAMailer(info *EULAInfo, docId string) Mailer {
+func NewEULAMailer(info *EULAInfo) Mailer {
 	data, err := yaml.Marshal(info)
 	if err != nil {
 		data = []byte("Error: " + err.Error())
@@ -33,11 +33,11 @@ An EULA has been generated for the following customer:
 
 %s
 
-The generated EULA can be found here: https://docs.google.com/document/d/%s
+The generated EULA can be found here: %s
 
 Regards,
 EULA Generator
-`, string(data), docId)
+`, string(data), info.EULADocLink)
 	return Mailer{
 		Sender:          MailSales,
 		BCC:             "",
