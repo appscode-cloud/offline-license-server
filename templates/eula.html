@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AppsCode Product Pricing List</title>
+    <title>AppsCode Software License Agreement</title>
     <link rel="shortcut icon" type="image/png" href="https://cdn.appscode.com/images/products/appscode/icons/favicon-32x32.png">
     <link
       rel="stylesheet"
@@ -15,8 +15,8 @@
       <div class="container">
         <div class="columns is-mobile is-centered">
           <div class="column is-half">
-            <h1 class="title">AppsCode Contract Generator</h1>
-            <form action="/_/contract" method="post">
+            <h1 class="title">AppsCode EULA Generator</h1>
+            <form action="/_/eula" method="post">
               <div class="field">
                 <label class="label">Company Legal Name</label>
                 <div class="control">
@@ -30,10 +30,38 @@
               </div>
 
               <div class="field">
+                <label class="label">Company Website</label>
+                <div class="control">
+                  <input
+                    name="domain"
+                    class="input"
+                    type="text"
+                    placeholder=""
+                    value=""
+                  />
+                </div>
+                <!-- <p class="help is-danger">This email is invalid</p> -->
+              </div>
+
+              <div class="field">
                 <label class="label">Company Legal Address</label>
                 <div class="control">
                   <input
                     name="address"
+                    class="input"
+                    type="text"
+                    placeholder=""
+                    value=""
+                  />
+                </div>
+                <!-- <p class="help is-danger">This email is invalid</p> -->
+              </div>
+
+              <div class="field">
+                <label class="label">Quotation #</label>
+                <div class="control">
+                  <input
+                    name="quotation"
                     class="input"
                     type="text"
                     placeholder=""
@@ -61,7 +89,7 @@
                 <label class="label">Payment Terms</label>
                 <div class="control">
                   <div class="select">
-                    <select id="payment" name="payment">
+                    <select id="payment-term" name="payment-term">
                       <option value="annual">
                         Annual
                       </option>
@@ -77,7 +105,7 @@
                 <label class="label">Support Plan</label>
                 <div class="control">
                   <div class="select">
-                    <select id="support" name="support">
+                    <select id="support-plan" name="support-plan">
                       <option value="basic">
                         Basic
                       </option>

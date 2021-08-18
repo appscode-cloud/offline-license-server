@@ -250,6 +250,30 @@ func (s *Server) Run() error {
 		}
 	})
 
+	m.Get("/_/eula/", auth.Basic(os.Getenv("APPSCODE_SALES_USERNAME"), os.Getenv("APPSCODE_SALES_PASSWORD")), func(ctx *macaron.Context) {
+		ctx.HTML(200, "eula") // 200 is the response code.
+	})
+	m.Post("/_/eula/", binding.Bind(EULAInfo{}), func(ctx *macaron.Context, form EULAInfo) {
+		if err := form.Complete(); err != nil {
+			ctx.WriteHeader(http.StatusBadRequest)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+		if err := form.Validate(); err != nil {
+			ctx.WriteHeader(http.StatusBadRequest)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+
+		folderId, err := s.GenerateEULA(&form)
+		if err != nil {
+			ctx.WriteHeader(http.StatusInternalServerError)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+		ctx.Redirect(fmt.Sprintf("https://drive.google.com/drive/folders/%s", folderId))
+	})
+
 	m.Get("/_/offerletter/", auth.Basic(os.Getenv("APPSCODE_SALES_USERNAME"), os.Getenv("APPSCODE_SALES_PASSWORD")), func(ctx *macaron.Context) {
 		ctx.HTML(200, "offerletter") // 200 is the response code.
 	})
