@@ -129,21 +129,21 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 		fmt.Println("Email:", info.Email)
 		fmt.Println("Using folder id:", candidateFolderId)
 
-		docId, err := s.generateDoc(info, candidateFolderId, "offer")
+		docId, err := s.generateOfferDoc(info, candidateFolderId, "offer")
 		if err != nil {
 			log.Warningln(err)
 			return
 		}
 		fmt.Println("Offer docId:", docId)
 
-		docId, err = s.generateDoc(info, candidateFolderId, "nda")
+		docId, err = s.generateOfferDoc(info, candidateFolderId, "nda")
 		if err != nil {
 			log.Warningln(err)
 			return
 		}
 		fmt.Println("NDA docId:", docId)
 
-		docId, err = s.generateDoc(info, candidateFolderId, "handbook")
+		docId, err = s.generateOfferDoc(info, candidateFolderId, "handbook")
 		if err != nil {
 			log.Warningln(err)
 			return
@@ -185,7 +185,7 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 	return candidateFolderId, nil
 }
 
-func (s *Server) generateDoc(info *CandidateInfo, candidateFolderId string, templateKey string) (string, error) {
+func (s *Server) generateOfferDoc(info *CandidateInfo, candidateFolderId string, templateKey string) (string, error) {
 	var docName string
 	switch templateKey {
 	case "offer":
