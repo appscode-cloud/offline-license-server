@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gocarina/gocsv"
@@ -75,6 +76,9 @@ func (form *EULAInfo) Complete() error {
 	form.PreparedOn = NewOfferOfferDate(now)
 	form.TermYears = 1 // for now only support 1 year
 
+	if !strings.Contains(form.Domain, "://") {
+		form.Domain = "http://" + form.Domain
+	}
 	u, err := url.Parse(form.Domain)
 	if err != nil {
 		return err
