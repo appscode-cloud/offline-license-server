@@ -157,15 +157,17 @@ func (s *Server) GenerateEULA(info *EULAInfo) (string, error) {
 		info.EULADocLink = fmt.Sprintf("https://docs.google.com/document/d/%s/edit", docId)
 		fmt.Println("EULA docId:", docId)
 
-		// record in spreadsheet
-		clients := []*EULAInfo{
-			info,
-		}
-		writer := gdrive.NewWriter(s.srvSheets, LicenseSpreadsheetId, "EULA Log")
-		err = gocsv.MarshalCSV(clients, writer)
-		if err != nil {
-			log.Warningln(err)
-			return
+		// record in spreadsheet unless generated for appscode.com domain
+		if !skipEmailDomains.Has(info.Domain) {
+			clients := []*EULAInfo{
+				info,
+			}
+			writer := gdrive.NewWriter(s.srvSheets, LicenseSpreadsheetId, "EULA Log")
+			err = gocsv.MarshalCSV(clients, writer)
+			if err != nil {
+				log.Warningln(err)
+				return
+			}
 		}
 
 		// mail HR
