@@ -1,19 +1,14 @@
 # offline-license-server
 
-AppsCode License server. We call it `offline` license server because once you have received the license file, no further
-connection is required with the license server. So, these licenses can be used within an air-gapped Kubernetes cluster.
+AppsCode License server. We call it `offline` license server because once you have received the license file, no further connection is required with the license server. So, these licenses can be used within an air-gapped Kubernetes cluster.
 
 ## License Validity
 
-A License file is a valid for a given Kubernetes cluster. For the `community` edition, you will receive a license that
-is valid for 1 year. For the `enterprise` edition, this server will issue a 30 day trial license. If you are interested
-in purchasing Enterprise license, please contact us via sales@appscode.com for further discussion. You can also set up a
-meeting via our [calendly link](https://calendly.com/appscode/30min).
+A License file is a valid for a given Kubernetes cluster. For the `community` edition, you will receive a license that is valid for 1 year. For the `enterprise` edition, this server will issue a 30 day trial license. If you are interested in purchasing Enterprise license, please contact us via sales@appscode.com for further discussion. You can also set up a meeting via our [calendly link](https://calendly.com/appscode/intro).
 
 ## Cluster UID
 
-We use the `uid` of the `kube-system` namespace as the Kubernetes cluster UID. Please run the command below to get the
-cluster uid for your cluster:
+We use the `uid` of the `kube-system` namespace as the Kubernetes cluster UID. Please run the command below to get the cluster uid for your cluster:
 
 ```bash
 kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'
@@ -25,34 +20,39 @@ The license issuer ca can be found here: https://licenses.appscode.com/certifica
 
 ## List of products
 
-- kubedb-community
-- kubedb-enterprise
-- stash-community
-- stash-enterprise
-- kubevault-community
-- kubevault-enterprise
-- kubeform-community
-- kubeform-enterprise
+ - kubedb-enterprise
+ - kubedb-community
+ - stash-enterprise
+ - stash-community
+ - kubevault-enterprise
+ - kubevault-community
+ - kubeform-enterprise
+ - kubeform-community
+ - voyager-enterprise
+ - voyager-community
+ - console-enterprise
+ - auditor-enterprise
+ - panopticon-enterprise
 
 ## Email Address Requirements
 
-You must provide a valid non-disposable email to acquire license. For Enterprise products, you must provide a valid work
-email to acquire license.
+You must provide a valid non-disposable email to acquire license. For Enterprise products, you must provide a valid work email to acquire license.
 
 ## API Reference
 
-### Register Email
+License issuing process can be automated in 2 steps:
 
-Make the api call below with a valid email address. We are going to email you a token for the License server.
+### 1. Register Email
+
+This is an one time set up step where you register with a valid email address. Make the api call below with a valid email address. We are going to email you a token for the License server.
 
 ```bash
 curl -d "email=***" -X POST https://license-issuer.appscode.com/register
 ```
 
-### Issue License
+### 2. Issue License
 
-You can use the `{email, token}` to issue license using `curl` from command line. In the example below replace `***`
-with an actual token you have received in the email.
+Now every time you need a new license, use the token from the previous step to make an api call to our license server. You can use the `{email, token}` to issue license using `curl` from command line. In the example below replace `***` with an actual token you have received in the email.
 
 ```bash
 # pass request body as application/x-www-form-urlencoded
