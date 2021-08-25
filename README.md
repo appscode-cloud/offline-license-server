@@ -18,22 +18,6 @@ kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'
 
 The license issuer ca can be found here: https://licenses.appscode.com/certificates/ca.crt
 
-## List of products
-
- - kubedb-enterprise
- - kubedb-community
- - stash-enterprise
- - stash-community
- - kubevault-enterprise
- - kubevault-community
- - kubeform-enterprise
- - kubeform-community
- - voyager-enterprise
- - voyager-community
- - console-enterprise
- - auditor-enterprise
- - panopticon-enterprise
-
 ## Email Address Requirements
 
 You must provide a valid non-disposable email to acquire license. For Enterprise products, you must provide a valid work email to acquire license.
@@ -77,6 +61,21 @@ curl -X POST -H "Content-Type: application/json" \
   "token": "***"
 }
 ```
+**List of products**
+
+ - kubedb-enterprise
+ - kubedb-community
+ - stash-enterprise
+ - stash-community
+ - kubevault-enterprise
+ - kubevault-community
+ - kubeform-enterprise
+ - kubeform-community
+ - voyager-enterprise
+ - voyager-community
+ - console-enterprise
+ - auditor-enterprise
+ - panopticon-enterprise
 
 ## Installation
 
