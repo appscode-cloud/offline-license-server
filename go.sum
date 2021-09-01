@@ -152,7 +152,6 @@ github.com/go-openapi/jsonpointer v0.0.0-20160704185906-46af16f9f7b1/go.mod h1:+
 github.com/go-openapi/jsonreference v0.0.0-20160704190145-13c6e3589ad9/go.mod h1:W3Z9FmVs9qj+KR4zFKmDPGiLdk1D9Rlm7cyMvf57TTg=
 github.com/go-openapi/spec v0.0.0-20160808142527-6aced65f8501/go.mod h1:J8+jY1nAiCcj+friV/PDoE1/3eeccG9LYBs0tYvLOWc=
 github.com/go-openapi/swag v0.0.0-20160704191624-1d0bd113de87/go.mod h1:DXUve3Dpr1UfpPtxFw+EFuQ41HhCWZfha5jSVRG7C7I=
-github.com/go-resty/resty/v2 v2.4.0/go.mod h1:B88+xCTEwvfD94NOuE6GS1wMlnoKNY8eEiNizfNwOwA=
 github.com/go-resty/resty/v2 v2.6.0 h1:joIR5PNLM2EFqqESUjCMGXrWmXNHEU9CEiK813oKYS4=
 github.com/go-resty/resty/v2 v2.6.0/go.mod h1:PwvJS6hvaPkjtjNg9ph+VrSD92bi5Zq73w/BIH7cC3Q=
 github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
@@ -513,7 +512,6 @@ golang.org/x/net v0.0.0-20201021035429-f5854403a974/go.mod h1:sp8m0HH+o8qH0wwXwY
 golang.org/x/net v0.0.0-20201031054903-ff519b6c9102/go.mod h1:sp8m0HH+o8qH0wwXwYZr8TS3Oi6o0r6Gce1SSxlDquU=
 golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb/go.mod h1:sp8m0HH+o8qH0wwXwYZr8TS3Oi6o0r6Gce1SSxlDquU=
 golang.org/x/net v0.0.0-20201216054612-986b41b23924/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
-golang.org/x/net v0.0.0-20201224014010-6772e930b67b/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
 golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 h1:4nGaVu0QrbjT/AK2PRLuQfQuh6DJve+pELhqTdAj3x0=
 golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4/go.mod h1:p54w0d4576C0XHj96bSt6lcn1PtDYWL6XObtHCRCNQM=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
@@ -632,8 +630,8 @@ gomodules.xyz/cert v1.2.0 h1:9RbkQVQlEZFYyx9gp7lq2eW5A6duQWeIRlZ2RRS/emw=
 gomodules.xyz/cert v1.2.0/go.mod h1:3p4FzumuJeDY0l+Byr3zK5vRL8f1r2RxyamgGWncDso=
 gomodules.xyz/email-providers v0.1.4 h1:kcFyxaLGvW7DBr87DDZ5xVeM1iE/gJBkrgqUihV90js=
 gomodules.xyz/email-providers v0.1.4/go.mod h1:EqvSNJ9PZ2oEdgmYOiw5YhMoUwJaKQZGanirI77rCxA=
-gomodules.xyz/freshsales-client-go v0.0.1 h1:QC5Hnv9Yrj3H/U62WrpQ0TKXq2DRQF++zVBfe2uN/m4=
-gomodules.xyz/freshsales-client-go v0.0.1/go.mod h1:6dBJkzyzcftgiW03gKJcrb0wgMpyTHytpQXoqi3jm5Q=
+gomodules.xyz/freshsales-client-go v0.0.2 h1:yUwJH8SG7jNmHEJtTfm5Hh7s2XN+FLAGgMPkONuUOPw=
+gomodules.xyz/freshsales-client-go v0.0.2/go.mod h1:kAkUx/THh9+yQ04y9FUkVVSSUuJctvBQAY9c9kfXSrM=
 gomodules.xyz/gdrive-utils v0.0.0-20210501111906-9a849ceff5b3 h1:Jk4SjrwizNd4FXE5k6pzKM6ZBjDXbLMIrnZbVRQpCRE=
 gomodules.xyz/gdrive-utils v0.0.0-20210501111906-9a849ceff5b3/go.mod h1:mDo1yHgr6oCzAqp+T2nofsyvMeTqozgOxlfNgHYKcvE=
 gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84 h1:RH11GBm37fGstaCcoFB5KtcUijofDS0yxcdkCS6vx/A=

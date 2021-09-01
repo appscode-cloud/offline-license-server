@@ -3,6 +3,7 @@ package freshsalesclient
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
@@ -80,6 +81,65 @@ func (c *Client) UpdateLead(lead *Lead) (*Lead, error) {
 		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
 	}
 	return resp.Result().(*APIObject).Lead, nil
+}
+
+func (c *Client) GetLeadFilters() ([]LeadView, error) {
+	resp, err := c.client.R().
+		SetResult(LeadFilters{}).
+		Get("/api/leads/filters")
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode() < http.StatusOK || resp.StatusCode() >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
+	}
+	return resp.Result().(*LeadFilters).Filters, nil
+}
+
+func (c *Client) ListAllLeads() ([]Lead, error) {
+	views, err := c.GetLeadFilters()
+	if err != nil {
+		return nil, err
+	}
+	viewId := -1
+	for _, view := range views {
+		if view.Name == "All Leads" {
+			viewId = view.ID
+			break
+		}
+	}
+	if viewId == -1 {
+		return nil, fmt.Errorf("failed to detect view_id for \"All Leads\"")
+	}
+
+	page := 1
+	var leads []Lead
+	for {
+		resp, err := c.getLeadPage(viewId, page)
+		if err != nil {
+			return nil, err
+		}
+		leads = append(leads, resp.Leads...)
+		if page == resp.Meta.TotalPages {
+			break
+		}
+		page++
+	}
+	return leads, nil
+}
+
+func (c *Client) getLeadPage(viewId, page int) (*ListResponse, error) {
+	resp, err := c.client.R().
+		SetResult(ListResponse{}).
+		SetQueryParam("page", strconv.Itoa(page)).
+		Get(fmt.Sprintf("/api/leads/view/%d", viewId))
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode() < http.StatusOK || resp.StatusCode() >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("request failed with status code = %d", resp.StatusCode())
+	}
+	return resp.Result().(*ListResponse), nil
 }
 
 func (c *Client) UpdateContact(contact *Contact) (*Contact, error) {

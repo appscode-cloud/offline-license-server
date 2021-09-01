@@ -81,10 +81,10 @@ type EmailInfo struct {
 	Destroy   bool        `json:"_destroy,omitempty"`
 }
 type CustomFields struct {
-	Interest              interface{} `json:"cf_interest,omitempty"`
-	Github                interface{} `json:"cf_github,omitempty"`
-	KubernetesSetup       string      `json:"cf_kubernetes_setup,omitempty"`
-	CalendlyMeetingAgenda interface{} `json:"cf_calendly_meeting_agenda,omitempty"`
+	Interest              string `json:"cf_interest,omitempty"`
+	Github                string `json:"cf_github,omitempty"`
+	KubernetesSetup       string `json:"cf_kubernetes_setup,omitempty"`
+	CalendlyMeetingAgenda string `json:"cf_calendly_meeting_agenda,omitempty"`
 }
 
 type Lead struct {
@@ -126,8 +126,8 @@ type Lead struct {
 	RecentNote                     string        `json:"recent_note,omitempty"`
 	LastContactedViaChat           *time.Time    `json:"last_contacted_via_chat,omitempty"`
 	LastContactedViaSalesActivity  string        `json:"last_contacted_via_sales_activity,omitempty"`
-	CompletedSalesSequences        int           `json:"completed_sales_sequences,omitempty"`
-	ActiveSalesSequences           int           `json:"active_sales_sequences,omitempty"`
+	CompletedSalesSequences        string        `json:"completed_sales_sequences,omitempty"`
+	ActiveSalesSequences           string        `json:"active_sales_sequences,omitempty"`
 	WebFormIds                     string        `json:"web_form_ids,omitempty"`
 	LastAssignedAt                 *time.Time    `json:"last_assigned_at,omitempty"`
 	Tags                           []string      `json:"tags,omitempty"`
@@ -179,8 +179,8 @@ type Contact struct {
 	LastContactedViaChat           *time.Time   `json:"last_contacted_via_chat,omitempty"`
 	WonDealsCount                  int          `json:"won_deals_count,omitempty"`
 	LastContactedViaSalesActivity  string       `json:"last_contacted_via_sales_activity,omitempty"`
-	CompletedSalesSequences        int          `json:"completed_sales_sequences,omitempty"`
-	ActiveSalesSequences           int          `json:"active_sales_sequences,omitempty"`
+	CompletedSalesSequences        string       `json:"completed_sales_sequences,omitempty"`
+	ActiveSalesSequences           string       `json:"active_sales_sequences,omitempty"`
 	WebFormIds                     string       `json:"web_form_ids,omitempty"`
 	OpenDealsCount                 int          `json:"open_deals_count,omitempty"`
 	LastAssignedAt                 *time.Time   `json:"last_assigned_at,omitempty"`
@@ -236,4 +236,28 @@ type GeoLocation struct {
 	City        string `json:"city,omitempty"`
 	Country     string `json:"country,omitempty"`
 	Coordinates string `json:"coordinates,omitempty"`
+}
+
+type LeadView struct {
+	ID             int    `json:"id"`
+	Name           string `json:"name"`
+	ModelClassName string `json:"model_class_name"`
+	UserID         int    `json:"user_id"`
+	IsDefault      bool   `json:"is_default"`
+	IsPublic       bool   `json:"is_public"`
+	UpdatedAt      string `json:"updated_at"`
+}
+
+type LeadFilters struct {
+	Filters []LeadView `json:"filters"`
+}
+
+type ListMeta struct {
+	TotalPages int `json:"total_pages"`
+	Total      int `json:"total"`
+}
+
+type ListResponse struct {
+	Leads []Lead   `json:"leads"`
+	Meta  ListMeta `json:"meta"`
 }
