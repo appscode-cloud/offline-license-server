@@ -64,11 +64,11 @@ type PlanInfo struct {
 // plan name => features
 var supportedProducts = map[string]PlanInfo{
 	"kubedb-community": {
-		Features:     []string{"kubedb-community", "panopticon-community"},
+		Features:     []string{"kubedb-community", "panopticon-community", "kubedb-monitoring-agent"},
 		MailingLists: []string{MailingList_KubeDB, MailingList_Stash, MailingList_Panopticon},
 	},
 	"kubedb-enterprise": {
-		Features:     []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash", "panopticon-enterprise"},
+		Features:     []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash", "panopticon-enterprise", "kubedb-monitoring-agent"},
 		MailingLists: []string{MailingList_KubeDB, MailingList_Stash, MailingList_Panopticon},
 	},
 	"stash-community": {
@@ -104,7 +104,7 @@ var supportedProducts = map[string]PlanInfo{
 		MailingLists: []string{MailingList_Voyager, MailingList_Panopticon},
 	},
 	"console-enterprise": {
-		Features:     []string{"console-enterprise", "auditor-enterprise", "panopticon-enterprise"},
+		Features:     []string{"console-enterprise", "auditor-enterprise", "panopticon-enterprise", "cluster-connector"},
 		MailingLists: []string{MailingList_Console, MailingList_Panopticon},
 	},
 	"auditor-enterprise": {
