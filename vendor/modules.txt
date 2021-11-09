@@ -66,6 +66,8 @@ github.com/gocarina/gocsv
 ## explicit
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
+# github.com/golang-jwt/jwt v0.0.0-00010101000000-000000000000 => github.com/golang-jwt/jwt v3.2.2+incompatible
+## explicit
 # github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 ## explicit
 github.com/golang/glog
@@ -599,3 +601,8 @@ sigs.k8s.io/yaml
 # k8s.io/apiserver => github.com/kmodules/apiserver v0.18.4-0.20200521000930-14c5f6df9625
 # k8s.io/client-go => k8s.io/client-go v0.18.3
 # k8s.io/kubernetes => github.com/kmodules/kubernetes v1.19.0-alpha.0.0.20200521033432-49d3646051ad
+# github.com/satori/go.uuid => github.com/gomodules/uuid v4.0.0+incompatible
+# github.com/dgrijalva/jwt-go => github.com/gomodules/jwt v3.2.2+incompatible
+# github.com/golang-jwt/jwt => github.com/golang-jwt/jwt v3.2.2+incompatible
+# github.com/form3tech-oss/jwt-go => github.com/form3tech-oss/jwt-go v3.2.5+incompatible
+# helm.sh/helm/v3 => github.com/kubepack/helm/v3 v3.6.1-0.20210518225915-c3e0ce48dd1b
