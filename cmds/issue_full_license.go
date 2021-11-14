@@ -34,6 +34,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 		Cluster: "",
 	}
 	d, _ := period.NewOf(server.DefaultTTLForEnterpriseProduct)
+	var featureFlags map[string]string
 	cmd := &cobra.Command{
 		Use:               "issue-full-license",
 		Short:             `Issue full license`,
@@ -56,7 +57,12 @@ func NewCmdIssueFullLicense() *cobra.Command {
 			defer func() {
 				s.Close()
 			}()
-			return s.IssueEnterpriseLicense(info, d2)
+
+			ff := server.FeatureFlags(featureFlags)
+			if err := ff.IsValid(); err != nil {
+				panic(err)
+			}
+			return s.IssueEnterpriseLicense(info, d2, ff)
 		},
 	}
 	opts.AddFlags(cmd.Flags())
@@ -66,6 +72,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 	cmd.Flags().StringVar(&info.Product, "product", info.Product, "Product for which license will be issued")
 	cmd.Flags().StringVar(&info.Cluster, "cluster", info.Cluster, "Cluster ID for which license will be issued")
 	cmd.Flags().Var(&d, "duration", "Duration for the new license")
+	cmd.Flags().StringToStringVar(&featureFlags, "feature-flag", featureFlags, "List of feature flags")
 
 	_ = cmd.MarkFlagRequired("email")
 	_ = cmd.MarkFlagRequired("product")

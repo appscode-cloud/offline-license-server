@@ -57,6 +57,8 @@ var knowTestEmails = sets.NewString("1gtm@appscode.com")
 var skipEmailDomains = sets.NewString("appscode.com")
 
 type PlanInfo struct {
+	ProductLine  string
+	TierName     string
 	Features     []string
 	MailingLists []string
 }
@@ -64,58 +66,86 @@ type PlanInfo struct {
 // plan name => features
 var supportedProducts = map[string]PlanInfo{
 	"kubedb-community": {
+		ProductLine:  "kubedb",
+		TierName:     "community",
 		Features:     []string{"kubedb-community", "panopticon-community", "kubedb-monitoring-agent"},
 		MailingLists: []string{MailingList_KubeDB, MailingList_Stash, MailingList_Panopticon},
 	},
 	"kubedb-enterprise": {
+		ProductLine:  "kubedb",
+		TierName:     "enterprise",
 		Features:     []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash", "panopticon-enterprise", "kubedb-monitoring-agent"},
 		MailingLists: []string{MailingList_KubeDB, MailingList_Stash, MailingList_Panopticon},
 	},
 	"stash-community": {
+		ProductLine:  "stash",
+		TierName:     "community",
 		Features:     []string{"stash-community", "panopticon-community"},
 		MailingLists: []string{MailingList_Stash, MailingList_Panopticon},
 	},
 	"stash-enterprise": {
+		ProductLine:  "stash",
+		TierName:     "enterprise",
 		Features:     []string{"stash-enterprise", "stash-community", "kubedb-ext-stash", "panopticon-enterprise"},
 		MailingLists: []string{MailingList_Stash, MailingList_Panopticon},
 	},
 	"kubevault-community": {
+		ProductLine:  "kubevault",
+		TierName:     "community",
 		Features:     []string{"kubevault-community", "panopticon-community"},
 		MailingLists: []string{MailingList_KubeVault, MailingList_Panopticon},
 	},
 	"kubevault-enterprise": {
+		ProductLine:  "kubevault",
+		TierName:     "enterprise",
 		Features:     []string{"kubevault-enterprise", "kubevault-community", "panopticon-enterprise"},
 		MailingLists: []string{MailingList_KubeVault, MailingList_Panopticon},
 	},
 	"kubeform-community": {
+		ProductLine:  "kubeform",
+		TierName:     "community",
 		Features:     []string{"kubeform-community", "panopticon-community"},
 		MailingLists: []string{MailingList_Kubeform, MailingList_Panopticon},
 	},
 	"kubeform-enterprise": {
+		ProductLine:  "kubeform",
+		TierName:     "enterprise",
 		Features:     []string{"kubeform-enterprise", "kubeform-community", "panopticon-enterprise"},
 		MailingLists: []string{MailingList_Kubeform, MailingList_Panopticon},
 	},
 	"voyager-community": {
+		ProductLine:  "voyager",
+		TierName:     "community",
 		Features:     []string{"voyager-community", "panopticon-community"},
 		MailingLists: []string{MailingList_Voyager, MailingList_Panopticon},
 	},
 	"voyager-enterprise": {
+		ProductLine:  "voyager",
+		TierName:     "enterprise",
 		Features:     []string{"voyager-enterprise", "voyager-community", "panopticon-enterprise"},
 		MailingLists: []string{MailingList_Voyager, MailingList_Panopticon},
 	},
 	"console-enterprise": {
+		ProductLine:  "console",
+		TierName:     "enterprise",
 		Features:     []string{"console-enterprise", "auditor-enterprise", "panopticon-enterprise", "cluster-connector"},
 		MailingLists: []string{MailingList_Console, MailingList_Panopticon},
 	},
 	"auditor-enterprise": {
+		ProductLine:  "auditor",
+		TierName:     "enterprise",
 		Features:     []string{"auditor-enterprise"},
 		MailingLists: []string{MailingList_Auditor},
 	},
 	"panopticon-community": {
+		ProductLine:  "panopticon",
+		TierName:     "community",
 		Features:     []string{"panopticon-community"},
 		MailingLists: []string{MailingList_Panopticon},
 	},
 	"panopticon-enterprise": {
+		ProductLine:  "panopticon",
+		TierName:     "enterprise",
 		Features:     []string{"panopticon-enterprise", "panopticon-community"},
 		MailingLists: []string{MailingList_Panopticon},
 	},
