@@ -30,7 +30,9 @@ type FeatureFlags map[string]string
 func (f FeatureFlags) IsValid() error {
 	var errs []error
 	for k := range f {
-		errs = append(errs, fmt.Errorf("unknown feature flag %q", k))
+		if !knownFlags.Has(k) {
+			errs = append(errs, fmt.Errorf("unknown feature flag %q", k))
+		}
 	}
 	return errors.NewAggregate(errs)
 }
