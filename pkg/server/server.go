@@ -573,10 +573,10 @@ func (s *Server) CreateOrRetrieveLicense(info LicenseForm, license ProductLicens
 			return s.fs.ReadFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
 		}
 	}
-	return s.CreateLicense(info, license, cluster)
+	return s.CreateLicense(info, license, cluster, nil)
 }
 
-func (s *Server) CreateLicense(info LicenseForm, license ProductLicense, cluster string) ([]byte, error) {
+func (s *Server) CreateLicense(info LicenseForm, license ProductLicense, cluster string, ff FeatureFlags) ([]byte, error) {
 	// agreement, TTL
 	sans := AltNames{
 		DNSNames: []string{cluster},
@@ -587,8 +587,11 @@ func (s *Server) CreateLicense(info LicenseForm, license ProductLicense, cluster
 	}
 	cfg := Config{
 		CommonName:         getCN(sans),
+		Country:            supportedProducts[license.Product].ProductLine,
+		Province:           supportedProducts[license.Product].TierName,
 		Organization:       supportedProducts[license.Product].Features,
-		OrganizationalUnit: license.Product,
+		OrganizationalUnit: license.Product, // plan
+		Locality:           ff.ToSlice(),
 		AltNames:           sans,
 		Usages:             []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}

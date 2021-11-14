@@ -48,8 +48,11 @@ type AltNames struct {
 // Config contains the basic fields required for creating a certificate
 type Config struct {
 	CommonName          string
+	Country             string
 	Organization        []string
 	OrganizationalUnit  string
+	Province            string
+	Locality            []string
 	AltNames            AltNames
 	Usages              []x509.ExtKeyUsage
 	NotBefore, NotAfter time.Time // Validity bounds.
@@ -71,8 +74,11 @@ func NewSignedCert(cfg Config, key crypto.Signer, caCert *x509.Certificate, caKe
 	certTmpl := x509.Certificate{
 		Subject: pkix.Name{
 			CommonName:         cfg.CommonName,
-			Organization:       cfg.Organization,
-			OrganizationalUnit: []string{cfg.OrganizationalUnit},
+			Country:            []string{cfg.Country},            // product
+			Province:           []string{cfg.Province},           // tier
+			Organization:       cfg.Organization,                 // plan name == {product}-{tier}
+			OrganizationalUnit: []string{cfg.OrganizationalUnit}, // features
+			Locality:           cfg.Locality,                     // flags DisableAnalytics=true
 		},
 		DNSNames:       cfg.AltNames.DNSNames,
 		IPAddresses:    cfg.AltNames.IPs,

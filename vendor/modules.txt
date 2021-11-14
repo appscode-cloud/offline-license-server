@@ -324,6 +324,9 @@ gomodules.xyz/cert/certstore
 # gomodules.xyz/email-providers v0.1.4
 ## explicit; go 1.14
 gomodules.xyz/email-providers
+# gomodules.xyz/errors v0.1.0
+## explicit; go 1.15
+gomodules.xyz/errors
 # gomodules.xyz/freshsales-client-go v0.0.2
 ## explicit; go 1.16
 gomodules.xyz/freshsales-client-go
