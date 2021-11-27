@@ -40,5 +40,6 @@ jobs:
             bin/offline-license-server-linux-arm
             bin/offline-license-server-linux-arm64
             bin/offline-license-server-darwin-amd64
+            bin/offline-license-server-darwin-arm64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
