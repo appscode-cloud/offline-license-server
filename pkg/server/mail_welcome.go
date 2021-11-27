@@ -33,13 +33,13 @@ func NewWelcomeMailer(info LicenseForm) Mailer {
 
 	src := fmt.Sprintf(`Hi {{.Name}},
 
-Thanks for trying {{.ProductDisplayName}}. Our engineers can help your team with any issues during the evaluation process. Please email %s with any questions regarding {{.ProductDisplayName}}.
+Thanks for trying {{.ProductDisplayName}}. Our engineers can help you with any issues during the evaluation process. Please email %s with any questions regarding {{.ProductDisplayName}}.
 
 {{ if not .IsEnterpriseProduct }}
 We noticed that you are trying the Community Edition. We offer a 30 day FREE evaluation license for our {{.ProductDisplayName}} Enterprise product. The Enterprise version offers important features for Day-2 operations. If you need more time for evaluation, we should be able to extend the trial period.
 {{ end }}
 
-We look forward to hearing from you”.
+We look forward to hearing from you.
 
 Regards,
 Team AppsCode
