@@ -420,10 +420,20 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		return err
 	}
 
+	existingEmails := ListExistingLicensees(s.srvSheets)
+	if !existingEmails.Has(info.Email) {
+		fmt.Printf("New user: %s\n", info.Email)
+		mailer := NewWelcomeMailer(info)
+		err = mailer.SendMail(s.mg, info.Email, info.CC, nil)
+		if err != nil {
+			return err
+		}
+	}
+
 	if !skipEmailDomains.Has(Domain(info.Email)) {
-		err2 := s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseIssued)
-		if err2 != nil {
-			return err2
+		err := s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseIssued)
+		if err != nil {
+			return err
 		}
 	}
 

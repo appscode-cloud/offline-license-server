@@ -23,7 +23,10 @@ import (
 	"strings"
 
 	"github.com/oschwald/geoip2-golang"
+	gdrive "gomodules.xyz/gdrive-utils"
+	"gomodules.xyz/sets"
 	"gomodules.xyz/x/log"
+	"google.golang.org/api/sheets/v4"
 )
 
 func IsEnterpriseProduct(product string) bool {
@@ -74,4 +77,25 @@ func DecorateGeoData(db *geoip2.Reader, entry *GeoLocation) {
 	entry.Country = record.Country.IsoCode
 	entry.Timezone = record.Location.TimeZone
 	entry.Coordinates = fmt.Sprintf("%v,%v", record.Location.Latitude, record.Location.Longitude)
+}
+
+func ListExistingLicensees(srv *sheets.Service) sets.String {
+	const (
+		sheetName = "License Issue Log"
+		header    = "Email"
+	)
+	reader, err := gdrive.NewColumnReader(srv, LicenseSpreadsheetId, sheetName, header)
+	if err != nil {
+		panic(err)
+	}
+	cols, err := reader.ReadAll()
+	if err != nil {
+		panic(err)
+	}
+
+	emails := sets.NewString()
+	for _, row := range cols {
+		emails.Insert(row...)
+	}
+	return emails
 }
