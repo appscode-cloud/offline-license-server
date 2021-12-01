@@ -21,7 +21,7 @@ type SheetWriter struct {
 	data [][]string
 	e    error
 
-	filter *Filter
+	filter *Predicate
 }
 
 var _ gocsv.CSVWriter = &SheetWriter{}
@@ -36,14 +36,14 @@ func NewWriter(srv *sheets.Service, spreadsheetId, sheetName string) *SheetWrite
 	}
 }
 
-func NewRowWriter(srv *sheets.Service, spreadsheetId, sheetName string, filter *Filter) *SheetWriter {
+func NewRowWriter(srv *sheets.Service, spreadsheetId, sheetName string, predicate *Predicate) *SheetWriter {
 	return &SheetWriter{
 		srv:                  srv,
 		spreadsheetId:        spreadsheetId,
 		sheetName:            sheetName,
 		ValueRenderOption:    "FORMATTED_VALUE",
 		DateTimeRenderOption: "SERIAL_NUMBER",
-		filter:               filter,
+		filter:               predicate,
 	}
 }
 

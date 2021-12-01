@@ -17,9 +17,10 @@ type structInfo struct {
 // Each IndexChain element before the last is the index of an the embedded struct field
 // that defines Key as a tag
 type fieldInfo struct {
-	keys       []string
-	omitEmpty  bool
-	IndexChain []int
+	keys         []string
+	omitEmpty    bool
+	IndexChain   []int
+	defaultValue string
 }
 
 func (f fieldInfo) getFirstKey() string {
@@ -92,10 +93,13 @@ func getFieldInfos(rType reflect.Type, parentIndexChain []int) []fieldInfo {
 		fieldTags := strings.Split(fieldTag, TagSeparator)
 		filteredTags := []string{}
 		for _, fieldTagEntry := range fieldTags {
-			if fieldTagEntry != "omitempty" {
-				filteredTags = append(filteredTags, normalizeName(fieldTagEntry))
-			} else {
+			trimmedFieldTagEntry := strings.TrimSpace(fieldTagEntry) // handles cases like `csv:"foo, omitempty, default=test"`
+			if trimmedFieldTagEntry == "omitempty" {
 				fieldInfo.omitEmpty = true
+			} else if strings.HasPrefix(trimmedFieldTagEntry, "default=") {
+				fieldInfo.defaultValue = strings.TrimPrefix(trimmedFieldTagEntry, "default=")
+			} else {
+				filteredTags = append(filteredTags, normalizeName(trimmedFieldTagEntry))
 			}
 		}
 
