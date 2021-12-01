@@ -56,6 +56,8 @@ type Options struct {
 
 	BlockedDomains []string
 	BlockedEmails  []string
+
+	EnableDripCampaign bool
 }
 
 func NewOptions() *Options {
@@ -77,6 +79,7 @@ func NewOptions() *Options {
 		listmonkUsername:     os.Getenv("LISTMONK_USERNAME"),
 		listmonkPassword:     os.Getenv("LISTMONK_PASSWORD"),
 		GoogleCredentialDir:  cwd,
+		EnableDripCampaign:   true,
 	}
 }
 
@@ -108,4 +111,6 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 
 	fs.StringSliceVar(&s.BlockedDomains, "blocked-domains", s.BlockedDomains, "Domains blocked from downloading license automatically")
 	fs.StringSliceVar(&s.BlockedEmails, "blocked-emails", s.BlockedEmails, "Emails blocked from downloading license automatically")
+
+	fs.BoolVar(&s.EnableDripCampaign, "drip-campaign", s.EnableDripCampaign, "Set true to enable drip campaign runner")
 }

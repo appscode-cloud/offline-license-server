@@ -53,6 +53,20 @@ type Mailer struct {
 	EnableTracking bool
 }
 
+func (m *Mailer) renderSubject() (string, error) {
+	subject := m.Subject
+	if m.Params != nil && strings.Contains(subject, `{{`) {
+		var sub bytes.Buffer
+		tpl := template.Must(template.New("").Funcs(sprig.TxtFuncMap()).Parse(subject))
+		err := tpl.Execute(&sub, m.Params)
+		if err != nil {
+			return "", err
+		}
+		subject = sub.String()
+	}
+	return subject, nil
+}
+
 func (m *Mailer) renderMail(src string, params interface{}) (string, string, error) {
 	var bodyText bytes.Buffer
 
@@ -85,18 +99,7 @@ func (m *Mailer) renderMail(src string, params interface{}) (string, string, err
 }
 
 func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient, cc string, srv *drive.Service) error {
-	subject := m.Subject
-	if m.Params != nil && strings.Contains(subject, `{{`) {
-		var sub bytes.Buffer
-		tpl := template.Must(template.New("").Funcs(sprig.TxtFuncMap()).Parse(m.Subject))
-		err := tpl.Execute(&sub, m.Params)
-		if err != nil {
-			return err
-		}
-		subject = sub.String()
-	}
-
-	bodyText, bodyHtml, err := m.renderMail(m.Body, m.Params)
+	subject, bodyText, bodyHtml, err := m.Render()
 	if err != nil {
 		return err
 	}
@@ -150,6 +153,16 @@ func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient, cc string, srv *drive.S
 	// Send the message with a 10 second timeout
 	_, _, err = mg.Send(ctx, msg)
 	return err
+}
+
+func (m *Mailer) Render() (subject string, bodyText string, bodyHtml string, err error) {
+	subject, err = m.renderSubject()
+	if err != nil {
+		return
+	}
+
+	bodyText, bodyHtml, err = m.renderMail(m.Body, m.Params)
+	return
 }
 
 func ExportPDF(srvDrive *drive.Service, docId, filename string) error {

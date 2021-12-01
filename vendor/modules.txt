@@ -367,7 +367,7 @@ gomodules.xyz/flags
 # gomodules.xyz/freshsales-client-go v0.0.2
 ## explicit; go 1.16
 gomodules.xyz/freshsales-client-go
-# gomodules.xyz/gdrive-utils v0.0.1
+# gomodules.xyz/gdrive-utils v0.0.2
 ## explicit; go 1.17
 gomodules.xyz/gdrive-utils
 # gomodules.xyz/homedir v0.1.0
@@ -379,7 +379,7 @@ gomodules.xyz/listmonk-client-go
 # gomodules.xyz/logs v0.0.6
 ## explicit; go 1.16
 gomodules.xyz/logs
-# gomodules.xyz/mailer v0.0.7
+# gomodules.xyz/mailer v0.0.11
 ## explicit; go 1.17
 gomodules.xyz/mailer
 # gomodules.xyz/password-generator v0.2.7

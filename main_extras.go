@@ -19,6 +19,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"time"
 
@@ -28,6 +29,8 @@ import (
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
 	gdrive "gomodules.xyz/gdrive-utils"
+	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
 	"k8s.io/klog/v2"
 )
 
@@ -60,7 +63,17 @@ AppsCode Team
 }
 
 func main_sheets() {
-	si, err := gdrive.NewSpreadsheet("1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA") // Share this sheet with the service account email
+	client, err := gdrive.DefaultClient(".")
+	if err != nil {
+		klog.Fatalln(err)
+	}
+
+	srvSheets, err := sheets.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		klog.Fatalf("Unable to retrieve Sheets client: %v", err)
+	}
+
+	si, err := gdrive.NewSpreadsheet(srvSheets, "1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA") // Share this sheet with the service account email
 	if err != nil {
 		klog.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}

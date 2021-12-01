@@ -47,6 +47,7 @@ import (
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
 	listmonkclient "gomodules.xyz/listmonk-client-go"
+	"gomodules.xyz/mailer"
 	"gomodules.xyz/sets"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/docs/v1"
@@ -100,21 +101,17 @@ func New(opts *Options) (*Server, error) {
 		return nil, err
 	}
 
-	client, err := gdrive.DefaultClient(opts.GoogleCredentialDir)
-	if err != nil {
-		return nil, err
-	}
-
-	sheet, err := gdrive.NewSpreadsheet(opts.LicenseSpreadsheetId, option.WithHTTPClient(client)) // Share this sheet with the service account email
-	if err != nil {
-		return nil, err
-	}
 	var geodb *geoip2.Reader
 	if opts.GeoCityDatabase != "" {
 		geodb, err = geoip2.Open(opts.GeoCityDatabase)
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	client, err := gdrive.DefaultClient(opts.GoogleCredentialDir)
+	if err != nil {
+		return nil, err
 	}
 
 	srvDrive, err := drive.NewService(context.TODO(), option.WithHTTPClient(client))
@@ -130,6 +127,11 @@ func New(opts *Options) (*Server, error) {
 	sheetsService, err := sheets.NewService(context.TODO(), option.WithHTTPClient(client))
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve Sheets client: %v", err)
+	}
+
+	sheet, err := gdrive.NewSpreadsheet(sheetsService, opts.LicenseSpreadsheetId) // Share this sheet with the service account email
+	if err != nil {
+		return nil, err
 	}
 
 	srvCalendar, err := calendar.NewService(context.TODO(), option.WithHTTPClient(client))
@@ -323,6 +325,18 @@ func (s *Server) Run() error {
 		},
 	}
 
+	if s.opts.EnableDripCampaign {
+		go func() {
+			if err := NewCommunitySignupCampaign(s.srvSheets, s.mg).Run(context.TODO()); err != nil {
+				panic(err)
+			}
+		}()
+		go func() {
+			if err := NewEnterpriseSignupCampaign(s.srvSheets, s.mg).Run(context.TODO()); err != nil {
+				panic(err)
+			}
+		}()
+	}
 	go func() {
 		// does automatic http to https redirects
 		err := http.ListenAndServe(":http", certManager.HTTPHandler(nil))
@@ -424,11 +438,41 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		existingEmails := ListExistingLicensees(s.srvSheets)
 		if !existingEmails.Has(info.Email) {
 			fmt.Printf("New user: %s\n", info.Email)
-			mailer := NewWelcomeMailer(info)
-			err = mailer.SendMail(s.mg, info.Email, info.CC, nil)
-			if err != nil {
-				return err
+
+			params := SignupCampaignData{
+				Name:                info.Name,
+				Product:             info.Product,
+				ProductDisplayName:  supportedProducts[info.Product].DisplayName,
+				IsEnterpriseProduct: IsEnterpriseProduct(info.Product),
+				TwitterHandle:       supportedProducts[info.Product].TwitterHandle,
+				QuickstartLink:      supportedProducts[info.Product].QuickstartLink,
 			}
+
+			if params.IsEnterpriseProduct {
+				dc := NewEnterpriseSignupCampaign(s.srvSheets, s.mg)
+				err = dc.AddContact(mailer.Contact{
+					Email: info.Email,
+					Data:  toJson(params),
+				})
+				if err != nil {
+					return err
+				}
+			} else {
+				dc := NewCommunitySignupCampaign(s.srvSheets, s.mg)
+				err = dc.AddContact(mailer.Contact{
+					Email: info.Email,
+					Data:  toJson(params),
+				})
+				if err != nil {
+					return err
+				}
+			}
+
+			//mailer := NewWelcomeMailer(info)
+			//err = mailer.SendMail(s.mg, info.Email, info.CC, nil)
+			//if err != nil {
+			//	return err
+			//}
 		}
 
 		err := s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseIssued)
