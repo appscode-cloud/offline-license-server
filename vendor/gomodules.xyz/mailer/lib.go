@@ -85,13 +85,24 @@ func (m *Mailer) renderMail(src string, params interface{}) (string, string, err
 }
 
 func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient, cc string, srv *drive.Service) error {
+	subject := m.Subject
+	if m.Params != nil && strings.Contains(subject, `{{`) {
+		var sub bytes.Buffer
+		tpl := template.Must(template.New("").Funcs(sprig.TxtFuncMap()).Parse(m.Subject))
+		err := tpl.Execute(&sub, m.Params)
+		if err != nil {
+			return err
+		}
+		subject = sub.String()
+	}
+
 	bodyText, bodyHtml, err := m.renderMail(m.Body, m.Params)
 	if err != nil {
 		return err
 	}
 
 	// The message object allows you to add attachments and Bcc recipients
-	msg := mg.NewMessage(m.Sender, m.Subject, bodyText, recipient)
+	msg := mg.NewMessage(m.Sender, subject, bodyText, recipient)
 	if cc != "" {
 		for _, e := range strings.Split(cc, ",") {
 			msg.AddCC(strings.TrimSpace(e))

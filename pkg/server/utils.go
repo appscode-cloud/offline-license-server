@@ -25,8 +25,8 @@ import (
 	"github.com/oschwald/geoip2-golang"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"gomodules.xyz/sets"
-	"gomodules.xyz/x/log"
 	"google.golang.org/api/sheets/v4"
+	"k8s.io/klog/v2"
 )
 
 func IsEnterpriseProduct(product string) bool {
@@ -69,7 +69,7 @@ func DecorateGeoData(db *geoip2.Reader, entry *GeoLocation) {
 	}
 	record, err := db.City(ip)
 	if err != nil {
-		log.Warningf("failed to detect geo data for ip %s. reason: %v", ip, err)
+		klog.Warningf("failed to detect geo data for ip %s. reason: %v", ip, err)
 		return
 	}
 

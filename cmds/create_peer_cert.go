@@ -25,7 +25,7 @@ import (
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
-	"gomodules.xyz/x/log"
+	"k8s.io/klog/v2"
 )
 
 func NewCmdCreatePeer(certDir string) *cobra.Command {
@@ -43,7 +43,7 @@ func NewCmdCreatePeer(certDir string) *cobra.Command {
 		DisableAutoGenTag: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) > 1 {
-				log.Fatalln("Multiple peer name found.")
+				klog.Fatalln("Multiple peer name found.")
 			}
 			if len(args) == 0 {
 				sans.DNSNames = merge("peer", sans.DNSNames)

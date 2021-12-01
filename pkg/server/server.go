@@ -47,6 +47,7 @@ import (
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
 	listmonkclient "gomodules.xyz/listmonk-client-go"
+	"gomodules.xyz/sets"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
@@ -55,7 +56,6 @@ import (
 	"gopkg.in/macaron.v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type Server struct {

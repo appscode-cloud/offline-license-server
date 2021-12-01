@@ -24,7 +24,7 @@ import (
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
-	"gomodules.xyz/x/log"
+	"k8s.io/klog/v2"
 )
 
 func NewCmdCreateClient(certDir string) *cobra.Command {
@@ -39,10 +39,10 @@ func NewCmdCreateClient(certDir string) *cobra.Command {
 		DisableAutoGenTag: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				log.Fatalln("Missing client name.")
+				klog.Fatalln("Missing client name.")
 			}
 			if len(args) > 1 {
-				log.Fatalln("Multiple client name found.")
+				klog.Fatalln("Multiple client name found.")
 			}
 
 			cfg := cert.Config{

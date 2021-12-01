@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -41,6 +40,7 @@ import (
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 	"gopkg.in/macaron.v1"
+	"k8s.io/klog/v2"
 )
 
 type QuoteInfo struct {
@@ -222,17 +222,17 @@ type QuotationGenerator struct {
 func NewQuotationGenerator(client *http.Client, cfg QuotationGeneratorConfig) *QuotationGenerator {
 	srvDrive, err := drive.NewService(context.TODO(), option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Docs client: %v", err)
+		klog.Fatalf("Unable to retrieve Docs client: %v", err)
 	}
 
 	srvDoc, err := docs.NewService(context.TODO(), option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Docs client: %v", err)
+		klog.Fatalf("Unable to retrieve Docs client: %v", err)
 	}
 
 	srvSheet, err := gdrive.NewSpreadsheet(cfg.LicenseSpreadsheetId, option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets client: %v", err)
+		klog.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 
 	return &QuotationGenerator{

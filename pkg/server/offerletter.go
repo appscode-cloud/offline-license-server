@@ -26,9 +26,9 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	gdrive "gomodules.xyz/gdrive-utils"
-	"gomodules.xyz/x/log"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -131,21 +131,21 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 
 		docId, err := s.generateOfferDoc(info, candidateFolderId, "offer")
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 		fmt.Println("Offer docId:", docId)
 
 		docId, err = s.generateOfferDoc(info, candidateFolderId, "nda")
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 		fmt.Println("NDA docId:", docId)
 
 		docId, err = s.generateOfferDoc(info, candidateFolderId, "handbook")
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 		fmt.Println("Handbook docId:", docId)
@@ -153,7 +153,7 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 		// record in spreadsheet
 		startDate, err := info.StartDate.Parse()
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 		sheetName := strconv.Itoa(startDate.Year())
@@ -163,7 +163,7 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 		writer := gdrive.NewWriter(s.srvSheets, offerLetterSpreadsheetId, sheetName)
 		err = gocsv.MarshalCSV(clients, writer)
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 
@@ -172,12 +172,12 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 		fmt.Println("sending email for generated offer letter", info.Email)
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 		err = mailer.SendMail(mg, MailHR, "", nil)
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 	}()

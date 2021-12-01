@@ -28,7 +28,7 @@ import (
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
 	gdrive "gomodules.xyz/gdrive-utils"
-	"gomodules.xyz/x/log"
+	"k8s.io/klog/v2"
 )
 
 func main_MD_HTML() {
@@ -62,7 +62,7 @@ AppsCode Team
 func main_sheets() {
 	si, err := gdrive.NewSpreadsheet("1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA") // Share this sheet with the service account email
 	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets client: %v", err)
+		klog.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 	info := server.LogEntry{
 		LicenseForm: server.LicenseForm{
@@ -76,6 +76,6 @@ func main_sheets() {
 
 	err = server.LogLicense(si, info)
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatal(err)
 	}
 }

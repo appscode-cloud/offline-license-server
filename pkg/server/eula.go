@@ -26,9 +26,9 @@ import (
 	"github.com/gocarina/gocsv"
 	"github.com/mailgun/mailgun-go/v4"
 	gdrive "gomodules.xyz/gdrive-utils"
-	"gomodules.xyz/x/log"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -151,7 +151,7 @@ func (s *Server) GenerateEULA(info *EULAInfo) (string, error) {
 	go func() {
 		docId, err := s.generateEULADoc(info, domainFolderId)
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 		info.EULADocLink = fmt.Sprintf("https://docs.google.com/document/d/%s/edit", docId)
@@ -165,7 +165,7 @@ func (s *Server) GenerateEULA(info *EULAInfo) (string, error) {
 			writer := gdrive.NewWriter(s.srvSheets, LicenseSpreadsheetId, "EULA Log")
 			err = gocsv.MarshalCSV(clients, writer)
 			if err != nil {
-				log.Warningln(err)
+				klog.Warningln(err)
 				return
 			}
 		}
@@ -175,12 +175,12 @@ func (s *Server) GenerateEULA(info *EULAInfo) (string, error) {
 		fmt.Println("sending email for generated EULA", info.Domain)
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 		err = mailer.SendMail(mg, MailSales, "", nil)
 		if err != nil {
-			log.Warningln(err)
+			klog.Warningln(err)
 			return
 		}
 	}()
