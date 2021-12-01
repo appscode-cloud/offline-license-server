@@ -222,7 +222,7 @@ func (s *Server) ListWebinarAttendees(date string) ([]string, error) {
 func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 	now := time.Now()
 
-	reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Filter{
+	reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Predicate{
 		Header: "Schedules",
 		By: func(column []interface{}) (int, error) {
 			type TP struct {
@@ -309,7 +309,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 		err := func() error {
 			yw, mw, dw := schedule.Date()
 
-			reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
+			reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, "Schedule", &gdrive.Predicate{
 				Header: "Schedules",
 				By: func(values []interface{}) (int, error) {
 					for i, v := range values {
@@ -420,7 +420,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 				return AddEventAttendants(s.srvCalendar, WebinarCalendarId, result.GoogleCalendarEventID, emails)
 			}
 
-			ww := gdrive.NewRowWriter(s.srvSheets, WebinarSpreadsheetId, "Schedule", &gdrive.Filter{
+			ww := gdrive.NewRowWriter(s.srvSheets, WebinarSpreadsheetId, "Schedule", &gdrive.Predicate{
 				Header: "Schedules",
 				By: func(values []interface{}) (int, error) {
 					for i, v := range values {

@@ -9,7 +9,7 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-type Filter struct {
+type Predicate struct {
 	Header string
 	By     func(v []interface{}) (int, error)
 }
@@ -106,7 +106,7 @@ func NewColumnReader(srv *sheets.Service, spreadsheetId, sheetName, header strin
 	return r, nil
 }
 
-func NewRowReader(srv *sheets.Service, spreadsheetId, sheetName string, filter *Filter) (*SheetReader, error) {
+func NewRowReader(srv *sheets.Service, spreadsheetId, sheetName string, predicate *Predicate) (*SheetReader, error) {
 	r := &SheetReader{
 		srv:                  srv,
 		spreadsheetId:        spreadsheetId,
@@ -128,13 +128,13 @@ func NewRowReader(srv *sheets.Service, spreadsheetId, sheetName string, filter *
 
 	sb.Reset()
 	for i, v := range values[0] {
-		if v.(string) == filter.Header {
+		if v.(string) == predicate.Header {
 			sb.WriteRune(rune('A' + i))
 			break
 		}
 	}
 	if sb.Len() == 0 {
-		return nil, fmt.Errorf("missing header %s", filter.Header)
+		return nil, fmt.Errorf("missing header %s", predicate.Header)
 	}
 
 	// read column
@@ -152,7 +152,7 @@ func NewRowReader(srv *sheets.Service, spreadsheetId, sheetName string, filter *
 		return nil, io.EOF
 	}
 
-	idx, err := filter.By(resp.Values[0])
+	idx, err := predicate.By(resp.Values[0])
 	if err != nil {
 		return nil, err
 	}
