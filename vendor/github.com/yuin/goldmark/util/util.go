@@ -37,6 +37,12 @@ func (b *CopyOnWriteBuffer) Write(value []byte) {
 	b.buffer = append(b.buffer, value...)
 }
 
+// WriteString writes given string to the buffer.
+// WriteString allocate new buffer and clears it at the first time.
+func (b *CopyOnWriteBuffer) WriteString(value string) {
+	b.Write(StringToReadOnlyBytes(value))
+}
+
 // Append appends given bytes to the buffer.
 // Append copy buffer at the first time.
 func (b *CopyOnWriteBuffer) Append(value []byte) {
@@ -47,6 +53,12 @@ func (b *CopyOnWriteBuffer) Append(value []byte) {
 		b.copied = true
 	}
 	b.buffer = append(b.buffer, value...)
+}
+
+// AppendString appends given string to the buffer.
+// AppendString copy buffer at the first time.
+func (b *CopyOnWriteBuffer) AppendString(value string) {
+	b.Append(StringToReadOnlyBytes(value))
 }
 
 // WriteByte writes the given byte to the buffer.
@@ -118,6 +130,9 @@ func VisualizeSpaces(bs []byte) []byte {
 	bs = bytes.Replace(bs, []byte("\t"), []byte("[TAB]"), -1)
 	bs = bytes.Replace(bs, []byte("\n"), []byte("[NEWLINE]\n"), -1)
 	bs = bytes.Replace(bs, []byte("\r"), []byte("[CR]"), -1)
+	bs = bytes.Replace(bs, []byte("\v"), []byte("[VTAB]"), -1)
+	bs = bytes.Replace(bs, []byte("\x00"), []byte("[NUL]"), -1)
+	bs = bytes.Replace(bs, []byte("\ufffd"), []byte("[U+FFFD]"), -1)
 	return bs
 }
 
@@ -137,30 +152,7 @@ func TabWidth(currentPos int) int {
 // width=2 is in the tab character. In this case, IndentPosition returns
 // (pos=1, padding=2)
 func IndentPosition(bs []byte, currentPos, width int) (pos, padding int) {
-	if width == 0 {
-		return 0, 0
-	}
-	w := 0
-	l := len(bs)
-	i := 0
-	hasTab := false
-	for ; i < l; i++ {
-		if bs[i] == '\t' {
-			w += TabWidth(currentPos + w)
-			hasTab = true
-		} else if bs[i] == ' ' {
-			w++
-		} else {
-			break
-		}
-	}
-	if w >= width {
-		if !hasTab {
-			return width, 0
-		}
-		return i, w - width
-	}
-	return -1, -1
+	return IndentPositionPadding(bs, currentPos, 0, width)
 }
 
 // IndentPositionPadding searches an indent position with the given width for the given line.
@@ -174,9 +166,9 @@ func IndentPositionPadding(bs []byte, currentPos, paddingv, width int) (pos, pad
 	i := 0
 	l := len(bs)
 	for ; i < l; i++ {
-		if bs[i] == '\t' {
+		if bs[i] == '\t' && w < width {
 			w += TabWidth(currentPos + w)
-		} else if bs[i] == ' ' {
+		} else if bs[i] == ' ' && w < width {
 			w++
 		} else {
 			break
@@ -189,52 +181,56 @@ func IndentPositionPadding(bs []byte, currentPos, paddingv, width int) (pos, pad
 }
 
 // DedentPosition dedents lines by the given width.
+//
+// Deprecated: This function has bugs. Use util.IndentPositionPadding and util.FirstNonSpacePosition.
 func DedentPosition(bs []byte, currentPos, width int) (pos, padding int) {
-	if width == 0 {
-		return 0, 0
-	}
-	w := 0
-	l := len(bs)
-	i := 0
-	for ; i < l; i++ {
-		if bs[i] == '\t' {
-			w += TabWidth(currentPos + w)
-		} else if bs[i] == ' ' {
-			w++
-		} else {
-			break
-		}
-	}
-	if w >= width {
-		return i, w - width
-	}
-	return i, 0
+       if width == 0 {
+               return 0, 0
+       }
+       w := 0
+       l := len(bs)
+       i := 0
+       for ; i < l; i++ {
+               if bs[i] == '\t' {
+                       w += TabWidth(currentPos + w)
+               } else if bs[i] == ' ' {
+                       w++
+               } else {
+                       break
+               }
+       }
+       if w >= width {
+               return i, w - width
+       }
+       return i, 0
 }
 
 // DedentPositionPadding dedents lines by the given width.
 // This function is mostly same as DedentPosition except this function
 // takes account into additional paddings.
+//
+// Deprecated: This function has bugs. Use util.IndentPositionPadding and util.FirstNonSpacePosition.
 func DedentPositionPadding(bs []byte, currentPos, paddingv, width int) (pos, padding int) {
-	if width == 0 {
-		return 0, paddingv
-	}
+       if width == 0 {
+               return 0, paddingv
+       }
 
-	w := 0
-	i := 0
-	l := len(bs)
-	for ; i < l; i++ {
-		if bs[i] == '\t' {
-			w += TabWidth(currentPos + w)
-		} else if bs[i] == ' ' {
-			w++
-		} else {
-			break
-		}
-	}
-	if w >= width {
-		return i - paddingv, w - width
-	}
-	return i - paddingv, 0
+       w := 0
+       i := 0
+       l := len(bs)
+       for ; i < l; i++ {
+               if bs[i] == '\t' {
+                       w += TabWidth(currentPos + w)
+               } else if bs[i] == ' ' {
+                       w++
+               } else {
+                       break
+               }
+       }
+       if w >= width {
+               return i - paddingv, w - width
+       }
+       return i - paddingv, 0
 }
 
 // IndentWidth calculate an indent width for the given line.
@@ -276,6 +272,10 @@ func FirstNonSpacePosition(bs []byte) int {
 // If codeSpan is set true, it ignores characters in code spans.
 // If allowNesting is set true, closures correspond to nested opener will be
 // ignored.
+//
+// Deprecated: This function can not handle newlines. Many elements
+// can be existed over multiple lines(e.g. link labels).
+// Use text.Reader.FindClosure.
 func FindClosure(bs []byte, opener, closure byte, codeSpan, allowNesting bool) int {
 	i := 0
 	opened := 1
@@ -695,7 +695,7 @@ func URLEscape(v []byte, resolveReference bool) []byte {
 			n = i
 			continue
 		}
-		if int(u8len) >= len(v) {
+		if int(u8len) > len(v) {
 			u8len = int8(len(v) - 1)
 		}
 		if u8len == 0 {
@@ -781,7 +781,7 @@ func FindEmailIndex(b []byte) int {
 
 var spaces = []byte(" \t\n\x0b\x0c\x0d")
 
-var spaceTable = [256]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+var spaceTable = [256]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 var punctTable = [256]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
@@ -804,7 +804,7 @@ func IsPunct(c byte) bool {
 	return punctTable[c] == 1
 }
 
-// IsPunct returns true if the given rune is a punctuation, otherwise false.
+// IsPunctRune returns true if the given rune is a punctuation, otherwise false.
 func IsPunctRune(r rune) bool {
 	return int32(r) <= 256 && IsPunct(byte(r)) || unicode.IsPunct(r)
 }
@@ -814,7 +814,7 @@ func IsSpace(c byte) bool {
 	return spaceTable[c] == 1
 }
 
-// IsSpace returns true if the given rune is a space, otherwise false.
+// IsSpaceRune returns true if the given rune is a space, otherwise false.
 func IsSpaceRune(r rune) bool {
 	return int32(r) <= 256 && IsSpace(byte(r)) || unicode.IsSpace(r)
 }

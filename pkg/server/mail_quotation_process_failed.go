@@ -20,10 +20,11 @@ import (
 	"fmt"
 
 	"github.com/avct/uasurfer"
+	"gomodules.xyz/mailer"
 	"sigs.k8s.io/yaml"
 )
 
-func NewQuotationProcessFailedMailer(gen *QuotationGenerator, err error) Mailer {
+func NewQuotationProcessFailedMailer(gen *QuotationGenerator, err error) mailer.Mailer {
 	var src string
 
 	info := struct {
@@ -44,13 +45,13 @@ func NewQuotationProcessFailedMailer(gen *QuotationGenerator, err error) Mailer 
 		src = string(data)
 	}
 
-	return Mailer{
+	return mailer.Mailer{
 		Sender:          MailSales,
 		BCC:             "",
 		ReplyTo:         MailSales,
 		Subject:         "[URGENT] Quotation request processing failed",
 		Body:            src,
-		params:          nil,
+		Params:          nil,
 		AttachmentBytes: nil,
 		EnableTracking:  false,
 	}

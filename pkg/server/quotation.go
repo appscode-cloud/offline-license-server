@@ -21,12 +21,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -39,6 +36,7 @@ import (
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
 	listmonkclient "gomodules.xyz/listmonk-client-go"
+	"gomodules.xyz/mailer"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
@@ -369,7 +367,7 @@ func (gen *QuotationGenerator) DocName(quote string) string {
 	return fmt.Sprintf("%s QUOTE #%s", FolderName(gen.Lead.Email), quote)
 }
 
-func (gen *QuotationGenerator) GetMailer() Mailer {
+func (gen *QuotationGenerator) GetMailer() mailer.Mailer {
 	switch strings.ToLower(gen.cfg.TemplateDoc) {
 	case "kubedb-payg":
 		return NewQuotationMailer(QuotationEmailData{
@@ -444,46 +442,6 @@ func (gen *QuotationGenerator) GetMailer() Mailer {
 	default:
 		panic(fmt.Errorf("unknown template doc %s", gen.cfg.TemplateDoc))
 	}
-}
-
-func ExportPDF(srvDrive *drive.Service, docId, filename string) error {
-	resp, err := srvDrive.Files.Export(docId, "application/pdf").Download()
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, resp.Body)
-	if err != nil {
-		return err
-	}
-	// filename := filepath.Join(gen.cfg.OutDir, FolderName(gen.cfg.Email), docName+".pdf")
-	err = os.MkdirAll(filepath.Dir(filename), 0755)
-	if err != nil {
-		return err
-	}
-	fmt.Println("writing file:", filename)
-	return ioutil.WriteFile(filename, buf.Bytes(), 0644)
-}
-
-func DownloadFile(srvDrive *drive.Service, docId, filename string) error {
-	resp, err := srvDrive.Files.Get(docId).Download()
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, resp.Body)
-	if err != nil {
-		return err
-	}
-	// filename := filepath.Join(gen.cfg.OutDir, FolderName(gen.cfg.Email), docName+".pdf")
-	err = os.MkdirAll(filepath.Dir(filename), 0755)
-	if err != nil {
-		return err
-	}
-	fmt.Println("writing file:", filename)
-	return ioutil.WriteFile(filename, buf.Bytes(), 0644)
 }
 
 func SanitizeTelNumber(tel string) string {

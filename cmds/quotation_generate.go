@@ -23,6 +23,7 @@ import (
 	"github.com/appscodelabs/offline-license-server/pkg/server"
 	"github.com/spf13/cobra"
 	gdrive "gomodules.xyz/gdrive-utils"
+	"gomodules.xyz/mailer"
 )
 
 func NewCmdGenerateQuotation() *cobra.Command {
@@ -67,7 +68,7 @@ func NewCmdGenerateQuotation() *cobra.Command {
 				}
 
 				filename := filepath.Join(outDir, server.FolderName(opts.Lead.Email), gen.DocName(quote)+".pdf")
-				err = server.ExportPDF(gen.DriveService, docId, filename)
+				err = mailer.ExportPDF(gen.DriveService, docId, filename)
 				if err != nil {
 					return err
 				}
