@@ -2,10 +2,11 @@ package parser
 
 import (
 	"bytes"
+	"regexp"
+
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/text"
 	"github.com/yuin/goldmark/util"
-	"regexp"
 )
 
 type rawHTMLParser struct {
@@ -47,8 +48,9 @@ func (s *rawHTMLParser) Parse(parent ast.Node, block text.Reader, pc Context) as
 }
 
 var tagnamePattern = `([A-Za-z][A-Za-z0-9-]*)`
-var attributePattern = `(?:\s+[a-zA-Z_:][a-zA-Z0-9:._-]*(?:\s*=\s*(?:[^\"'=<>` + "`" + `\x00-\x20]+|'[^']*'|"[^"]*"))?)`
-var openTagRegexp = regexp.MustCompile("^<" + tagnamePattern + attributePattern + `*\s*/?>`)
+
+var attributePattern = `(?:[\r\n \t]+[a-zA-Z_:][a-zA-Z0-9:._-]*(?:[\r\n \t]*=[\r\n \t]*(?:[^\"'=<>` + "`" + `\x00-\x20]+|'[^']*'|"[^"]*"))?)`
+var openTagRegexp = regexp.MustCompile("^<" + tagnamePattern + attributePattern + `*[ \t]*/?>`)
 var closeTagRegexp = regexp.MustCompile("^</" + tagnamePattern + `\s*>`)
 var commentRegexp = regexp.MustCompile(`^<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->`)
 var processingInstructionRegexp = regexp.MustCompile(`^(?:<\?).*?(?:\?>)`)
@@ -66,8 +68,6 @@ func (s *rawHTMLParser) parseSingleLineRegexp(reg *regexp.Regexp, block text.Rea
 	block.Advance(match[1])
 	return node
 }
-
-var dummyMatch = [][]byte{}
 
 func (s *rawHTMLParser) parseMultiLineRegexp(reg *regexp.Regexp, block text.Reader, pc Context) ast.Node {
 	sline, ssegment := block.Position()
@@ -101,8 +101,4 @@ func (s *rawHTMLParser) parseMultiLineRegexp(reg *regexp.Regexp, block text.Read
 		return node
 	}
 	return nil
-}
-
-func (s *rawHTMLParser) CloseBlock(parent ast.Node, pc Context) {
-	// nothing to do
 }

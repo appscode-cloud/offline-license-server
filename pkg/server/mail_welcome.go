@@ -18,9 +18,11 @@ package server
 
 import (
 	"fmt"
+
+	"gomodules.xyz/mailer"
 )
 
-func NewWelcomeMailer(info LicenseForm) Mailer {
+func NewWelcomeMailer(info LicenseForm) mailer.Mailer {
 	params := struct {
 		LicenseForm
 		ProductDisplayName  string
@@ -47,13 +49,13 @@ Team AppsCode
 [![Website](https://cdn.appscode.com/images/website.png)](https://appscode.com) [![Linkedin](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/ln.png)](https://www.linkedin.com/company/appscode/) [![Twitter](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/tt.png)](https://twitter.com/AppsCodeHQ) [![Youtube](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/yt.png)](https://www.youtube.com/c/AppsCodeInc)
 `, MailSupport)
 
-	return Mailer{
+	return mailer.Mailer{
 		Sender:          MailLicenseSender,
 		BCC:             MailLicenseTracker,
 		ReplyTo:         MailSupport,
 		Subject:         fmt.Sprintf("Welcome to %s", supportedProducts[info.Product].DisplayName),
 		Body:            src,
-		params:          params,
+		Params:          params,
 		AttachmentBytes: nil,
 		EnableTracking:  true,
 	}

@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 )
 
-type domainContainer struct {
+type DomainContainer struct {
 	Domain              Domain            `json:"domain"`
 	ReceivingDNSRecords []DNSRecord       `json:"receiving_dns_records"`
 	SendingDNSRecords   []DNSRecord       `json:"sending_dns_records"`
@@ -16,9 +16,9 @@ type domainContainer struct {
 	TagLimits           *TagLimits        `json:"limits,omitempty"`
 }
 
-func (ms *MockServer) addDomainRoutes(r chi.Router) {
+func (ms *mockServer) addDomainRoutes(r *mux.Router) {
 
-	ms.domainList = append(ms.domainList, domainContainer{
+	ms.domainList = append(ms.domainList, DomainContainer{
 		Domain: Domain{
 			CreatedAt:    RFC2822Time(time.Now().UTC()),
 			Name:         "mailgun.test",
@@ -81,27 +81,30 @@ func (ms *MockServer) addDomainRoutes(r chi.Router) {
 		},
 	})
 
-	r.Get("/domains", ms.listDomains)
-	r.Post("/domains", ms.createDomain)
-	r.Get("/domains/{domain}", ms.getDomain)
-	r.Put("/domains/{domain}/verify", ms.getDomain)
-	r.Delete("/domains/{domain}", ms.deleteDomain)
-	//r.Get("/domains/{domain}/credentials", ms.getCredentials)
-	//r.Post("/domains/{domain}/credentials", ms.createCredentials)
-	//r.Put("/domains/{domain}/credentials/{login}", ms.updateCredentials)
-	//r.Delete("/domains/{domain}/credentials/{login}", ms.deleteCredentials)
-	r.Get("/domains/{domain}/connection", ms.getConnection)
-	r.Put("/domains/{domain}/connection", ms.updateConnection)
-	r.Get("/domains/{domain}/tracking", ms.getTracking)
-	r.Put("/domains/{domain}/tracking/click", ms.updateClickTracking)
-	r.Put("/domains/{domain}/tracking/open", ms.updateOpenTracking)
-	r.Put("/domains/{domain}/tracking/unsubscribe", ms.updateUnsubTracking)
-	r.Get("/domains/{domain}/limits/tag", ms.getTagLimits)
-	r.Put("/domains/{domain}/dkim_selector", ms.updateDKIMSelector)
-	r.Put("/domains/{domain}/web_prefix", ms.updateWebPrefix)
+	r.HandleFunc("/domains", ms.listDomains).Methods(http.MethodGet)
+	r.HandleFunc("/domains", ms.createDomain).Methods(http.MethodPost)
+	r.HandleFunc("/domains/{domain}", ms.getDomain).Methods(http.MethodGet)
+	r.HandleFunc("/domains/{domain}/verify", ms.getDomain).Methods(http.MethodPut)
+	r.HandleFunc("/domains/{domain}", ms.deleteDomain).Methods(http.MethodDelete)
+	//r.HandleFunc("/domains/{domain}/credentials", ms.getCredentials).Methods(http.MethodGet)
+	//r.HandleFunc("/domains/{domain}/credentials", ms.createCredentials).Methods(http.MethodPost)
+	//r.HandleFunc("/domains/{domain}/credentials/{login}", ms.updateCredentials).Methods(http.MethodPut)
+	//r.HandleFunc("/domains/{domain}/credentials/{login}", ms.deleteCredentials).Methods(http.MethodDelete)
+	r.HandleFunc("/domains/{domain}/connection", ms.getConnection).Methods(http.MethodGet)
+	r.HandleFunc("/domains/{domain}/connection", ms.updateConnection).Methods(http.MethodPut)
+	r.HandleFunc("/domains/{domain}/tracking", ms.getTracking).Methods(http.MethodGet)
+	r.HandleFunc("/domains/{domain}/tracking/click", ms.updateClickTracking).Methods(http.MethodPut)
+	r.HandleFunc("/domains/{domain}/tracking/open", ms.updateOpenTracking).Methods(http.MethodPut)
+	r.HandleFunc("/domains/{domain}/tracking/unsubscribe", ms.updateUnsubTracking).Methods(http.MethodPut)
+	r.HandleFunc("/domains/{domain}/limits/tag", ms.getTagLimits).Methods(http.MethodGet)
+	r.HandleFunc("/domains/{domain}/dkim_selector", ms.updateDKIMSelector).Methods(http.MethodPut)
+	r.HandleFunc("/domains/{domain}/web_prefix", ms.updateWebPrefix).Methods(http.MethodPut)
 }
 
-func (ms *MockServer) listDomains(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) listDomains(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	var list []Domain
 	for _, domain := range ms.domainList {
 		list = append(list, domain.Domain)
@@ -137,9 +140,12 @@ func (ms *MockServer) listDomains(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (ms *MockServer) getDomain(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) getDomain(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for _, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			d.Connection = nil
 			toJSON(w, d)
 			return
@@ -149,8 +155,11 @@ func (ms *MockServer) getDomain(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) createDomain(w http.ResponseWriter, r *http.Request) {
-	ms.domainList = append(ms.domainList, domainContainer{
+func (ms *mockServer) createDomain(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
+	ms.domainList = append(ms.domainList, DomainContainer{
 		Domain: Domain{
 			CreatedAt:    RFC2822Time(time.Now()),
 			Name:         r.FormValue("name"),
@@ -164,10 +173,13 @@ func (ms *MockServer) createDomain(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "Domain has been created"})
 }
 
-func (ms *MockServer) deleteDomain(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) deleteDomain(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	result := ms.domainList[:0]
 	for _, domain := range ms.domainList {
-		if domain.Domain.Name == chi.URLParam(r, "domain") {
+		if domain.Domain.Name == mux.Vars(r)["domain"] {
 			continue
 		}
 		result = append(result, domain)
@@ -183,9 +195,12 @@ func (ms *MockServer) deleteDomain(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) getConnection(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) getConnection(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for _, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			resp := domainConnectionResponse{
 				Connection: *d.Connection,
 			}
@@ -197,9 +212,12 @@ func (ms *MockServer) getConnection(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) updateConnection(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) updateConnection(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for i, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			ms.domainList[i].Connection = &DomainConnection{
 				RequireTLS:       stringToBool(r.FormValue("require_tls")),
 				SkipVerification: stringToBool(r.FormValue("skip_verification")),
@@ -212,9 +230,12 @@ func (ms *MockServer) updateConnection(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) getTracking(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) getTracking(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for _, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			resp := domainTrackingResponse{
 				Tracking: *d.Tracking,
 			}
@@ -226,9 +247,12 @@ func (ms *MockServer) getTracking(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) updateClickTracking(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) updateClickTracking(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for i, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			ms.domainList[i].Tracking.Click.Active = stringToBool(r.FormValue("active"))
 			toJSON(w, okResp{Message: "Domain tracking settings have been updated"})
 			return
@@ -238,9 +262,12 @@ func (ms *MockServer) updateClickTracking(w http.ResponseWriter, r *http.Request
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) updateOpenTracking(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) updateOpenTracking(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for i, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			ms.domainList[i].Tracking.Open.Active = stringToBool(r.FormValue("active"))
 			toJSON(w, okResp{Message: "Domain tracking settings have been updated"})
 			return
@@ -250,9 +277,12 @@ func (ms *MockServer) updateOpenTracking(w http.ResponseWriter, r *http.Request)
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) updateUnsubTracking(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) updateUnsubTracking(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for i, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			ms.domainList[i].Tracking.Unsubscribe.Active = stringToBool(r.FormValue("active"))
 			if len(r.FormValue("html_footer")) != 0 {
 				ms.domainList[i].Tracking.Unsubscribe.HTMLFooter = r.FormValue("html_footer")
@@ -268,9 +298,12 @@ func (ms *MockServer) updateUnsubTracking(w http.ResponseWriter, r *http.Request
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) getTagLimits(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) getTagLimits(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for _, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			if d.TagLimits == nil {
 				w.WriteHeader(http.StatusNotFound)
 				toJSON(w, okResp{Message: "no limits defined for domain"})
@@ -284,9 +317,12 @@ func (ms *MockServer) getTagLimits(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) updateDKIMSelector(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) updateDKIMSelector(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for _, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			if r.FormValue("dkim_selector") == "" {
 				toJSON(w, okResp{Message: "dkim_selector param required"})
 				return
@@ -299,9 +335,12 @@ func (ms *MockServer) updateDKIMSelector(w http.ResponseWriter, r *http.Request)
 	toJSON(w, okResp{Message: "domain not found"})
 }
 
-func (ms *MockServer) updateWebPrefix(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) updateWebPrefix(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for _, d := range ms.domainList {
-		if d.Domain.Name == chi.URLParam(r, "domain") {
+		if d.Domain.Name == mux.Vars(r)["domain"] {
 			if r.FormValue("web_prefix") == "" {
 				toJSON(w, okResp{Message: "web_prefix param required"})
 				return

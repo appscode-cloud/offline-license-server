@@ -5,12 +5,12 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 	"github.com/mailgun/mailgun-go/v4/events"
 )
 
-func (ms *MockServer) addEventRoutes(r chi.Router) {
-	r.Get("/{domain}/events", ms.listEvents)
+func (ms *mockServer) addEventRoutes(r *mux.Router) {
+	r.HandleFunc("/{domain}/events", ms.listEvents).Methods(http.MethodGet)
 
 	var (
 		tags            = []string{"tag1", "tag2"}
@@ -193,7 +193,9 @@ type eventsResponse struct {
 	Paging Paging  `json:"paging"`
 }
 
-func (ms *MockServer) listEvents(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) listEvents(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
 	var idx []string
 
 	for _, e := range ms.events {

@@ -19,10 +19,11 @@ package server
 import (
 	"fmt"
 
+	"gomodules.xyz/mailer"
 	"sigs.k8s.io/yaml"
 )
 
-func NewEULAMailer(info *EULAInfo) Mailer {
+func NewEULAMailer(info *EULAInfo) mailer.Mailer {
 	data, err := yaml.Marshal(info)
 	if err != nil {
 		data = []byte("Error: " + err.Error())
@@ -38,13 +39,13 @@ The generated EULA can be found here: %s
 Regards,
 EULA Generator
 `, string(data), info.EULADocLink)
-	return Mailer{
+	return mailer.Mailer{
 		Sender:          MailSales,
 		BCC:             "",
 		ReplyTo:         MailSales,
 		Subject:         fmt.Sprintf("EULA generated for %s Quotation %s", info.Domain, info.Quotation),
 		Body:            src,
-		params:          nil,
+		Params:          nil,
 		AttachmentBytes: nil,
 		GDriveFiles:     nil,
 		EnableTracking:  false,

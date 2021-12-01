@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.2] - 2021-06-28
+### Changed
+* Change response for VerifyDomain method from (string, error) to (DomainResponse, error)
+
+## [4.5.1] - 2021-04-12
+### Changed
+* `MockServer` now locks internal resources for thread safety.
+
+## [4.5.0] - 2021-04-09
+### Changed
+* `MockServer` is now an interface, `NewMockServer()` now returns the interface.
+
+## [4.4.1] - 2021-02-23
+### Changed
+* Removed dependency on github.com/go-chi/chi
+
+## [4.4.0] - 2021-02-22
+### Changed
+* Added `SetTrackingOptions()` to suppport htmlonly option
+
+## [4.3.4] - 2021-02-22
+### Changed
+* Paging through results now clears the previous result before new fetch
+* Added test for multiple attachments
+
 ## [4.3.3] - 2021-01-29
 ### Added
 * Added UpdateDomainTrackingWebPrefix()

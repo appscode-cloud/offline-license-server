@@ -6,29 +6,29 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 )
 
-type mailingListContainer struct {
+type MailingListContainer struct {
 	MailingList MailingList
 	Members     []Member
 }
 
-func (ms *MockServer) addMailingListRoutes(r chi.Router) {
-	r.Get("/lists/pages", ms.listMailingLists)
-	r.Get("/lists/{address}", ms.getMailingList)
-	r.Post("/lists", ms.createMailingList)
-	r.Put("/lists/{address}", ms.updateMailingList)
-	r.Delete("/lists/{address}", ms.deleteMailingList)
+func (ms *mockServer) addMailingListRoutes(r *mux.Router) {
+	r.HandleFunc("/lists/pages", ms.listMailingLists).Methods(http.MethodGet)
+	r.HandleFunc("/lists/{address}", ms.getMailingList).Methods(http.MethodGet)
+	r.HandleFunc("/lists", ms.createMailingList).Methods(http.MethodPost)
+	r.HandleFunc("/lists/{address}", ms.updateMailingList).Methods(http.MethodPut)
+	r.HandleFunc("/lists/{address}", ms.deleteMailingList).Methods(http.MethodDelete)
 
-	r.Get("/lists/{address}/members/pages", ms.listMembers)
-	r.Get("/lists/{address}/members/{member}", ms.getMember)
-	r.Post("/lists/{address}/members", ms.createMember)
-	r.Put("/lists/{address}/members/{member}", ms.updateMember)
-	r.Delete("/lists/{address}/members/{member}", ms.deleteMember)
-	r.Post("/lists/{address}/members.json", ms.bulkCreate)
+	r.HandleFunc("/lists/{address}/members/pages", ms.listMembers).Methods(http.MethodGet)
+	r.HandleFunc("/lists/{address}/members/{member}", ms.getMember).Methods(http.MethodGet)
+	r.HandleFunc("/lists/{address}/members", ms.createMember).Methods(http.MethodPost)
+	r.HandleFunc("/lists/{address}/members/{member}", ms.updateMember).Methods(http.MethodPut)
+	r.HandleFunc("/lists/{address}/members/{member}", ms.deleteMember).Methods(http.MethodDelete)
+	r.HandleFunc("/lists/{address}/members.json", ms.bulkCreate).Methods(http.MethodPost)
 
-	ms.mailingList = append(ms.mailingList, mailingListContainer{
+	ms.mailingList = append(ms.mailingList, MailingListContainer{
 		MailingList: MailingList{
 			AccessLevel:  "everyone",
 			Address:      "foo@mailgun.test",
@@ -46,7 +46,10 @@ func (ms *MockServer) addMailingListRoutes(r chi.Router) {
 	})
 }
 
-func (ms *MockServer) listMailingLists(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) listMailingLists(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	var list []MailingList
 	var idx []string
 
@@ -89,9 +92,12 @@ func (ms *MockServer) listMailingLists(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, resp)
 }
 
-func (ms *MockServer) getMailingList(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) getMailingList(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for _, ml := range ms.mailingList {
-		if ml.MailingList.Address == chi.URLParam(r, "address") {
+		if ml.MailingList.Address == mux.Vars(r)["address"] {
 			toJSON(w, mailingListResponse{MailingList: ml.MailingList})
 			return
 		}
@@ -100,10 +106,13 @@ func (ms *MockServer) getMailingList(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "mailing list not found"})
 }
 
-func (ms *MockServer) deleteMailingList(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) deleteMailingList(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	result := ms.mailingList[:0]
 	for _, ml := range ms.mailingList {
-		if ml.MailingList.Address == chi.URLParam(r, "address") {
+		if ml.MailingList.Address == mux.Vars(r)["address"] {
 			continue
 		}
 		result = append(result, ml)
@@ -119,9 +128,12 @@ func (ms *MockServer) deleteMailingList(w http.ResponseWriter, r *http.Request) 
 	toJSON(w, okResp{Message: "mailing list not found"})
 }
 
-func (ms *MockServer) updateMailingList(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) updateMailingList(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	for i, d := range ms.mailingList {
-		if d.MailingList.Address == chi.URLParam(r, "address") {
+		if d.MailingList.Address == mux.Vars(r)["address"] {
 			if r.FormValue("address") != "" {
 				ms.mailingList[i].MailingList.Address = r.FormValue("address")
 			}
@@ -142,8 +154,11 @@ func (ms *MockServer) updateMailingList(w http.ResponseWriter, r *http.Request) 
 	toJSON(w, okResp{Message: "mailing list not found"})
 }
 
-func (ms *MockServer) createMailingList(w http.ResponseWriter, r *http.Request) {
-	ms.mailingList = append(ms.mailingList, mailingListContainer{
+func (ms *mockServer) createMailingList(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
+	ms.mailingList = append(ms.mailingList, MailingListContainer{
 		MailingList: MailingList{
 			CreatedAt:   RFC2822Time(time.Now().UTC()),
 			Name:        r.FormValue("name"),
@@ -155,13 +170,16 @@ func (ms *MockServer) createMailingList(w http.ResponseWriter, r *http.Request) 
 	toJSON(w, okResp{Message: "Mailing list has been created"})
 }
 
-func (ms *MockServer) listMembers(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) listMembers(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	var list []Member
 	var idx []string
 	var found bool
 
 	for _, ml := range ms.mailingList {
-		if ml.MailingList.Address == chi.URLParam(r, "address") {
+		if ml.MailingList.Address == mux.Vars(r)["address"] {
 			found = true
 			for _, member := range ml.Members {
 				list = append(list, member)
@@ -210,13 +228,16 @@ func (ms *MockServer) listMembers(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, resp)
 }
 
-func (ms *MockServer) getMember(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) getMember(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	var found bool
 	for _, ml := range ms.mailingList {
-		if ml.MailingList.Address == chi.URLParam(r, "address") {
+		if ml.MailingList.Address == mux.Vars(r)["address"] {
 			found = true
 			for _, member := range ml.Members {
-				if member.Address == chi.URLParam(r, "member") {
+				if member.Address == mux.Vars(r)["member"] {
 					toJSON(w, memberResponse{Member: member})
 					return
 				}
@@ -234,10 +255,13 @@ func (ms *MockServer) getMember(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "member not found"})
 }
 
-func (ms *MockServer) deleteMember(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) deleteMember(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	idx := -1
 	for i, ml := range ms.mailingList {
-		if ml.MailingList.Address == chi.URLParam(r, "address") {
+		if ml.MailingList.Address == mux.Vars(r)["address"] {
 			idx = i
 		}
 	}
@@ -250,7 +274,7 @@ func (ms *MockServer) deleteMember(w http.ResponseWriter, r *http.Request) {
 
 	result := ms.mailingList[idx].Members[:0]
 	for _, m := range ms.mailingList[idx].Members {
-		if m.Address == chi.URLParam(r, "member") {
+		if m.Address == mux.Vars(r)["member"] {
 			continue
 		}
 		result = append(result, m)
@@ -266,10 +290,13 @@ func (ms *MockServer) deleteMember(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "member not found"})
 }
 
-func (ms *MockServer) updateMember(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) updateMember(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	idx := -1
 	for i, ml := range ms.mailingList {
-		if ml.MailingList.Address == chi.URLParam(r, "address") {
+		if ml.MailingList.Address == mux.Vars(r)["address"] {
 			idx = i
 		}
 	}
@@ -281,7 +308,7 @@ func (ms *MockServer) updateMember(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i, m := range ms.mailingList[idx].Members {
-		if m.Address == chi.URLParam(r, "member") {
+		if m.Address == mux.Vars(r)["member"] {
 			if r.FormValue("address") != "" {
 				ms.mailingList[idx].Members[i].Address = parseAddress(r.FormValue("address"))
 			}
@@ -303,10 +330,13 @@ func (ms *MockServer) updateMember(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "member not found"})
 }
 
-func (ms *MockServer) createMember(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) createMember(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	idx := -1
 	for i, ml := range ms.mailingList {
-		if ml.MailingList.Address == chi.URLParam(r, "address") {
+		if ml.MailingList.Address == mux.Vars(r)["address"] {
 			idx = i
 		}
 	}
@@ -346,10 +376,13 @@ func (ms *MockServer) createMember(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "Mailing list member has been created"})
 }
 
-func (ms *MockServer) bulkCreate(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) bulkCreate(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	idx := -1
 	for i, ml := range ms.mailingList {
-		if ml.MailingList.Address == chi.URLParam(r, "address") {
+		if ml.MailingList.Address == mux.Vars(r)["address"] {
 			idx = i
 		}
 	}

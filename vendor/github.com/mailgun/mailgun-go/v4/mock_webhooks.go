@@ -3,17 +3,17 @@ package mailgun
 import (
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 )
 
-func (ms *MockServer) addWebhookRoutes(r chi.Router) {
-	r.Route("/domains/{domain}/webhooks", func(r chi.Router) {
-		r.Get("/", ms.listWebHooks)
-		r.Post("/", ms.postWebHook)
-		r.Get("/{webhook}", ms.getWebHook)
-		r.Put("/{webhook}", ms.putWebHook)
-		r.Delete("/{webhook}", ms.deleteWebHook)
-	})
+func (ms *mockServer) addWebhookRoutes(r *mux.Router) {
+	sr := r.PathPrefix("/domains/{domain}/webhooks").Subrouter()
+	sr.HandleFunc("", ms.listWebHooks).Methods(http.MethodGet)
+	sr.HandleFunc("", ms.postWebHook).Methods(http.MethodPost)
+	sr.HandleFunc("/{webhook}", ms.getWebHook).Methods(http.MethodGet)
+	sr.HandleFunc("/{webhook}", ms.putWebHook).Methods(http.MethodPut)
+	sr.HandleFunc("/{webhook}", ms.deleteWebHook).Methods(http.MethodDelete)
+
 	ms.webhooks = WebHooksListResponse{
 		Webhooks: map[string]UrlOrUrls{
 			"new-webhook": {
@@ -26,20 +26,29 @@ func (ms *MockServer) addWebhookRoutes(r chi.Router) {
 	}
 }
 
-func (ms *MockServer) listWebHooks(w http.ResponseWriter, _ *http.Request) {
+func (ms *mockServer) listWebHooks(w http.ResponseWriter, _ *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	toJSON(w, ms.webhooks)
 }
 
-func (ms *MockServer) getWebHook(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) getWebHook(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	resp := WebHookResponse{
 		Webhook: UrlOrUrls{
-			Urls: ms.webhooks.Webhooks[chi.URLParam(r, "webhook")].Urls,
+			Urls: ms.webhooks.Webhooks[mux.Vars(r)["webhook"]].Urls,
 		},
 	}
 	toJSON(w, resp)
 }
 
-func (ms *MockServer) postWebHook(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) postWebHook(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	if err := r.ParseForm(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		toJSON(w, okResp{Message: err.Error()})
@@ -55,7 +64,10 @@ func (ms *MockServer) postWebHook(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "success"})
 }
 
-func (ms *MockServer) putWebHook(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) putWebHook(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
 	if err := r.ParseForm(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		toJSON(w, okResp{Message: err.Error()})
@@ -66,18 +78,21 @@ func (ms *MockServer) putWebHook(w http.ResponseWriter, r *http.Request) {
 	for _, url := range r.Form["url"] {
 		urls = append(urls, url)
 	}
-	ms.webhooks.Webhooks[chi.URLParam(r, "webhook")] = UrlOrUrls{Urls: urls}
+	ms.webhooks.Webhooks[mux.Vars(r)["webhook"]] = UrlOrUrls{Urls: urls}
 
 	toJSON(w, okResp{Message: "success"})
 }
 
-func (ms *MockServer) deleteWebHook(w http.ResponseWriter, r *http.Request) {
-	_, ok := ms.webhooks.Webhooks[chi.URLParam(r, "webhook")]
+func (ms *mockServer) deleteWebHook(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+
+	_, ok := ms.webhooks.Webhooks[mux.Vars(r)["webhook"]]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		toJSON(w, okResp{Message: "webhook not found"})
 	}
 
-	delete(ms.webhooks.Webhooks, chi.URLParam(r, "webhook"))
+	delete(ms.webhooks.Webhooks, mux.Vars(r)["webhook"])
 	toJSON(w, okResp{Message: "success"})
 }

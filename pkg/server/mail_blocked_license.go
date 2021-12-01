@@ -16,9 +16,13 @@ limitations under the License.
 
 package server
 
-import "fmt"
+import (
+	"fmt"
 
-func NewBlockedLicenseMailer(info LicenseMailData) Mailer {
+	"gomodules.xyz/mailer"
+)
+
+func NewBlockedLicenseMailer(info LicenseMailData) mailer.Mailer {
 	src := `Hello,
 FYI, an attempt was made to issue a {{.Product}} license for cluster {{.Cluster}} by {{.Email}}. Please review for further action.
 
@@ -26,13 +30,13 @@ Regards,
 License server
 `
 
-	return Mailer{
+	return mailer.Mailer{
 		Sender:          MailLicenseSender,
 		BCC:             MailLicenseTracker,
 		ReplyTo:         MailSales,
 		Subject:         fmt.Sprintf("[LICENSE_BLOCKED] plan:%s email:%s cluster:%s", info.Product, info.Email, info.Cluster),
 		Body:            src,
-		params:          info,
+		Params:          info,
 		AttachmentBytes: nil,
 		EnableTracking:  false,
 	}

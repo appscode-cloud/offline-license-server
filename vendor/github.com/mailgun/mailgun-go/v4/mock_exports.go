@@ -4,17 +4,19 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 )
 
-func (ms *MockServer) addExportRoutes(r chi.Router) {
-	r.Post("/exports", ms.postExports)
-	r.Get("/exports", ms.listExports)
-	r.Get("/exports/{id}", ms.getExport)
-	r.Get("/exports/{id}/download_url", ms.getExportLink)
+func (ms *mockServer) addExportRoutes(r *mux.Router) {
+	r.HandleFunc("/exports", ms.postExports).Methods(http.MethodPost)
+	r.HandleFunc("/exports", ms.listExports).Methods(http.MethodGet)
+	r.HandleFunc("/exports/{id}", ms.getExport).Methods(http.MethodGet)
+	r.HandleFunc("/exports/{id}/download_url", ms.getExportLink).Methods(http.MethodGet)
 }
 
-func (ms *MockServer) postExports(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) postExports(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
 	e := Export{
 		ID:     strconv.Itoa(len(ms.exportList)),
 		URL:    r.FormValue("url"),
@@ -25,15 +27,19 @@ func (ms *MockServer) postExports(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "success"})
 }
 
-func (ms *MockServer) listExports(w http.ResponseWriter, _ *http.Request) {
+func (ms *mockServer) listExports(w http.ResponseWriter, _ *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
 	toJSON(w, ExportList{
 		Items: ms.exportList,
 	})
 }
 
-func (ms *MockServer) getExport(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) getExport(w http.ResponseWriter, r *http.Request) {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
 	for _, export := range ms.exportList {
-		if export.ID == chi.URLParam(r, "id") {
+		if export.ID == mux.Vars(r)["id"] {
 			toJSON(w, export)
 			return
 		}
@@ -42,7 +48,7 @@ func (ms *MockServer) getExport(w http.ResponseWriter, r *http.Request) {
 	toJSON(w, okResp{Message: "export not found"})
 }
 
-func (ms *MockServer) getExportLink(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) getExportLink(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Location", "/some/s3/url")
 	w.WriteHeader(http.StatusFound)
 }

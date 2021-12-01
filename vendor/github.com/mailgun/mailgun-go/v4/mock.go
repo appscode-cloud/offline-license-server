@@ -10,31 +10,88 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 )
 
+type MockServer interface {
+	Stop()
+	URL4() string
+	URL() string
+	DomainIPS() []string
+	DomainList() []DomainContainer
+	ExportList() []Export
+	MailingList() []MailingListContainer
+	RouteList() []Route
+	Events() []Event
+	Webhooks() WebHooksListResponse
+}
+
 // A mailgun api mock suitable for testing
-type MockServer struct {
+type mockServer struct {
 	srv *httptest.Server
 
 	domainIPS   []string
-	domainList  []domainContainer
+	domainList  []DomainContainer
 	exportList  []Export
-	mailingList []mailingListContainer
+	mailingList []MailingListContainer
 	routeList   []Route
 	events      []Event
 	webhooks    WebHooksListResponse
+	mutex       sync.Mutex
+}
+
+func (ms *mockServer) DomainIPS() []string {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+	return ms.domainIPS
+}
+
+func (ms *mockServer) DomainList() []DomainContainer {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+	return ms.domainList
+}
+
+func (ms *mockServer) ExportList() []Export {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+	return ms.exportList
+}
+
+func (ms *mockServer) MailingList() []MailingListContainer {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+	return ms.mailingList
+}
+
+func (ms *mockServer) RouteList() []Route {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+	return ms.routeList
+}
+
+func (ms *mockServer) Events() []Event {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+	return ms.events
+}
+
+func (ms *mockServer) Webhooks() WebHooksListResponse {
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
+	return ms.webhooks
 }
 
 // Create a new instance of the mailgun API mock server
 func NewMockServer() MockServer {
-	ms := MockServer{}
+	ms := mockServer{}
 
 	// Add all our handlers
-	r := chi.NewRouter()
+	r := mux.NewRouter()
 
-	r.Route("/v3", func(r chi.Router) {
+	func(r *mux.Router) {
 		ms.addIPRoutes(r)
 		ms.addExportRoutes(r)
 		ms.addDomainRoutes(r)
@@ -43,25 +100,25 @@ func NewMockServer() MockServer {
 		ms.addMessagesRoutes(r)
 		ms.addRoutes(r)
 		ms.addWebhookRoutes(r)
-	})
+	}(r.PathPrefix("/v3").Subrouter())
 	ms.addValidationRoutes(r)
 
 	// Start the server
 	ms.srv = httptest.NewServer(r)
-	return ms
+	return &ms
 }
 
 // Stop the server
-func (ms *MockServer) Stop() {
+func (ms *mockServer) Stop() {
 	ms.srv.Close()
 }
 
-func (ms *MockServer) URL4() string {
+func (ms *mockServer) URL4() string {
 	return ms.srv.URL + "/v4"
 }
 
 // URL returns the URL used to connect to the mock server
-func (ms *MockServer) URL() string {
+func (ms *mockServer) URL() string {
 	return ms.srv.URL + "/v3"
 }
 

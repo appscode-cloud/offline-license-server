@@ -18,6 +18,8 @@ package server
 
 import (
 	"fmt"
+
+	"gomodules.xyz/mailer"
 )
 
 type QuotationEmailData struct {
@@ -27,7 +29,7 @@ type QuotationEmailData struct {
 	Plan     string // PAYG, Enterprise
 }
 
-func NewQuotationMailer(info QuotationEmailData) Mailer {
+func NewQuotationMailer(info QuotationEmailData) mailer.Mailer {
 	src := `Hello {{ .Name }},
 
 Thanks for your interest in licensing {{.Offer}}.
@@ -46,13 +48,13 @@ Team AppsCode
 [![Website](https://cdn.appscode.com/images/website.png)](https://appscode.com) [![Linkedin](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/ln.png)](https://www.linkedin.com/company/appscode/) [![Twitter](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/tt.png)](https://twitter.com/AppsCodeHQ) [![Youtube](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/yt.png)](https://www.youtube.com/c/AppsCodeInc)
 `
 
-	return Mailer{
+	return mailer.Mailer{
 		Sender:          MailSales,
 		BCC:             MailSales,
 		ReplyTo:         MailSales,
 		Subject:         fmt.Sprintf("%s %s Quotation - %s", info.Offer, info.Plan, info.Company),
 		Body:            src,
-		params:          info,
+		Params:          info,
 		AttachmentBytes: nil,
 		GDriveFiles:     nil,
 		EnableTracking:  true,

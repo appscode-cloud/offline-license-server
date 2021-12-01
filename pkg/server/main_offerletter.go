@@ -19,10 +19,11 @@ package server
 import (
 	"fmt"
 
+	"gomodules.xyz/mailer"
 	"sigs.k8s.io/yaml"
 )
 
-func NewOfferLetterMailer(info *CandidateInfo, folderId string) Mailer {
+func NewOfferLetterMailer(info *CandidateInfo, folderId string) mailer.Mailer {
 	data, err := yaml.Marshal(info)
 	if err != nil {
 		data = []byte("Error: " + err.Error())
@@ -38,13 +39,13 @@ The generated offer letter can be found here: https://drive.google.com/drive/fol
 Regards,
 Offer Letter Generator
 `, string(data), folderId)
-	return Mailer{
+	return mailer.Mailer{
 		Sender:          MailHR,
 		BCC:             "",
 		ReplyTo:         MailHR,
 		Subject:         fmt.Sprintf("Offer letter generated for %s", info.Email),
 		Body:            src,
-		params:          nil,
+		Params:          nil,
 		AttachmentBytes: nil,
 		GDriveFiles:     nil,
 		EnableTracking:  false,

@@ -6,20 +6,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 	"github.com/mailgun/mailgun-go/v4/events"
 )
 
-func (ms *MockServer) addMessagesRoutes(r chi.Router) {
-	r.Post("/{domain}/messages", ms.createMessages)
+func (ms *mockServer) addMessagesRoutes(r *mux.Router) {
+	r.HandleFunc("/{domain}/messages", ms.createMessages).Methods(http.MethodPost)
 
 	// This path is made up; it could be anything as the storage url could change over time
-	r.Get("/se.storage.url/messages/{id}", ms.getStoredMessages)
-	r.Post("/se.storage.url/messages/{id}", ms.sendStoredMessages)
+	r.HandleFunc("/se.storage.url/messages/{id}", ms.getStoredMessages).Methods(http.MethodGet)
+	r.HandleFunc("/se.storage.url/messages/{id}", ms.sendStoredMessages).Methods(http.MethodPost)
 }
 
 // TODO: This implementation doesn't support multiple recipients
-func (ms *MockServer) createMessages(w http.ResponseWriter, r *http.Request) {
+func (ms *mockServer) createMessages(w http.ResponseWriter, r *http.Request) {
 	to, err := mail.ParseAddress(r.FormValue("to"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -49,7 +49,9 @@ func (ms *MockServer) createMessages(w http.ResponseWriter, r *http.Request) {
 		stored.Flags = events.Flags{
 			IsTestMode: false,
 		}
+		ms.mutex.Lock()
 		ms.events = append(ms.events, stored)
+		ms.mutex.Unlock()
 	default:
 		accepted := new(events.Accepted)
 		accepted.Name = events.EventAccepted
@@ -60,19 +62,34 @@ func (ms *MockServer) createMessages(w http.ResponseWriter, r *http.Request) {
 		accepted.Message.Headers.MessageID = accepted.ID
 		accepted.Message.Headers.Subject = r.FormValue("subject")
 
+		if r.MultipartForm.File != nil {
+			for _, fh := range r.MultipartForm.File {
+				for _, fd := range fh {
+					accepted.Message.Attachments = append(accepted.Message.Attachments, events.Attachment{
+						FileName:    fd.Filename,
+						ContentType: fd.Header.Get("Content-Type"),
+						Size:        int(fd.Size),
+					})
+				}
+			}
+		}
 		accepted.Recipient = r.FormValue("to")
 		accepted.RecipientDomain = strings.Split(to.Address, "@")[1]
 		accepted.Flags = events.Flags{
 			IsAuthenticated: true,
 		}
+		ms.mutex.Lock()
 		ms.events = append(ms.events, accepted)
+		ms.mutex.Unlock()
 	}
 
 	toJSON(w, okResp{ID: "<" + id + ">", Message: "Queued. Thank you."})
 }
 
-func (ms *MockServer) getStoredMessages(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+func (ms *mockServer) getStoredMessages(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
 
 	// Find our stored event
 	var stored *events.Stored
@@ -101,8 +118,10 @@ func (ms *MockServer) getStoredMessages(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func (ms *MockServer) sendStoredMessages(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+func (ms *mockServer) sendStoredMessages(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	defer ms.mutex.Unlock()
+	ms.mutex.Lock()
 
 	// Find our stored event
 	var stored *events.Stored
