@@ -39,6 +39,7 @@ import (
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
 	"gopkg.in/macaron.v1"
 	"k8s.io/klog/v2"
 )
@@ -230,7 +231,12 @@ func NewQuotationGenerator(client *http.Client, cfg QuotationGeneratorConfig) *Q
 		klog.Fatalf("Unable to retrieve Docs client: %v", err)
 	}
 
-	srvSheet, err := gdrive.NewSpreadsheet(cfg.LicenseSpreadsheetId, option.WithHTTPClient(client))
+	srvSheets, err := sheets.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		klog.Fatalf("Unable to retrieve Sheets client: %v", err)
+	}
+
+	srvSheet, err := gdrive.NewSpreadsheet(srvSheets, cfg.LicenseSpreadsheetId)
 	if err != nil {
 		klog.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}

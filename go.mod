@@ -31,11 +31,11 @@ require (
 	gomodules.xyz/email-providers v0.1.4
 	gomodules.xyz/errors v0.1.0
 	gomodules.xyz/freshsales-client-go v0.0.2
-	gomodules.xyz/gdrive-utils v0.0.1
+	gomodules.xyz/gdrive-utils v0.0.2
 	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/listmonk-client-go v0.0.3
 	gomodules.xyz/logs v0.0.6
-	gomodules.xyz/mailer v0.0.7
+	gomodules.xyz/mailer v0.0.11
 	gomodules.xyz/password-generator v0.2.7
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/sets v0.2.1

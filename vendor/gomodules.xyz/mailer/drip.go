@@ -107,18 +107,33 @@ func (dc *DripCampaign) Prepare(c *Contact, t time.Time) {
 func (dc *DripCampaign) AddContact(c Contact) error {
 	dc.Prepare(&c, time.Now())
 
-	fmt.Println(c.Step_3_Timestamp.IsZero())
-	fmt.Println(c.Step_4_Timestamp.IsZero())
+	si, err := gdrive.NewSpreadsheet(dc.SheetService, dc.SpreadsheetId)
+	if err != nil {
+		return err
+	}
+	_, err = si.EnsureSheet(dc.SheetName, nil)
+	if err != nil {
+		return err
+	}
 
 	w := gdrive.NewWriter(dc.SheetService, dc.SpreadsheetId, dc.SheetName)
 	return gocsv.MarshalCSV([]*Contact{&c}, w)
 }
 
-func (dc *DripCampaign) Run(ctx context.Context) {
+func (dc *DripCampaign) Run(ctx context.Context) error {
+	si, err := gdrive.NewSpreadsheet(dc.SheetService, dc.SpreadsheetId)
+	if err != nil {
+		return err
+	}
+	_, err = si.EnsureSheet(dc.SheetName, nil)
+	if err != nil {
+		return err
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return ctx.Err()
 		default:
 		}
 
@@ -136,7 +151,7 @@ func (dc *DripCampaign) Run(ctx context.Context) {
 		} else {
 			klog.InfoS("completed processing drip campaign", "name", dc.Name)
 		}
-		time.Sleep(120 * time.Hour)
+		time.Sleep(1 * time.Hour)
 	}
 }
 

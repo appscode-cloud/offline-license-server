@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"golang.org/x/net/context"
-	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -14,13 +13,7 @@ type Spreadsheet struct {
 	SpreadSheetId string
 }
 
-func NewSpreadsheet(spreadsheetId string, opts ...option.ClientOption) (*Spreadsheet, error) {
-	// Set env GOOGLE_APPLICATION_CREDENTIALS to service account json path
-	srv, err := sheets.NewService(context.TODO(), opts...)
-	if err != nil {
-		return nil, err
-	}
-
+func NewSpreadsheet(srv *sheets.Service, spreadsheetId string) (*Spreadsheet, error) {
 	return &Spreadsheet{
 		srv:           srv,
 		SpreadSheetId: spreadsheetId,
@@ -197,9 +190,11 @@ func (si *Spreadsheet) EnsureSheet(name string, headers []string) (int64, error)
 		return -1, err
 	}
 
-	err = si.ensureHeader(sheetId, headers)
-	if err != nil {
-		return -1, err
+	if len(headers) > 0 {
+		err = si.ensureHeader(sheetId, headers)
+		if err != nil {
+			return -1, err
+		}
 	}
 
 	return sheetId, nil
