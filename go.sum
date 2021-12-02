@@ -865,8 +865,8 @@ gomodules.xyz/listmonk-client-go v0.0.3 h1:zClL0BzsMrLLj3otzSirbzWjv4s9ewH7J8LE6
 gomodules.xyz/listmonk-client-go v0.0.3/go.mod h1:KndG87c141fxyzuxblTVa2CxYq0DAyX/xSFs/hkX67o=
 gomodules.xyz/logs v0.0.6 h1:8+9Wkud5yBPtIvkVszubyTeFxNII30lWODom0+GZD8U=
 gomodules.xyz/logs v0.0.6/go.mod h1:Q+fFtZFLEB5q86KmDehXCGuMP72Rv+Rwz0KuVxK+Gi4=
-gomodules.xyz/mailer v0.0.13 h1:61eQx/5/W1/2ZohA3cMAuw4JjyjwoLUA+iDMguainFw=
-gomodules.xyz/mailer v0.0.13/go.mod h1:mnAm43hOfv8HLPl2GVo8XBOX2XbBXysnuj2gIpf+99M=
+gomodules.xyz/mailer v0.0.15 h1:OGCvvlImX4UDSa6HoyyV34rAuabpszyyIF4kMQBbTUs=
+gomodules.xyz/mailer v0.0.15/go.mod h1:mnAm43hOfv8HLPl2GVo8XBOX2XbBXysnuj2gIpf+99M=
 gomodules.xyz/password-generator v0.2.6/go.mod h1:TvwYYTx9+P1pPwKQKfZgB/wr2Id9MqAQ3B5auY7reNg=
 gomodules.xyz/password-generator v0.2.7 h1:xUCiIKji8JYOkyTsvi/2nArbVevsHMOnoJVMaShbzqI=
 gomodules.xyz/password-generator v0.2.7/go.mod h1:TvwYYTx9+P1pPwKQKfZgB/wr2Id9MqAQ3B5auY7reNg=

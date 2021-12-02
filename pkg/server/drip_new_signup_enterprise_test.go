@@ -25,6 +25,7 @@ func TestNewEnterpriseSignupCampaign(t *testing.T) {
 	for idx, step := range dc.Steps {
 		step.Mailer.Params = &SignupCampaignData{
 			Name:                "Tamal Saha",
+			Cluster:             "5f2e2f62-d8b4-43d0-8d6d-d1592a9a76d4",
 			Product:             "kubedb-enterprise",
 			ProductDisplayName:  "KubeDB",
 			IsEnterpriseProduct: true,

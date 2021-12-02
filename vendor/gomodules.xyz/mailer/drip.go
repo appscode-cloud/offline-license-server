@@ -121,14 +121,16 @@ func (dc *DripCampaign) AddContact(c Contact) error {
 	return gocsv.MarshalCSV([]*Contact{&c}, w)
 }
 
-func (dc *DripCampaign) Run(ctx context.Context) error {
-	si, err := gdrive.NewSpreadsheet(dc.SheetService, dc.SpreadsheetId)
-	if err != nil {
-		return err
-	}
-	_, err = si.EnsureSheet(dc.SheetName, nil)
-	if err != nil {
-		return err
+func RunCampaigns(ctx context.Context, dcs ...*DripCampaign) error {
+	for _, dc := range dcs {
+		si, err := gdrive.NewSpreadsheet(dc.SheetService, dc.SpreadsheetId)
+		if err != nil {
+			return err
+		}
+		_, err = si.EnsureSheet(dc.SheetName, nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	for {
@@ -138,19 +140,13 @@ func (dc *DripCampaign) Run(ctx context.Context) error {
 		default:
 		}
 
-		err := func() (e2 error) {
-			defer func() {
-				if r := recover(); r != nil {
-					e2 = fmt.Errorf("panic: %v [recovered]", r)
-				}
-			}()
-			e2 = dc.ProcessCampaign()
-			return
-		}()
-		if err != nil {
-			klog.ErrorS(err, "failed processing drip campaign", "name", dc.Name)
-		} else {
-			klog.InfoS("completed processing drip campaign", "name", dc.Name)
+		for _, dc := range dcs {
+			err := dc.ProcessCampaign()
+			if err != nil {
+				klog.ErrorS(err, "failed processing drip campaign", "name", dc.Name)
+			} else {
+				klog.InfoS("completed processing drip campaign", "name", dc.Name)
+			}
 		}
 		time.Sleep(1 * time.Hour)
 	}

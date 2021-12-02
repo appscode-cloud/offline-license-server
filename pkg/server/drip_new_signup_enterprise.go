@@ -26,6 +26,7 @@ import (
 
 type SignupCampaignData struct {
 	Name                string
+	Cluster             string
 	Product             string
 	ProductDisplayName  string
 	IsEnterpriseProduct bool
@@ -36,7 +37,7 @@ type SignupCampaignData struct {
 func NewEnterpriseSignupCampaign(srv *sheets.Service, mg mailgun.Mailgun) *mailer.DripCampaign {
 	return &mailer.DripCampaign{
 		Name: "New Signup",
-		Steps: []mailer.CampaignStep{
+		Steps: append([]mailer.CampaignStep{
 			{
 				WaitTime: 0,
 				Mailer: mailer.Mailer{
@@ -114,13 +115,25 @@ Team AppsCode
 					EnableTracking:  true,
 				},
 			},
+		}, NewEnterpriseFirstTimeCampaign(srv, mg).Steps...),
+		M:             mg,
+		SheetService:  srv,
+		SpreadsheetId: DripSpreadsheetId,
+		SheetName:     "NEW_SIGNUP_ENTERPRISE",
+	}
+}
+
+func NewEnterpriseFirstTimeCampaign(srv *sheets.Service, mg mailgun.Mailgun) *mailer.DripCampaign {
+	return &mailer.DripCampaign{
+		Name: "New Signup",
+		Steps: []mailer.CampaignStep{
 			{
 				WaitTime: 25 * 24 * time.Hour, // 25 days
 				Mailer: mailer.Mailer{
 					Sender:  MailHello,
 					BCC:     MailLicenseTracker,
 					ReplyTo: MailHello,
-					Subject: "Your {{.ProductDisplayName}} trial ending soon",
+					Subject: "Your {{.ProductDisplayName}} trial for cluster {{.Cluster}} ending soon",
 					Body: `Hi {{.Name}},
 
 You are almost at the end of your trial period for {{.Product}}. Would you like to extend your trial? Or maybe you would like to get a full Enterprise license? For an Enterprise price quote, please reach us [here](https://appscode.com/contact/).
@@ -148,7 +161,7 @@ Team AppsCode
 					Subject: "{{.ProductDisplayName}} next steps",
 					Body: `Hi {{.Name}},
 
-Congratulations on reaching the end of your trial period with {{.ProductDisplayName}}. Here on, we would love to hear about your journey with our product. And how would you like to move forward with us? For an Enterprise price quote, please reach us [here](https://appscode.com/contact/).
+Congratulations on reaching the end of your trial period with {{.ProductDisplayName}} for cluster {{.Cluster}}. Here on, we would love to hear about your journey with our product. And how would you like to move forward with us? For an Enterprise price quote, please reach us [here](https://appscode.com/contact/).
 
 Or email us at sales@appscode.com.
 
@@ -168,6 +181,6 @@ Team AppsCode
 		M:             mg,
 		SheetService:  srv,
 		SpreadsheetId: DripSpreadsheetId,
-		SheetName:     "NEW_SIGNUP_ENTERPRISE",
+		SheetName:     "FIRST_TIME_ENTERPRISE",
 	}
 }

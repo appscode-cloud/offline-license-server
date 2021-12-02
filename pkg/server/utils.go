@@ -17,7 +17,6 @@ limitations under the License.
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -99,12 +98,4 @@ func ListExistingLicensees(srv *sheets.Service, spreadsheetId, sheetName, header
 		emails.Insert(row...)
 	}
 	return emails
-}
-
-func toJson(v interface{}) string {
-	data, err := json.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-	return string(data)
 }

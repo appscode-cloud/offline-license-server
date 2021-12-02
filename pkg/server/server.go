@@ -328,12 +328,11 @@ func (s *Server) Run() error {
 
 	if s.opts.EnableDripCampaign {
 		go func() {
-			if err := NewCommunitySignupCampaign(s.srvSheets, s.mg).Run(context.TODO()); err != nil {
-				panic(err)
-			}
-		}()
-		go func() {
-			if err := NewEnterpriseSignupCampaign(s.srvSheets, s.mg).Run(context.TODO()); err != nil {
+			if err := mailer.RunCampaigns(context.TODO(),
+				NewCommunitySignupCampaign(s.srvSheets, s.mg),
+				NewEnterpriseSignupCampaign(s.srvSheets, s.mg),
+				NewEnterpriseFirstTimeCampaign(s.srvSheets, s.mg),
+			); err != nil {
 				panic(err)
 			}
 		}()
@@ -443,8 +442,22 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 					klog.ErrorS(err, "failed record license download event", "email", info.Email)
 				}
 			}()
+
+			dcEnt := NewEnterpriseSignupCampaign(s.srvSheets, s.mg)
+			audEnt, err := dcEnt.ListAudiences()
+			if err != nil {
+				return err
+			}
+
+			dcComm := NewCommunitySignupCampaign(s.srvSheets, s.mg)
+			audCom, err := dcComm.ListAudiences()
+			if err != nil {
+				return err
+			}
+
 			params := SignupCampaignData{
 				Name:                info.Name,
+				Cluster:             info.Cluster,
 				Product:             info.Product,
 				ProductDisplayName:  supportedProducts[info.Product].DisplayName,
 				IsEnterpriseProduct: IsEnterpriseProduct(info.Product),
@@ -452,37 +465,30 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 				QuickstartLink:      supportedProducts[info.Product].QuickstartLink,
 			}
 
+			var dc *mailer.DripCampaign
 			if params.IsEnterpriseProduct {
-				dc := NewEnterpriseSignupCampaign(s.srvSheets, s.mg)
-				audiences, err := dc.ListAudiences()
-				if err != nil {
-					return err
-				}
-				if !audiences.Has(info.Email) {
-					fmt.Printf("New user: %s\n", info.Email)
-					err = dc.AddContact(mailer.Contact{
-						Email: info.Email,
-						Data:  toJson(params),
-					})
-					if err != nil {
-						return err
-					}
+				if !audEnt.Has(info.Email) && !audCom.Has(info.Email) {
+					dc = dcEnt
+				} else {
+					dc = NewEnterpriseFirstTimeCampaign(s.srvSheets, s.mg)
 				}
 			} else {
-				dc := NewCommunitySignupCampaign(s.srvSheets, s.mg)
-				audiences, err := dc.ListAudiences()
+				if !audCom.Has(info.Email) && !audEnt.Has(info.Email) {
+					dc = dcComm
+				}
+			}
+			if dc != nil {
+				fmt.Printf("New user: %s\n", info.Email)
+				data, err := json.Marshal(params)
 				if err != nil {
 					return err
 				}
-				if !audiences.Has(info.Email) {
-					fmt.Printf("New user: %s\n", info.Email)
-					err = dc.AddContact(mailer.Contact{
-						Email: info.Email,
-						Data:  toJson(params),
-					})
-					if err != nil {
-						return err
-					}
+				err = dc.AddContact(mailer.Contact{
+					Email: info.Email,
+					Data:  string(data),
+				})
+				if err != nil {
+					return err
 				}
 			}
 
