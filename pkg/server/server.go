@@ -435,50 +435,49 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	}
 
 	if !skipEmailDomains.Has(Domain(info.Email)) {
-		existingEmails := ListExistingLicensees(s.srvSheets)
-		if !existingEmails.Has(info.Email) {
-			fmt.Printf("New user: %s\n", info.Email)
+		go func() error {
+			existingEmails := ListExistingLicensees(s.srvSheets)
+			if !existingEmails.Has(info.Email) {
+				fmt.Printf("New user: %s\n", info.Email)
 
-			params := SignupCampaignData{
-				Name:                info.Name,
-				Product:             info.Product,
-				ProductDisplayName:  supportedProducts[info.Product].DisplayName,
-				IsEnterpriseProduct: IsEnterpriseProduct(info.Product),
-				TwitterHandle:       supportedProducts[info.Product].TwitterHandle,
-				QuickstartLink:      supportedProducts[info.Product].QuickstartLink,
+				params := SignupCampaignData{
+					Name:                info.Name,
+					Product:             info.Product,
+					ProductDisplayName:  supportedProducts[info.Product].DisplayName,
+					IsEnterpriseProduct: IsEnterpriseProduct(info.Product),
+					TwitterHandle:       supportedProducts[info.Product].TwitterHandle,
+					QuickstartLink:      supportedProducts[info.Product].QuickstartLink,
+				}
+
+				if params.IsEnterpriseProduct {
+					dc := NewEnterpriseSignupCampaign(s.srvSheets, s.mg)
+					err = dc.AddContact(mailer.Contact{
+						Email: info.Email,
+						Data:  toJson(params),
+					})
+					if err != nil {
+						return err
+					}
+				} else {
+					dc := NewCommunitySignupCampaign(s.srvSheets, s.mg)
+					err = dc.AddContact(mailer.Contact{
+						Email: info.Email,
+						Data:  toJson(params),
+					})
+					if err != nil {
+						return err
+					}
+				}
+
+				//mailer := NewWelcomeMailer(info)
+				//err = mailer.SendMail(s.mg, info.Email, info.CC, nil)
+				//if err != nil {
+				//	return err
+				//}
 			}
 
-			if params.IsEnterpriseProduct {
-				dc := NewEnterpriseSignupCampaign(s.srvSheets, s.mg)
-				err = dc.AddContact(mailer.Contact{
-					Email: info.Email,
-					Data:  toJson(params),
-				})
-				if err != nil {
-					return err
-				}
-			} else {
-				dc := NewCommunitySignupCampaign(s.srvSheets, s.mg)
-				err = dc.AddContact(mailer.Contact{
-					Email: info.Email,
-					Data:  toJson(params),
-				})
-				if err != nil {
-					return err
-				}
-			}
-
-			//mailer := NewWelcomeMailer(info)
-			//err = mailer.SendMail(s.mg, info.Email, info.CC, nil)
-			//if err != nil {
-			//	return err
-			//}
-		}
-
-		err := s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseIssued)
-		if err != nil {
-			return err
-		}
+			return s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseIssued)
+		}()
 	}
 
 	{
