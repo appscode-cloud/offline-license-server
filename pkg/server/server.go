@@ -57,6 +57,7 @@ import (
 	"gopkg.in/macaron.v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 )
 
 type Server struct {
@@ -435,7 +436,14 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	}
 
 	if !skipEmailDomains.Has(Domain(info.Email)) {
-		go func() error {
+		// nolint:errcheck
+		go func() (err error) {
+			defer func() {
+				if err != nil {
+					klog.ErrorS(err, "failed record license download event", "email", info.Email)
+				}
+			}()
+
 			existingEmails := ListExistingLicensees(s.srvSheets)
 			if !existingEmails.Has(info.Email) {
 				fmt.Printf("New user: %s\n", info.Email)
@@ -476,7 +484,8 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 				//}
 			}
 
-			return s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseIssued)
+			err = s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseIssued)
+			return
 		}()
 	}
 
