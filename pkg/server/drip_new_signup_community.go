@@ -58,7 +58,7 @@ Team AppsCode
 				},
 			},
 			{
-				WaitTime: 10 * time.Second,
+				WaitTime: 1 * 24 * time.Hour, // 1 day
 				Mailer: mailer.Mailer{
 					Sender:  MailHello,
 					BCC:     MailLicenseTracker,
