@@ -379,7 +379,7 @@ gomodules.xyz/listmonk-client-go
 # gomodules.xyz/logs v0.0.6
 ## explicit; go 1.16
 gomodules.xyz/logs
-# gomodules.xyz/mailer v0.0.11
+# gomodules.xyz/mailer v0.0.13
 ## explicit; go 1.17
 gomodules.xyz/mailer
 # gomodules.xyz/password-generator v0.2.7

@@ -35,7 +35,7 @@ require (
 	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/listmonk-client-go v0.0.3
 	gomodules.xyz/logs v0.0.6
-	gomodules.xyz/mailer v0.0.11
+	gomodules.xyz/mailer v0.0.13
 	gomodules.xyz/password-generator v0.2.7
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/sets v0.2.1

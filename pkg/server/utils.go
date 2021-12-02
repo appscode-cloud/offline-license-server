@@ -80,12 +80,12 @@ func DecorateGeoData(db *geoip2.Reader, entry *GeoLocation) {
 	entry.Coordinates = fmt.Sprintf("%v,%v", record.Location.Latitude, record.Location.Longitude)
 }
 
-func ListExistingLicensees(srv *sheets.Service) sets.String {
-	const (
-		sheetName = "License Issue Log"
-		header    = "Email"
-	)
-	reader, err := gdrive.NewColumnReader(srv, LicenseSpreadsheetId, sheetName, header)
+func ListExistingLicensees(srv *sheets.Service, spreadsheetId, sheetName, header string) sets.String {
+	//const (
+	//	sheetName = "License Issue Log"
+	//	header    = "Email"
+	//)
+	reader, err := gdrive.NewColumnReader(srv, spreadsheetId, sheetName, header)
 	if err != nil {
 		panic(err)
 	}

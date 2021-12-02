@@ -25,6 +25,7 @@ import (
 	"github.com/mailgun/mailgun-go/v4"
 	"gomodules.xyz/encoding/json"
 	gdrive "gomodules.xyz/gdrive-utils"
+	"gomodules.xyz/sets"
 	"google.golang.org/api/sheets/v4"
 	"k8s.io/klog/v2"
 )
@@ -257,4 +258,21 @@ func (dc *DripCampaign) processStep(stepIndex int, step CampaignStep, c Contact)
 		},
 	})
 	return gocsv.MarshalCSV([]*Contact{&c}, w)
+}
+
+func (dc *DripCampaign) ListAudiences() (sets.String, error) {
+	reader, err := gdrive.NewColumnReader(dc.SheetService, dc.SpreadsheetId, dc.SheetName, "email")
+	if err != nil {
+		return nil, err
+	}
+	cols, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	emails := sets.NewString()
+	for _, row := range cols {
+		emails.Insert(row...)
+	}
+	return emails, nil
 }
