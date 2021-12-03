@@ -78,7 +78,7 @@ Team AppsCode
 
 I hope you are doing well. Just wanted to check your progress with {{.ProductDisplayName}} so far. We want to make sure your journey with {{.ProductDisplayName}} is going smoothly so far.
 
-For support, please mail us at support@appscode.com. Our engineers are be happy to help you during the evaluation period. 
+For support, please mail us at support@appscode.com. Our engineers are happy to help you during the evaluation period.
 
 Warm Regards,
 Team AppsCode
