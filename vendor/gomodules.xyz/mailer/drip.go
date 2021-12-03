@@ -26,6 +26,7 @@ import (
 	"gomodules.xyz/encoding/json"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"gomodules.xyz/sets"
+	timex "gomodules.xyz/x/time"
 	"google.golang.org/api/sheets/v4"
 	"k8s.io/klog/v2"
 )
@@ -84,23 +85,24 @@ type DripCampaign struct {
 }
 
 type CampaignStep struct {
-	WaitTime time.Duration
-	Mailer   Mailer
+	WaitTime          time.Duration
+	WeekendAdjustment timex.WeekendAdjustment
+	Mailer            Mailer
 }
 
 func (dc *DripCampaign) Prepare(c *Contact, t time.Time) {
 	for idx, step := range dc.Steps {
 		switch idx {
 		case 0:
-			c.Step_0_Timestamp = Timestamp{t.Add(step.WaitTime)}
+			c.Step_0_Timestamp = Timestamp{timex.AdjustForWeekend(t.Add(step.WaitTime), step.WeekendAdjustment)}
 		case 1:
-			c.Step_1_Timestamp = Timestamp{t.Add(step.WaitTime)}
+			c.Step_1_Timestamp = Timestamp{timex.AdjustForWeekend(t.Add(step.WaitTime), step.WeekendAdjustment)}
 		case 2:
-			c.Step_2_Timestamp = Timestamp{t.Add(step.WaitTime)}
+			c.Step_2_Timestamp = Timestamp{timex.AdjustForWeekend(t.Add(step.WaitTime), step.WeekendAdjustment)}
 		case 3:
-			c.Step_3_Timestamp = Timestamp{t.Add(step.WaitTime)}
+			c.Step_3_Timestamp = Timestamp{timex.AdjustForWeekend(t.Add(step.WaitTime), step.WeekendAdjustment)}
 		case 4:
-			c.Step_4_Timestamp = Timestamp{t.Add(step.WaitTime)}
+			c.Step_4_Timestamp = Timestamp{timex.AdjustForWeekend(t.Add(step.WaitTime), step.WeekendAdjustment)}
 		}
 	}
 }

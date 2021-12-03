@@ -12,14 +12,14 @@ require (
 	github.com/go-macaron/cors v0.0.0-20210206180111-00b7f53a9308
 	github.com/gobuffalo/flect v0.2.2
 	github.com/gocarina/gocsv v0.0.0-20211020200912-82fc2684cc48
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.3.0
 	github.com/himalayan-institute/zoom-lib-golang v1.0.0
 	github.com/k3a/html2text v1.0.7
 	github.com/mailgun/mailgun-go/v4 v4.6.0
 	github.com/oschwald/geoip2-golang v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/rickb777/date v1.15.3
-	github.com/spf13/cobra v1.1.3
+	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/yuin/goldmark v1.4.4
 	gocloud.dev v0.20.0
@@ -35,11 +35,11 @@ require (
 	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/listmonk-client-go v0.0.3
 	gomodules.xyz/logs v0.0.6
-	gomodules.xyz/mailer v0.0.15
+	gomodules.xyz/mailer v0.0.16
 	gomodules.xyz/password-generator v0.2.7
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/sets v0.2.1
-	gomodules.xyz/x v0.0.8
+	gomodules.xyz/x v0.0.10
 	google.golang.org/api v0.60.0
 	gopkg.in/macaron.v1 v1.4.0
 	k8s.io/apimachinery v0.21.1
@@ -68,7 +68,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/wire v0.4.0 // indirect
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
@@ -103,7 +103,7 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/ini.v1 v1.51.0 // indirect
+	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.0 // indirect
 )

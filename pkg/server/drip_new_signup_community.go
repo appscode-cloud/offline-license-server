@@ -21,6 +21,7 @@ import (
 
 	"github.com/mailgun/mailgun-go/v4"
 	"gomodules.xyz/mailer"
+	timex "gomodules.xyz/x/time"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -29,7 +30,8 @@ func NewCommunitySignupCampaign(srv *sheets.Service, mg mailgun.Mailgun) *mailer
 		Name: "New Signup",
 		Steps: []mailer.CampaignStep{
 			{
-				WaitTime: 0,
+				WaitTime:          0,
+				WeekendAdjustment: timex.NoChange,
 				Mailer: mailer.Mailer{
 					Sender:  MailHello,
 					BCC:     MailLicenseTracker,
@@ -58,7 +60,8 @@ Team AppsCode
 				},
 			},
 			{
-				WaitTime: 1 * 24 * time.Hour, // 1 day
+				WaitTime:          1 * 24 * time.Hour, // 1 day
+				WeekendAdjustment: timex.After,
 				Mailer: mailer.Mailer{
 					Sender:  MailHello,
 					BCC:     MailLicenseTracker,
@@ -83,7 +86,8 @@ Team AppsCode
 				},
 			},
 			{
-				WaitTime: 5 * 24 * time.Hour, // 5 days
+				WaitTime:          5 * 24 * time.Hour, // 5 days
+				WeekendAdjustment: timex.After,
 				Mailer: mailer.Mailer{
 					Sender:  MailHello,
 					BCC:     MailLicenseTracker,
