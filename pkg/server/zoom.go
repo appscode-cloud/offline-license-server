@@ -62,6 +62,7 @@ func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomE
 			AutoRecording:     zoom.AutoRecordingLocal,
 			CloseRegistration: false,
 			WaitingRoom:       true,
+			AlternativeHosts:  WebinarAlternativeHosts,
 		},
 	})
 	if err != nil {
