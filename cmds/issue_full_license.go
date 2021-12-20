@@ -19,6 +19,7 @@ package cmds
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/appscodelabs/offline-license-server/pkg/server"
 	"github.com/rickb777/date/period"
@@ -33,6 +34,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 		Product: "",
 		Cluster: "",
 	}
+	var ccList []string
 	d, _ := period.NewOf(server.DefaultTTLForEnterpriseProduct)
 	var featureFlags map[string]string
 	cmd := &cobra.Command{
@@ -40,6 +42,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 		Short:             `Issue full license`,
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			info.CC = strings.Join(ccList, ",")
 			fmt.Println(d.Duration())
 			d2, _ := d.Duration()
 			if d2 > server.DefaultTTLForEnterpriseProduct {
@@ -68,7 +71,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 	opts.AddFlags(cmd.Flags())
 	cmd.Flags().StringVar(&info.Name, "name", info.Name, "Name of the user receiving the license")
 	cmd.Flags().StringVar(&info.Email, "email", info.Email, "Email of the user receiving the license")
-	cmd.Flags().StringVar(&info.CC, "cc", info.CC, "CC the license to these emails")
+	cmd.Flags().StringSliceVar(&ccList, "cc", ccList, "CC the license to these emails")
 	cmd.Flags().StringVar(&info.Product, "product", info.Product, "Product for which license will be issued")
 	cmd.Flags().StringVar(&info.Cluster, "cluster", info.Cluster, "Cluster ID for which license will be issued")
 	cmd.Flags().Var(&d, "duration", "Duration for the new license")
