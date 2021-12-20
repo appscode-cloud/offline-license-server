@@ -69,15 +69,11 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration
 		if len(certs) > 1 {
 			return fmt.Errorf("multiple certificates found in %s", LicenseCertPath(license.Domain, license.Product, info.Cluster))
 		}
-		ttl := certs[0].NotAfter.Sub(certs[0].NotBefore)
-		if ttl > DefaultTTLForEnterpriseProduct {
-			// if expires in next 30 days issue new license
-			if time.Until(certs[0].NotAfter) < DefaultTTLForEnterpriseProduct {
-				license.Agreement.ExpiryDate = metav1.NewTime(certs[0].NotAfter.Add(extendBy).UTC())
-			} else {
-				// Original license is > 30 days valid. Keep using that.
-				crtLicense = cert.EncodeCertPEM(certs[0])
-			}
+
+		if !certs[0].NotAfter.Before(license.Agreement.ExpiryDate.Time) {
+			// Original license is sufficiently valid. Keep using that.
+			crtLicense = cert.EncodeCertPEM(certs[0])
+			license.Agreement.ExpiryDate = metav1.NewTime(certs[0].NotAfter.UTC())
 		}
 	}
 	if len(crtLicense) == 0 {
