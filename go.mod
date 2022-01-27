@@ -23,7 +23,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/yuin/goldmark v1.4.4
 	gocloud.dev v0.20.0
-	golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c
+	golang.org/x/crypto v0.0.0-20220126234351-aa10faf2a1f8
 	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
 	golang.org/x/text v0.3.6
 	gomodules.xyz/blobfs v0.1.7

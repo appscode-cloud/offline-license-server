@@ -287,8 +287,8 @@ gocloud.dev/internal/oc
 gocloud.dev/internal/openurl
 gocloud.dev/internal/retry
 gocloud.dev/internal/useragent
-# golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c
-## explicit; go 1.11
+# golang.org/x/crypto v0.0.0-20220126234351-aa10faf2a1f8
+## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/bcrypt
