@@ -56,8 +56,10 @@ const (
 	MailingList_Panopticon = "47ae2f13-5034-483e-be9a-682b32b39315"
 )
 
-var knowTestEmails = sets.NewString("1gtm@appscode.com")
-var skipEmailDomains = sets.NewString("appscode.com")
+var (
+	knowTestEmails   = sets.NewString("1gtm@appscode.com")
+	skipEmailDomains = sets.NewString("appscode.com")
+)
 
 type PlanInfo struct {
 	DisplayName    string

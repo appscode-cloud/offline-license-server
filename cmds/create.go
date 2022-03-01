@@ -23,18 +23,16 @@ import (
 	"gomodules.xyz/homedir"
 )
 
-var (
-	certDir = func() string {
-		if v, ok := os.LookupEnv("ONESSL_PKI_DIR"); ok {
-			return v
-		}
-		dir, err := os.Getwd()
-		if err != nil {
-			dir = homedir.HomeDir()
-		}
-		return dir
-	}()
-)
+var certDir = func() string {
+	if v, ok := os.LookupEnv("ONESSL_PKI_DIR"); ok {
+		return v
+	}
+	dir, err := os.Getwd()
+	if err != nil {
+		dir = homedir.HomeDir()
+	}
+	return dir
+}()
 
 func NewCmdCreate() *cobra.Command {
 	cmd := &cobra.Command{

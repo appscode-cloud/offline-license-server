@@ -344,7 +344,7 @@ func (s *Server) Run() error {
 			panic(err)
 		}
 	}()
-	return server.ListenAndServeTLS("", "") //Key and cert are coming from Let's Encrypt
+	return server.ListenAndServeTLS("", "") // Key and cert are coming from Let's Encrypt
 }
 
 func (s *Server) HandleRegisterEmail(req RegisterRequest) error {

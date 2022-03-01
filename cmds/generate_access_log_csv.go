@@ -42,7 +42,7 @@ func NewCmdGenerateAccessLogCSV() *cobra.Command {
 		Short:             `Generate Access Log in CSV format`,
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f, err := os.OpenFile(AccessLogFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+			f, err := os.OpenFile(AccessLogFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 			if err != nil {
 				return err
 			}
