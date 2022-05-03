@@ -20,8 +20,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"sort"
 	"strings"
 	"time"
@@ -46,7 +49,8 @@ type WebinarSchedule struct {
 	SpeakerTitle   string `json:"speaker_title" csv:"Speaker Title" form:"speaker_title"`
 	SpeakerBio     string `json:"speaker_bio" csv:"Speaker Bio" form:"speaker_bio"`
 	SpeakerPicture string `json:"speaker_picture" csv:"Speaker Picture" form:"speaker_picture"`
-	YoutubeLink    string `json:"youtube_link" csv:"Youtube Link" form:"youtube_link"`
+	YoutubeLink    string `json:"-" csv:"Youtube Link" form:"-"`
+	YoutubeVideoID string `json:"youtube_video_id" csv:"-" form:"-"`
 }
 
 type WebinarMeetingID struct {
@@ -243,11 +247,7 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 	reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Predicate{
 		Header: "Schedules",
 		By: func(column []interface{}) (int, error) {
-			type TP struct {
-				Schedules Dates
-				Pos       int
-			}
-			var upcoming []TP
+			pos := math.MaxInt
 			for i, v := range column {
 				schedules := Dates{}
 				err := schedules.UnmarshalCSV(v.(string))
@@ -257,21 +257,15 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 
 				// 3/11/2021 3:00:00
 				for _, t := range schedules {
-					if t.After(now) {
-						upcoming = append(upcoming, TP{
-							Schedules: schedules,
-							Pos:       i,
-						})
+					if t.After(now) && i < pos {
+						pos = i
 					}
 				}
 			}
-			if len(upcoming) == 0 {
+			if pos == math.MaxInt {
 				return -1, io.EOF
 			}
-			sort.Slice(upcoming, func(i, j int) bool {
-				return upcoming[i].Schedules[0].Before(upcoming[j].Schedules[0])
-			})
-			return upcoming[0].Pos, nil
+			return pos, nil
 		},
 	})
 	if err == io.EOF {
@@ -284,6 +278,9 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 	if err := gocsv.UnmarshalCSV(reader, &schedules); err != nil { // Load clients from file
 		return nil, err
 	}
+	sort.Slice(schedules, func(i, j int) bool {
+		return schedules[i].Schedules[0].Before(schedules[j].Schedules[0])
+	})
 
 	if len(schedules) > 0 {
 		sch := schedules[0]
@@ -295,7 +292,11 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 			}
 		}
 		sch.Schedules = dates
-
+		if videoID, err := YoutubeVideoID(sch.YoutubeLink); err != nil {
+			return nil, err
+		} else {
+			sch.YoutubeVideoID = videoID
+		}
 		return sch, nil
 	}
 	return &WebinarSchedule{}, nil
@@ -307,11 +308,7 @@ func (s *Server) UpcomingWebinarSchedules() ([]*WebinarSchedule, error) {
 	reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Predicate{
 		Header: "Schedules",
 		By: func(column []interface{}) (int, error) {
-			type TP struct {
-				Schedules Dates
-				Pos       int
-			}
-			var upcoming []TP
+			pos := math.MaxInt
 			for i, v := range column {
 				schedules := Dates{}
 				err := schedules.UnmarshalCSV(v.(string))
@@ -321,21 +318,15 @@ func (s *Server) UpcomingWebinarSchedules() ([]*WebinarSchedule, error) {
 
 				// 3/11/2021 3:00:00
 				for _, t := range schedules {
-					if t.After(now) {
-						upcoming = append(upcoming, TP{
-							Schedules: schedules,
-							Pos:       i,
-						})
+					if t.After(now) && i < pos {
+						pos = i
 					}
 				}
 			}
-			if len(upcoming) == 0 {
+			if pos == math.MaxInt {
 				return -1, io.EOF
 			}
-			sort.Slice(upcoming, func(i, j int) bool {
-				return upcoming[i].Schedules[0].Before(upcoming[j].Schedules[0])
-			})
-			return upcoming[0].Pos, nil
+			return pos, nil
 		},
 	})
 	if err == io.EOF {
@@ -348,6 +339,7 @@ func (s *Server) UpcomingWebinarSchedules() ([]*WebinarSchedule, error) {
 	if err := gocsv.UnmarshalCSV(reader, &schedules); err != nil { // Load clients from file
 		return nil, err
 	}
+
 	for i := 0; i < len(schedules); {
 		sch := schedules[i]
 
@@ -363,12 +355,33 @@ func (s *Server) UpcomingWebinarSchedules() ([]*WebinarSchedule, error) {
 			continue
 		}
 		sch.Schedules = []time.Time{dates[0]}
+		if videoID, err := YoutubeVideoID(sch.YoutubeLink); err != nil {
+			return nil, err
+		} else {
+			sch.YoutubeVideoID = videoID
+		}
 		i++
 	}
 	sort.Slice(schedules, func(i, j int) bool {
 		return schedules[i].Schedules[0].Before(schedules[j].Schedules[0])
 	})
 	return schedules, nil
+}
+
+/*
+https://www.youtube.com/embed/_rVS3oe1usA
+https://www.youtube.com/watch?v=_rVS3oe1usA
+https://youtu.be/tjHvdkwSDF4
+*/
+func YoutubeVideoID(rawURL string) (string, error) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return "", err
+	}
+	if id := u.Query().Get("v"); id != "" {
+		return id, nil
+	}
+	return path.Base(u.Path), nil
 }
 
 func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) error {
