@@ -202,6 +202,7 @@ func (s *Server) noteEventQuotation(form ProductQuotation, e EventQuotationGener
 	return err
 }
 
+// nolint:unused
 func (s *Server) noteEventMailgun(email string, e EventMailgun) error {
 	name := email
 	idx := strings.LastIndex(email, "@")
