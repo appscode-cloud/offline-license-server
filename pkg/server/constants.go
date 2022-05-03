@@ -27,7 +27,7 @@ const (
 	LicenseSpreadsheetId = "1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA"
 	DripSpreadsheetId    = "10Jx3-1Ww2UQ7xNjs9-CRvJX4iIA22EDu-EsLKoHp1hc"
 
-	MailLicenseSender  = "license-issuer@mail.appscode.com"
+	MailLicenseSender  = "license-issuer@appscode.com"
 	MailLicenseTracker = "issued-license-tracker@appscode.com"
 	MailSupport        = "support@appscode.com"
 	MailSales          = "sales@appscode.com"
