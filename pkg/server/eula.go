@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/gocarina/gocsv"
-	"github.com/mailgun/mailgun-go/v4"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
@@ -173,12 +172,7 @@ func (s *Server) GenerateEULA(info *EULAInfo) (string, error) {
 		// mail HR
 		mailer := NewEULAMailer(info)
 		fmt.Println("sending email for generated EULA", info.Domain)
-		mg, err := mailgun.NewMailgunFromEnv()
-		if err != nil {
-			klog.Warningln(err)
-			return
-		}
-		err = mailer.SendMail(mg, MailSales, "", nil)
+		err = mailer.SendMail(s.mg, MailSales, "", nil)
 		if err != nil {
 			klog.Warningln(err)
 			return

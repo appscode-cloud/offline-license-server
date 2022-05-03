@@ -19,13 +19,12 @@ package server
 import (
 	"time"
 
-	"github.com/mailgun/mailgun-go/v4"
 	"gomodules.xyz/mailer"
 	timex "gomodules.xyz/x/time"
 	"google.golang.org/api/sheets/v4"
 )
 
-func NewCommunitySignupCampaign(srv *sheets.Service, mg mailgun.Mailgun) *mailer.DripCampaign {
+func NewCommunitySignupCampaign(srv *sheets.Service, mg *mailer.SMTPService) *mailer.DripCampaign {
 	return &mailer.DripCampaign{
 		Name: "New Signup",
 		Steps: []mailer.CampaignStep{
@@ -56,7 +55,6 @@ Team AppsCode
 					AttachmentBytes: nil,
 					GDriveFiles:     nil,
 					GoogleDocIds:    nil,
-					EnableTracking:  true,
 				},
 			},
 			{
@@ -82,7 +80,6 @@ Team AppsCode
 					AttachmentBytes: nil,
 					GDriveFiles:     nil,
 					GoogleDocIds:    nil,
-					EnableTracking:  true,
 				},
 			},
 			{
@@ -106,7 +103,6 @@ Team AppsCode
 					AttachmentBytes: nil,
 					GDriveFiles:     nil,
 					GoogleDocIds:    nil,
-					EnableTracking:  true,
 				},
 			},
 			//			{

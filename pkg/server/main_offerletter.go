@@ -48,6 +48,5 @@ Offer Letter Generator
 		Params:          nil,
 		AttachmentBytes: nil,
 		GDriveFiles:     nil,
-		EnableTracking:  false,
 	}
 }

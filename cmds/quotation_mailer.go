@@ -21,9 +21,9 @@ import (
 	"path/filepath"
 
 	"github.com/appscodelabs/offline-license-server/pkg/server"
-	"github.com/mailgun/mailgun-go/v4"
 	"github.com/spf13/cobra"
 	gdrive "gomodules.xyz/gdrive-utils"
+	"gomodules.xyz/mailer"
 )
 
 func NewCmdEmailQuotation() *cobra.Command {
@@ -67,16 +67,16 @@ func NewCmdEmailQuotation() *cobra.Command {
 					return err
 				}
 
-				mailer := gen.GetMailer()
-				mailer.GoogleDocIds = map[string]string{
+				mm := gen.GetMailer()
+				mm.GoogleDocIds = map[string]string{
 					gen.DocName(quote) + ".pdf": docId,
 				}
 
-				mg, err := mailgun.NewMailgunFromEnv()
+				mg, err := mailer.NewSMTPServiceFromEnv()
 				if err != nil {
 					return err
 				}
-				err = mailer.SendMail(mg, opts.Lead.Email, opts.Lead.CC, gen.DriveService)
+				err = mm.SendMail(mg, opts.Lead.Email, opts.Lead.CC, gen.DriveService)
 				if err != nil {
 					return err
 				}

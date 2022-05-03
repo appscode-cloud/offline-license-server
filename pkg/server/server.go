@@ -22,7 +22,9 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
+	"net/smtp"
 	"os"
 	"path"
 	"time"
@@ -36,7 +38,6 @@ import (
 	"github.com/go-macaron/cors"
 	"github.com/google/uuid"
 	"github.com/himalayan-institute/zoom-lib-golang"
-	"github.com/mailgun/mailgun-go/v4"
 	"github.com/oschwald/geoip2-golang"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/acme/autocert"
@@ -65,7 +66,7 @@ type Server struct {
 
 	certs      *certstore.CertStore
 	fs         *blobfs.BlobFS
-	mg         mailgun.Mailgun
+	mg         *mailer.SMTPService
 	freshsales *freshsalesclient.Client
 	listmonk   *listmonkclient.Client
 	geodb      *geoip2.Reader
@@ -140,11 +141,19 @@ func New(opts *Options) (*Server, error) {
 		return nil, fmt.Errorf("unable to retrieve Calendar gc: %v", err)
 	}
 
+	smtpHost, _, err := net.SplitHostPort(opts.SMTPAddress)
+	if err != nil {
+		return nil, err
+	}
+	mg := &mailer.SMTPService{
+		Address: opts.SMTPAddress,
+		Auth:    smtp.PlainAuth("", opts.SMTPUsername, opts.SMTPPassword, smtpHost),
+	}
 	return &Server{
 		opts:             opts,
 		certs:            certs,
 		fs:               fs,
-		mg:               mailgun.NewMailgun(opts.MailgunDomain, opts.MailgunPrivateAPIKey),
+		mg:               mg,
 		sheet:            sheet,
 		freshsales:       freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
 		listmonk:         listmonkclient.New(opts.listmonkHost, opts.listmonkUsername, opts.listmonkPassword),
@@ -298,7 +307,7 @@ func (s *Server) Run() error {
 	})
 
 	s.RegisterWebinarAPI(m)
-	m.Post("/_/webhooks/mailgun/", s.HandleMailgunWebhook)
+	// m.Post("/_/webhooks/mailgun/", s.HandleMailgunWebhook)
 
 	if !s.opts.EnableSSL {
 		addr := fmt.Sprintf(":%d", s.opts.Port)

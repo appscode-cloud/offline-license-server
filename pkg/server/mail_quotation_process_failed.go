@@ -53,6 +53,5 @@ func NewQuotationProcessFailedMailer(gen *QuotationGenerator, err error) mailer.
 		Body:            src,
 		Params:          nil,
 		AttachmentBytes: nil,
-		EnableTracking:  false,
 	}
 }

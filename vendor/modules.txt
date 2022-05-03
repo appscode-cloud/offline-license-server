@@ -92,6 +92,12 @@ github.com/envoyproxy/go-control-plane/envoy/type/v3
 # github.com/envoyproxy/protoc-gen-validate v0.1.0
 ## explicit
 github.com/envoyproxy/protoc-gen-validate/validate
+# github.com/gabriel-vasile/mimetype v1.4.1-rc1
+## explicit; go 1.12
+github.com/gabriel-vasile/mimetype
+github.com/gabriel-vasile/mimetype/internal/charset
+github.com/gabriel-vasile/mimetype/internal/json
+github.com/gabriel-vasile/mimetype/internal/magic
 # github.com/go-logr/logr v1.2.0
 ## explicit; go 1.16
 github.com/go-logr/logr
@@ -169,9 +175,6 @@ github.com/googleapis/gax-go
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gax-go/v2/apierror
 github.com/googleapis/gax-go/v2/apierror/internal/proto
-# github.com/gorilla/mux v1.8.0
-## explicit; go 1.12
-github.com/gorilla/mux
 # github.com/gorilla/schema v1.2.0
 ## explicit
 github.com/gorilla/schema
@@ -193,10 +196,6 @@ github.com/json-iterator/go
 # github.com/k3a/html2text v1.0.7
 ## explicit
 github.com/k3a/html2text
-# github.com/mailgun/mailgun-go/v4 v4.6.0
-## explicit; go 1.13
-github.com/mailgun/mailgun-go/v4
-github.com/mailgun/mailgun-go/v4/events
 # github.com/mitchellh/copystructure v1.0.0
 ## explicit
 github.com/mitchellh/copystructure
@@ -299,6 +298,8 @@ golang.org/x/crypto/scrypt
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
+golang.org/x/net/html
+golang.org/x/net/html/atom
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
@@ -352,6 +353,9 @@ gomodules.xyz/cert/certstore
 # gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f
 ## explicit; go 1.14
 gomodules.xyz/clock
+# gomodules.xyz/email v0.1.0
+## explicit; go 1.18
+gomodules.xyz/email
 # gomodules.xyz/email-providers v0.1.4
 ## explicit; go 1.14
 gomodules.xyz/email-providers
@@ -379,7 +383,7 @@ gomodules.xyz/listmonk-client-go
 # gomodules.xyz/logs v0.0.6
 ## explicit; go 1.16
 gomodules.xyz/logs
-# gomodules.xyz/mailer v0.0.16
+# gomodules.xyz/mailer v0.0.18
 ## explicit; go 1.17
 gomodules.xyz/mailer
 # gomodules.xyz/password-generator v0.2.7
