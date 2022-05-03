@@ -57,6 +57,5 @@ Team AppsCode
 		Params:          info,
 		AttachmentBytes: nil,
 		GDriveFiles:     nil,
-		EnableTracking:  true,
 	}
 }

@@ -16,10 +16,12 @@ limitations under the License.
 
 package server
 
+/*
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
 
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/mailgun/mailgun-go/v4/events"
@@ -99,3 +101,4 @@ func (s *Server) HandleMailgunWebhook(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Link clicked: %s\n", event.Url)
 	}
 }
+*/

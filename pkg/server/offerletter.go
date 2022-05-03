@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/gocarina/gocsv"
-	"github.com/mailgun/mailgun-go/v4"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	gdrive "gomodules.xyz/gdrive-utils"
@@ -170,12 +169,7 @@ func (s *Server) GenerateOfferLetter(info *CandidateInfo) (string, error) {
 		// mail HR
 		mailer := NewOfferLetterMailer(info, candidateFolderId)
 		fmt.Println("sending email for generated offer letter", info.Email)
-		mg, err := mailgun.NewMailgunFromEnv()
-		if err != nil {
-			klog.Warningln(err)
-			return
-		}
-		err = mailer.SendMail(mg, MailHR, "", nil)
+		err = mailer.SendMail(s.mg, MailHR, "", nil)
 		if err != nil {
 			klog.Warningln(err)
 			return

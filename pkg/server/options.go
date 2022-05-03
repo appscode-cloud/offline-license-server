@@ -37,13 +37,9 @@ type Options struct {
 	LicenseBucket        string
 	LicenseSpreadsheetId string
 
-	// Your available domain names can be found here:
-	// (https://app.mailgun.com/app/domains)
-	MailgunDomain string
-
-	// You can find the Private API Key in your Account Menu, under "Settings":
-	// (https://app.mailgun.com/app/account/security)
-	MailgunPrivateAPIKey string
+	SMTPAddress  string
+	SMTPUsername string
+	SMTPPassword string
 
 	freshsalesHost     string
 	freshsalesAPIToken string
@@ -71,8 +67,9 @@ func NewOptions() *Options {
 		GeoCityDatabase:      "",
 		LicenseBucket:        LicenseBucket,
 		LicenseSpreadsheetId: LicenseSpreadsheetId,
-		MailgunDomain:        os.Getenv("MG_DOMAIN"),
-		MailgunPrivateAPIKey: os.Getenv("MG_API_KEY"),
+		SMTPAddress:          os.Getenv("SMTP_ADDRESS"),
+		SMTPUsername:         os.Getenv("SMTP_USERNAME"),
+		SMTPPassword:         os.Getenv("SMTP_PASSWORD"),
 		freshsalesHost:       "https://appscode.freshsales.io",
 		freshsalesAPIToken:   os.Getenv("CRM_API_TOKEN"),
 		listmonkHost:         listmonkclient.ListmonkProd,
@@ -97,8 +94,9 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.LicenseBucket, "bucket", s.LicenseBucket, "Name of GCS bucket used to store licenses")
 	fs.StringVar(&s.LicenseSpreadsheetId, "spreadsheet-id", s.LicenseSpreadsheetId, "Google Spreadsheet Id used to store license issue log")
 
-	fs.StringVar(&s.MailgunDomain, "mailgun.domain", s.MailgunDomain, "Mailgun domain")
-	fs.StringVar(&s.MailgunPrivateAPIKey, "mailgun.api-key", s.MailgunPrivateAPIKey, "Mailgun private api key")
+	fs.StringVar(&s.SMTPAddress, "smtp.address", s.SMTPAddress, "SMTP server host:port")
+	fs.StringVar(&s.SMTPUsername, "smtp.username", s.SMTPUsername, "SMTP username")
+	fs.StringVar(&s.SMTPPassword, "smtp.password", s.SMTPPassword, "SMTP password")
 
 	fs.StringVar(&s.freshsalesHost, "freshsales.host", s.freshsalesHost, "Freshsales host url")
 	fs.StringVar(&s.freshsalesAPIToken, "freshsales.token", s.freshsalesAPIToken, "Freshsales api token")

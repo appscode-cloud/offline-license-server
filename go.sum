@@ -170,12 +170,6 @@ github.com/envoyproxy/go-control-plane v0.9.9-0.20210512163311-63b5d3c536b0/go.m
 github.com/envoyproxy/protoc-gen-validate v0.1.0 h1:EQciDnbrYxy13PgWoY8AqoxGiPrpgBZ1R8UNe3ddc+A=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/evanphx/json-patch v4.9.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
-github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51 h1:0JZ+dUmQeA8IIVUMzysrX4/AKuQwWhV2dYQuPZdvdSQ=
-github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51/go.mod h1:Yg+htXGokKKdzcwhuNDwVvN+uBxDGXJ7G/VN1d8fa64=
-github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 h1:JWuenKqqX8nojtoVVWjGfOF9635RETekkoH6Cc9SX0A=
-github.com/facebookgo/stack v0.0.0-20160209184415-751773369052/go.mod h1:UbMTZqLaRiH3MsBH8va0n7s1pQYcu3uTb8G4tygF4Zg=
-github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 h1:E2s37DuLxFhQDg5gKsWoLBOB0n+ZW8s599zru8FJ2/Y=
-github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870/go.mod h1:5tD+neXqOorC30/tWg0LCSkrqj/AR6gu8yY8/fpw1q0=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.10.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGEBuJM=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
@@ -183,6 +177,8 @@ github.com/fortytw2/leaktest v1.3.0/go.mod h1:jDsjWgpAGjm2CA7WthBh/CdZYEPF31XHqu
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/fsnotify/fsnotify v1.5.1/go.mod h1:T3375wBYaZdLLcVNkcVbzGHY7f1l/uK5T5Ai1i3InKU=
+github.com/gabriel-vasile/mimetype v1.4.1-rc1 h1:gnx+1wiDbniq42GfCAKwTxnZuCFHcLPqB7dUvW/qNrI=
+github.com/gabriel-vasile/mimetype v1.4.1-rc1/go.mod h1:fA8fi6KUiG7MgQQ+mEWotXoEOvmxRtOJlERCzSmRvr8=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
@@ -333,8 +329,6 @@ github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORR
 github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c h1:7lF+Vz0LqiRidnzC1Oq86fpX1q/iEv2KJdrCtttYjT4=
 github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
-github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
-github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/gorilla/schema v1.2.0 h1:YufUaxZYCKGFuAq3c96BOhjgd5nmXiOY9NGzF247Tsc=
 github.com/gorilla/schema v1.2.0/go.mod h1:kgLaKoK1FELgZqMAVxx/5cbj0kT+57qxUrAlIO2eleU=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
@@ -413,8 +407,6 @@ github.com/lunny/log v0.0.0-20160921050905-7887c61bf0de/go.mod h1:3q8WtuPQsoRbat
 github.com/lunny/nodb v0.0.0-20160621015157-fc1ef06ad4af/go.mod h1:Cqz6pqow14VObJ7peltM+2n3PWOz7yTrfUuGbVFkzN0=
 github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/magiconair/properties v1.8.5/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
-github.com/mailgun/mailgun-go/v4 v4.6.0 h1:qSrgT3wP5fU7wF/tNUp4xeYe8wSUy+8V5NJPYnB6Hxo=
-github.com/mailgun/mailgun-go/v4 v4.6.0/go.mod h1:FJlF9rI5cQT+mrwujtJjPMbIVy3Ebor9bKTVsJ0QU40=
 github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
@@ -686,6 +678,7 @@ golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v
 golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4/go.mod h1:RBQZq4jEuRlivfhVLdyRGr576XBO4/greRjx4P4O3yc=
 golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4/go.mod h1:p54w0d4576C0XHj96bSt6lcn1PtDYWL6XObtHCRCNQM=
 golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
+golang.org/x/net v0.0.0-20210505024714-0287a6fb4125/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9 h1:0qxwC5n+ttVOINCBeRHO0nq9X7uy8SDsPoi5OaCdIEI=
 golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
@@ -876,6 +869,8 @@ gomodules.xyz/cert v1.2.0 h1:9RbkQVQlEZFYyx9gp7lq2eW5A6duQWeIRlZ2RRS/emw=
 gomodules.xyz/cert v1.2.0/go.mod h1:3p4FzumuJeDY0l+Byr3zK5vRL8f1r2RxyamgGWncDso=
 gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f h1:hTyhR4r+tj1Uq7/PpFxLTzbeA0LhMVp7bEYfhkzFjdY=
 gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f/go.mod h1:K3m7N+nBOlf91/tpv8REUGwsAgaKFwElQCuiLhm12AQ=
+gomodules.xyz/email v0.1.0 h1:Zm/SkyaOmuxzvAitwRdxC0YOszUO0gkudzZwvNA86Iw=
+gomodules.xyz/email v0.1.0/go.mod h1:F2bjw5yfu3tcEFuC7qFbakPqTVs2Z/GTOb1ITtdXFok=
 gomodules.xyz/email-providers v0.1.4 h1:kcFyxaLGvW7DBr87DDZ5xVeM1iE/gJBkrgqUihV90js=
 gomodules.xyz/email-providers v0.1.4/go.mod h1:EqvSNJ9PZ2oEdgmYOiw5YhMoUwJaKQZGanirI77rCxA=
 gomodules.xyz/encoding v0.0.2 h1:tK8zLuf6fvycbc1nlGGpQkr5HPr+sVI/VdDossnKKsw=
@@ -895,8 +890,8 @@ gomodules.xyz/listmonk-client-go v0.0.3 h1:zClL0BzsMrLLj3otzSirbzWjv4s9ewH7J8LE6
 gomodules.xyz/listmonk-client-go v0.0.3/go.mod h1:KndG87c141fxyzuxblTVa2CxYq0DAyX/xSFs/hkX67o=
 gomodules.xyz/logs v0.0.6 h1:8+9Wkud5yBPtIvkVszubyTeFxNII30lWODom0+GZD8U=
 gomodules.xyz/logs v0.0.6/go.mod h1:Q+fFtZFLEB5q86KmDehXCGuMP72Rv+Rwz0KuVxK+Gi4=
-gomodules.xyz/mailer v0.0.16 h1:DSP9NZ2EYvK4MyEx/fISuQfKjwGPbQ5ZzQXtTSTzNHw=
-gomodules.xyz/mailer v0.0.16/go.mod h1:8tthFFnhynD0lkAaddUePyOUBpydpYnH0H7plLfAufg=
+gomodules.xyz/mailer v0.0.18 h1:Hzy9Nobbedk5RtzYzwAl8mUn9MdyIHN+uoM3GVfmo6E=
+gomodules.xyz/mailer v0.0.18/go.mod h1:xTzDWE7kWPUtvH1gI8MoRYY7MXh1p8wa/FWn1Lgy9A4=
 gomodules.xyz/password-generator v0.2.6/go.mod h1:TvwYYTx9+P1pPwKQKfZgB/wr2Id9MqAQ3B5auY7reNg=
 gomodules.xyz/password-generator v0.2.7 h1:xUCiIKji8JYOkyTsvi/2nArbVevsHMOnoJVMaShbzqI=
 gomodules.xyz/password-generator v0.2.7/go.mod h1:TvwYYTx9+P1pPwKQKfZgB/wr2Id9MqAQ3B5auY7reNg=
@@ -912,7 +907,6 @@ gomodules.xyz/version v0.1.0/go.mod h1:Y8xuV02mL/45psyPKG3NCVOwvAOy6T5Kx0l3rCjKS
 gomodules.xyz/wait v0.2.0 h1:HnRIh+cvIrrKIFaXoYznCVVirv2/2xu3KzjSzsQmYAY=
 gomodules.xyz/wait v0.2.0/go.mod h1:g/epKzZQuCqgvhzhaoG4cSBNGHqnOrhFR4Q7szDJ1JM=
 gomodules.xyz/x v0.0.0-20201105065653-91c568df6331/go.mod h1:Q5P/WKpi2XymJJ4mBhUlBVsCzoL167c78CxyIind/pA=
-gomodules.xyz/x v0.0.9/go.mod h1:AgHPywNbRKtogAdk08vCqsfwjtXtXX1/FUPyG7OWdOs=
 gomodules.xyz/x v0.0.10 h1:b78HYvlXlqOVb8OZEy2uZeN/bp78nH42qIFnLQVR6O0=
 gomodules.xyz/x v0.0.10/go.mod h1:AgHPywNbRKtogAdk08vCqsfwjtXtXX1/FUPyG7OWdOs=
 google.golang.org/api v0.4.0/go.mod h1:8k5glujaEP+g9n7WNsDg8QP6cUVNI86fCNMcbazEtwE=

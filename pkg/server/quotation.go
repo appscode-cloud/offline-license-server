@@ -29,7 +29,6 @@ import (
 
 	"github.com/avct/uasurfer"
 	"github.com/davegardnerisme/phonegeocode"
-	"github.com/mailgun/mailgun-go/v4"
 	"golang.org/x/net/context"
 	. "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
@@ -583,11 +582,7 @@ func (s *Server) processQuotationRequest(gen *QuotationGenerator, sendEmail bool
 
 	if sendEmail {
 		fmt.Println("sending email to", gen.Lead.Email)
-		mg, err := mailgun.NewMailgunFromEnv()
-		if err != nil {
-			return err
-		}
-		err = mailer.SendMail(mg, gen.Lead.Email, gen.Lead.CC, srvDrive)
+		err = mailer.SendMail(s.mg, gen.Lead.Email, gen.Lead.CC, srvDrive)
 		if err != nil {
 			return err
 		}

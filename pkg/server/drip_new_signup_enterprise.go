@@ -19,7 +19,6 @@ package server
 import (
 	"time"
 
-	"github.com/mailgun/mailgun-go/v4"
 	"gomodules.xyz/mailer"
 	timex "gomodules.xyz/x/time"
 	"google.golang.org/api/sheets/v4"
@@ -35,7 +34,7 @@ type SignupCampaignData struct {
 	QuickstartLink      string
 }
 
-func NewEnterpriseSignupCampaign(srv *sheets.Service, mg mailgun.Mailgun) *mailer.DripCampaign {
+func NewEnterpriseSignupCampaign(srv *sheets.Service, mg *mailer.SMTPService) *mailer.DripCampaign {
 	return &mailer.DripCampaign{
 		Name: "New Signup",
 		Steps: append([]mailer.CampaignStep{
@@ -66,7 +65,6 @@ Team AppsCode
 					AttachmentBytes: nil,
 					GDriveFiles:     nil,
 					GoogleDocIds:    nil,
-					EnableTracking:  true,
 				},
 			},
 			{
@@ -92,7 +90,6 @@ Team AppsCode
 					AttachmentBytes: nil,
 					GDriveFiles:     nil,
 					GoogleDocIds:    nil,
-					EnableTracking:  true,
 				},
 			},
 			{
@@ -116,7 +113,6 @@ Team AppsCode
 					AttachmentBytes: nil,
 					GDriveFiles:     nil,
 					GoogleDocIds:    nil,
-					EnableTracking:  true,
 				},
 			},
 		}, NewEnterpriseFirstTimeCampaign(srv, mg).Steps...),
@@ -127,7 +123,7 @@ Team AppsCode
 	}
 }
 
-func NewEnterpriseFirstTimeCampaign(srv *sheets.Service, mg mailgun.Mailgun) *mailer.DripCampaign {
+func NewEnterpriseFirstTimeCampaign(srv *sheets.Service, mg *mailer.SMTPService) *mailer.DripCampaign {
 	return &mailer.DripCampaign{
 		Name: "New Signup",
 		Steps: []mailer.CampaignStep{
@@ -154,7 +150,6 @@ Team AppsCode
 					AttachmentBytes: nil,
 					GDriveFiles:     nil,
 					GoogleDocIds:    nil,
-					EnableTracking:  true,
 				},
 			},
 			{
@@ -180,7 +175,6 @@ Team AppsCode
 					AttachmentBytes: nil,
 					GDriveFiles:     nil,
 					GoogleDocIds:    nil,
-					EnableTracking:  true,
 				},
 			},
 		},

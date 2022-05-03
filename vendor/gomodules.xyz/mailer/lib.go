@@ -18,24 +18,43 @@ package mailer
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
+	"net/smtp"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/Masterminds/sprig/v3"
-	"github.com/mailgun/mailgun-go/v4"
+	"github.com/gabriel-vasile/mimetype"
+	"github.com/pkg/errors"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+	"gomodules.xyz/email"
 	"google.golang.org/api/drive/v3"
 )
+
+type SMTPService struct {
+	Address string
+	Auth    smtp.Auth
+}
+
+func NewSMTPServiceFromEnv() (*SMTPService, error) {
+	addr := os.Getenv("SMTP_ADDRESS")
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return nil, err
+	}
+	return &SMTPService{
+		Address: addr,
+		Auth:    smtp.PlainAuth("", os.Getenv("SMTP_USERNAME"), os.Getenv("SMTP_PASSWORD"), host),
+	}, nil
+}
 
 type Mailer struct {
 	Sender  string
@@ -49,8 +68,6 @@ type Mailer struct {
 	AttachmentBytes map[string][]byte
 	GDriveFiles     map[string]string
 	GoogleDocIds    map[string]string
-
-	EnableTracking bool
 }
 
 func (m *Mailer) renderSubject() (string, error) {
@@ -98,35 +115,38 @@ func (m *Mailer) renderMail(src string, params interface{}) (string, string, err
 	return bodyText.String(), bodyHtml.String(), nil
 }
 
-func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient, cc string, srv *drive.Service) error {
+func (m *Mailer) SendMail(mg *SMTPService, recipient, cc string, srv *drive.Service) error {
 	subject, bodyText, bodyHtml, err := m.Render()
 	if err != nil {
 		return err
 	}
 
 	// The message object allows you to add attachments and Bcc recipients
-	msg := mg.NewMessage(m.Sender, subject, bodyText, recipient)
+	msg := email.NewEmail()
+	msg.From = m.Sender
+	msg.To = []string{recipient}
+	msg.Subject = subject
+	msg.Text = []byte(bodyText)
+	msg.HTML = []byte(bodyHtml)
 	if cc != "" {
 		for _, e := range strings.Split(cc, ",") {
-			msg.AddCC(strings.TrimSpace(e))
+			msg.Cc = append(msg.Cc, strings.TrimSpace(e))
 		}
 	}
 	if m.BCC != "" {
-		msg.AddBCC(m.BCC)
+		for _, e := range strings.Split(m.BCC, ",") {
+			msg.Bcc = append(msg.Bcc, strings.TrimSpace(e))
+		}
 	}
 	if m.ReplyTo != "" {
-		msg.SetReplyTo(m.ReplyTo)
+		msg.ReplyTo = []string{m.ReplyTo}
 	}
 
-	if m.EnableTracking {
-		msg.SetTracking(true)
-		msg.SetTrackingClicks(true)
-		msg.SetTrackingOpens(true)
-	}
-
-	msg.SetHtml(bodyHtml)
 	for filename, data := range m.AttachmentBytes {
-		msg.AddBufferAttachment(filename, data)
+		mtype := mimetype.Detect(data)
+		if _, err := msg.Attach(bytes.NewReader(data), filename, mtype.String()); err != nil {
+			return errors.Wrapf(err, "failed to attach file %q", filename)
+		}
 	}
 
 	for f, docId := range m.GoogleDocIds {
@@ -135,7 +155,9 @@ func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient, cc string, srv *drive.S
 		if err != nil {
 			return err
 		}
-		msg.AddAttachment(filename)
+		if _, err := msg.AttachFile(filename); err != nil {
+			return errors.Wrapf(err, "failed to attach file %q", filename)
+		}
 	}
 
 	for f, docId := range m.GDriveFiles {
@@ -144,15 +166,13 @@ func (m *Mailer) SendMail(mg mailgun.Mailgun, recipient, cc string, srv *drive.S
 		if err != nil {
 			return err
 		}
-		msg.AddAttachment(filename)
+		if _, err := msg.AttachFile(filename); err != nil {
+			return errors.Wrapf(err, "failed to attach file %q", filename)
+		}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
 	// Send the message with a 10 second timeout
-	_, _, err = mg.Send(ctx, msg)
-	return err
+	return msg.Send(mg.Address, mg.Auth)
 }
 
 func (m *Mailer) Render() (subject string, bodyText string, bodyHtml string, err error) {
@@ -177,12 +197,12 @@ func ExportPDF(srvDrive *drive.Service, docId, filename string) error {
 		return err
 	}
 	// filename := filepath.Join(gen.cfg.OutDir, FolderName(gen.cfg.Email), docName+".pdf")
-	err = os.MkdirAll(filepath.Dir(filename), 0755)
+	err = os.MkdirAll(filepath.Dir(filename), 0o755)
 	if err != nil {
 		return err
 	}
 	fmt.Println("writing file:", filename)
-	return ioutil.WriteFile(filename, buf.Bytes(), 0644)
+	return ioutil.WriteFile(filename, buf.Bytes(), 0o644)
 }
 
 func DownloadFile(srvDrive *drive.Service, docId, filename string) error {
@@ -197,10 +217,10 @@ func DownloadFile(srvDrive *drive.Service, docId, filename string) error {
 		return err
 	}
 	// filename := filepath.Join(gen.cfg.OutDir, FolderName(gen.cfg.Email), docName+".pdf")
-	err = os.MkdirAll(filepath.Dir(filename), 0755)
+	err = os.MkdirAll(filepath.Dir(filename), 0o755)
 	if err != nil {
 		return err
 	}
 	fmt.Println("writing file:", filename)
-	return ioutil.WriteFile(filename, buf.Bytes(), 0644)
+	return ioutil.WriteFile(filename, buf.Bytes(), 0o644)
 }

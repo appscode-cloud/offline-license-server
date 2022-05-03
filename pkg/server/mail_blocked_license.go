@@ -38,6 +38,5 @@ License server
 		Body:            src,
 		Params:          info,
 		AttachmentBytes: nil,
-		EnableTracking:  false,
 	}
 }

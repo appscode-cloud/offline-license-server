@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/gocarina/gocsv"
-	"github.com/mailgun/mailgun-go/v4"
 	"gomodules.xyz/encoding/json"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"gomodules.xyz/sets"
@@ -78,7 +77,7 @@ type DripCampaign struct {
 	Name  string
 	Steps []CampaignStep
 
-	M             mailgun.Mailgun
+	M             *SMTPService
 	SheetService  *sheets.Service
 	SpreadsheetId string
 	SheetName     string

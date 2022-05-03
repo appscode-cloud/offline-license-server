@@ -15,7 +15,6 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/himalayan-institute/zoom-lib-golang v1.0.0
 	github.com/k3a/html2text v1.0.7
-	github.com/mailgun/mailgun-go/v4 v4.6.0
 	github.com/oschwald/geoip2-golang v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/rickb777/date v1.15.3
@@ -35,7 +34,7 @@ require (
 	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/listmonk-client-go v0.0.3
 	gomodules.xyz/logs v0.0.6
-	gomodules.xyz/mailer v0.0.16
+	gomodules.xyz/mailer v0.0.18
 	gomodules.xyz/password-generator v0.2.7
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/sets v0.2.1
@@ -60,6 +59,7 @@ require (
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210512163311-63b5d3c536b0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.1-rc1 // indirect
 	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191 // indirect
 	github.com/go-resty/resty/v2 v2.6.0 // indirect
@@ -73,7 +73,6 @@ require (
 	github.com/google/wire v0.4.0 // indirect
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
@@ -94,6 +93,7 @@ require (
 	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
+	gomodules.xyz/email v0.1.0 // indirect
 	gomodules.xyz/encoding v0.0.2 // indirect
 	gomodules.xyz/flags v0.1.3 // indirect
 	gomodules.xyz/wait v0.2.0 // indirect
