@@ -46,6 +46,7 @@ type WebinarSchedule struct {
 	SpeakerTitle   string `json:"speaker_title" csv:"Speaker Title" form:"speaker_title"`
 	SpeakerBio     string `json:"speaker_bio" csv:"Speaker Bio" form:"speaker_bio"`
 	SpeakerPicture string `json:"speaker_picture" csv:"Speaker Picture" form:"speaker_picture"`
+	YoutubeLink    string `json:"youtube_link" csv:"Youtube Link" form:"youtube_link"`
 }
 
 type WebinarMeetingID struct {
@@ -177,6 +178,23 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 		ctx.JSON(http.StatusOK, out)
 	})
 
+	m.Get("/_/upcoming_webinars", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
+		key := ctx.Req.URL.Path
+		out := c.Get(key)
+		if out == nil {
+			schedule, err := s.UpcomingWebinarSchedules()
+			if err != nil {
+				ctx.Error(http.StatusInternalServerError, err.Error())
+				return
+			}
+			out = schedule
+			_ = c.Put(key, out, 60) // cache for 60 seconds
+		} else {
+			log.Println(key, "found")
+		}
+		ctx.JSON(http.StatusOK, out)
+	})
+
 	m.Post("/_/webinars/register", binding.Bind(WebinarRegistrationForm{}), func(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) {
 		err := s.RegisterForWebinar(ctx, form, log)
 		if err != nil {
@@ -281,6 +299,76 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 		return sch, nil
 	}
 	return &WebinarSchedule{}, nil
+}
+
+func (s *Server) UpcomingWebinarSchedules() ([]*WebinarSchedule, error) {
+	now := time.Now()
+
+	reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Predicate{
+		Header: "Schedules",
+		By: func(column []interface{}) (int, error) {
+			type TP struct {
+				Schedules Dates
+				Pos       int
+			}
+			var upcoming []TP
+			for i, v := range column {
+				schedules := Dates{}
+				err := schedules.UnmarshalCSV(v.(string))
+				if err != nil {
+					return -1, err
+				}
+
+				// 3/11/2021 3:00:00
+				for _, t := range schedules {
+					if t.After(now) {
+						upcoming = append(upcoming, TP{
+							Schedules: schedules,
+							Pos:       i,
+						})
+					}
+				}
+			}
+			if len(upcoming) == 0 {
+				return -1, io.EOF
+			}
+			sort.Slice(upcoming, func(i, j int) bool {
+				return upcoming[i].Schedules[0].Before(upcoming[j].Schedules[0])
+			})
+			return upcoming[0].Pos, nil
+		},
+	})
+	if err == io.EOF {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	schedules := []*WebinarSchedule{}
+	if err := gocsv.UnmarshalCSV(reader, &schedules); err != nil { // Load clients from file
+		return nil, err
+	}
+	for i := 0; i < len(schedules); {
+		sch := schedules[i]
+
+		var dates []time.Time
+		for _, t := range sch.Schedules {
+			if t.After(now) {
+				dates = append(dates, t)
+			}
+		}
+		if len(dates) == 0 {
+			// pass webinar
+			schedules = append(schedules[:i], schedules[i+1:]...)
+			continue
+		}
+		sch.Schedules = []time.Time{dates[0]}
+		i++
+	}
+	sort.Slice(schedules, func(i, j int) bool {
+		return schedules[i].Schedules[0].Before(schedules[j].Schedules[0])
+	})
+	return schedules, nil
 }
 
 func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) error {
