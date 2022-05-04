@@ -264,7 +264,6 @@ func (w *SheetWriter) getSheetId(name string) (int64, error) {
 		if sheet.Properties.Title == name {
 			id = sheet.Properties.SheetId
 		}
-
 	}
 
 	return id, nil

@@ -55,6 +55,7 @@ import (
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
+	"google.golang.org/api/youtube/v3"
 	"gopkg.in/macaron.v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -77,6 +78,7 @@ type Server struct {
 	srvSheets   *sheets.Service
 	sheet       *gdrive.Spreadsheet
 	srvCalendar *calendar.Service
+	srvYT       *youtube.Service
 
 	zc               *zoom.Client
 	zoomAccountEmail string
@@ -111,7 +113,7 @@ func New(opts *Options) (*Server, error) {
 		}
 	}
 
-	client, err := gdrive.DefaultClient(opts.GoogleCredentialDir)
+	client, err := gdrive.DefaultClient(opts.GoogleCredentialDir, youtube.YoutubeReadonlyScope)
 	if err != nil {
 		return nil, err
 	}
@@ -141,6 +143,11 @@ func New(opts *Options) (*Server, error) {
 		return nil, fmt.Errorf("unable to retrieve Calendar gc: %v", err)
 	}
 
+	srvYT, err := youtube.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to create YouTube client: %v", err)
+	}
+
 	smtpHost, _, err := net.SplitHostPort(opts.SMTPAddress)
 	if err != nil {
 		return nil, err
@@ -163,6 +170,7 @@ func New(opts *Options) (*Server, error) {
 		srvDoc:           srvDoc,
 		srvSheets:        sheetsService,
 		srvCalendar:      srvCalendar,
+		srvYT:            srvYT,
 		zc:               zoom.NewClient(os.Getenv("ZOOM_API_KEY"), os.Getenv("ZOOM_API_SECRET")),
 		zoomAccountEmail: os.Getenv("ZOOM_ACCOUNT_EMAIL"),
 		blockedDomains:   sets.NewString(opts.BlockedDomains...),
@@ -308,6 +316,8 @@ func (s *Server) Run() error {
 
 	s.RegisterWebinarAPI(m)
 	// m.Post("/_/webhooks/mailgun/", s.HandleMailgunWebhook)
+
+	s.RegisterYoutubeAPI(m)
 
 	if !s.opts.EnableSSL {
 		addr := fmt.Sprintf(":%d", s.opts.Port)

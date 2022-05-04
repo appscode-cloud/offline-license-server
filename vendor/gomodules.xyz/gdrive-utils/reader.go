@@ -107,6 +107,10 @@ func NewColumnReader(srv *sheets.Service, spreadsheetId, sheetName, header strin
 }
 
 func NewRowReader(srv *sheets.Service, spreadsheetId, sheetName string, predicate *Predicate) (*SheetReader, error) {
+	if predicate == nil {
+		return NewReader(srv, spreadsheetId, sheetName, 1)
+	}
+
 	r := &SheetReader{
 		srv:                  srv,
 		spreadsheetId:        spreadsheetId,
