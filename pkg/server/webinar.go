@@ -43,7 +43,7 @@ import (
 
 type SpeakerInfo struct {
 	Name     string `json:"name"`
-	JobTitle string `json:"jobTitle"`
+	JobTitle string `json:"job_title"`
 	Picture  string `json:"picture"`
 }
 
