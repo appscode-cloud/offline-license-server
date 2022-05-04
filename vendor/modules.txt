@@ -371,7 +371,7 @@ gomodules.xyz/flags
 # gomodules.xyz/freshsales-client-go v0.0.2
 ## explicit; go 1.16
 gomodules.xyz/freshsales-client-go
-# gomodules.xyz/gdrive-utils v0.0.2
+# gomodules.xyz/gdrive-utils v0.0.3
 ## explicit; go 1.17
 gomodules.xyz/gdrive-utils
 # gomodules.xyz/homedir v0.1.0
@@ -398,7 +398,7 @@ gomodules.xyz/sets
 # gomodules.xyz/wait v0.2.0
 ## explicit; go 1.14
 gomodules.xyz/wait
-# gomodules.xyz/x v0.0.10
+# gomodules.xyz/x v0.0.13
 ## explicit; go 1.17
 gomodules.xyz/x/net
 gomodules.xyz/x/time
@@ -424,6 +424,7 @@ google.golang.org/api/transport/grpc
 google.golang.org/api/transport/http
 google.golang.org/api/transport/http/internal/propagation
 google.golang.org/api/transport/internal/dca
+google.golang.org/api/youtube/v3
 # google.golang.org/appengine v1.6.7
 ## explicit; go 1.11
 google.golang.org/appengine
