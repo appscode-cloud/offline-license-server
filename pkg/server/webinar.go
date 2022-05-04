@@ -41,16 +41,23 @@ import (
 	"gopkg.in/macaron.v1"
 )
 
+type SpeakerInfo struct {
+	Name     string `json:"name"`
+	JobTitle string `json:"jobTitle"`
+	Picture  string `json:"picture"`
+}
+
 type WebinarSchedule struct {
-	Title          string `json:"title" csv:"Title" form:"title"`
-	Schedules      Dates  `json:"schedules" csv:"Schedules" form:"schedules"`
-	Summary        string `json:"summary" csv:"Summary" form:"summary"`
-	Speaker        string `json:"speaker" csv:"Speaker" form:"speaker"`
-	SpeakerTitle   string `json:"speaker_title" csv:"Speaker Title" form:"speaker_title"`
-	SpeakerBio     string `json:"speaker_bio" csv:"Speaker Bio" form:"speaker_bio"`
-	SpeakerPicture string `json:"speaker_picture" csv:"Speaker Picture" form:"speaker_picture"`
-	YoutubeLink    string `json:"-" csv:"Youtube Link" form:"-"`
-	YoutubeVideoID string `json:"youtube_video_id" csv:"-" form:"-"`
+	Title          string        `json:"title" csv:"Title" form:"title"`
+	Schedules      Dates         `json:"schedules" csv:"Schedules" form:"schedules"`
+	Summary        string        `json:"summary" csv:"Summary" form:"summary"`
+	Speaker        string        `json:"speaker" csv:"Speaker" form:"speaker"`
+	SpeakerTitle   string        `json:"speaker_title" csv:"Speaker Title" form:"speaker_title"`
+	SpeakerBio     string        `json:"speaker_bio" csv:"Speaker Bio" form:"speaker_bio"`
+	SpeakerPicture string        `json:"speaker_picture" csv:"Speaker Picture" form:"speaker_picture"`
+	Speakers       []SpeakerInfo `json:"speakers" csv:"-" form:"-"`
+	YoutubeLink    string        `json:"-" csv:"Youtube Link" form:"-"`
+	YoutubeVideoID string        `json:"youtube_video_id" csv:"-" form:"-"`
 }
 
 type WebinarMeetingID struct {
@@ -297,6 +304,7 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 		} else {
 			sch.YoutubeVideoID = videoID
 		}
+		FixSpeakers(sch)
 		return sch, nil
 	}
 	return &WebinarSchedule{}, nil
@@ -360,6 +368,7 @@ func (s *Server) UpcomingWebinarSchedules() ([]*WebinarSchedule, error) {
 		} else {
 			sch.YoutubeVideoID = videoID
 		}
+		FixSpeakers(sch)
 		i++
 	}
 	sort.Slice(schedules, func(i, j int) bool {
@@ -382,6 +391,42 @@ func YoutubeVideoID(rawURL string) (string, error) {
 		return id, nil
 	}
 	return path.Base(u.Path), nil
+}
+
+func FixSpeakers(sch *WebinarSchedule) []SpeakerInfo {
+	spliter := func(r rune) bool {
+		return r == ',' || r == ';'
+	}
+	names := strings.FieldsFunc(sch.Speaker, spliter)
+	titles := strings.FieldsFunc(sch.SpeakerTitle, spliter)
+	pics := strings.FieldsFunc(sch.SpeakerPicture, spliter)
+
+	n := min(len(names), min(len(titles), len(pics)))
+	out := make([]SpeakerInfo, n)
+	for i := 0; i < n; i++ {
+		out[i] = SpeakerInfo{
+			Name:     names[i],
+			JobTitle: titles[i],
+			Picture:  pics[i],
+		}
+	}
+
+	// FIX input, if more than one speaker, set old fields for the first speaker
+	sch.Speakers = out
+	if n > 1 {
+		sch.Speaker = out[0].Name
+		sch.SpeakerTitle = out[0].JobTitle
+		sch.SpeakerPicture = out[0].Picture
+	}
+
+	return out
+}
+
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }
 
 func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) error {
