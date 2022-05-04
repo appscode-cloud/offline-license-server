@@ -206,6 +206,23 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 		ctx.JSON(http.StatusOK, out)
 	})
 
+	m.Get("/_/past_webinars", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
+		key := ctx.Req.URL.Path
+		out := c.Get(key)
+		if out == nil {
+			schedule, err := s.PastWebinarSchedules()
+			if err != nil {
+				ctx.Error(http.StatusInternalServerError, err.Error())
+				return
+			}
+			out = schedule
+			_ = c.Put(key, out, 60) // cache for 60 seconds
+		} else {
+			log.Println(key, "found")
+		}
+		ctx.JSON(http.StatusOK, out)
+	})
+
 	m.Post("/_/webinars/register", binding.Bind(WebinarRegistrationForm{}), func(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) {
 		err := s.RegisterForWebinar(ctx, form, log)
 		if err != nil {
@@ -354,6 +371,50 @@ func (s *Server) UpcomingWebinarSchedules() ([]*WebinarSchedule, error) {
 		var dates []time.Time
 		for _, t := range sch.Schedules {
 			if t.After(now) {
+				dates = append(dates, t)
+			}
+		}
+		if len(dates) == 0 {
+			// pass webinar
+			schedules = append(schedules[:i], schedules[i+1:]...)
+			continue
+		}
+		sch.Schedules = []time.Time{dates[0]}
+		if videoID, err := YoutubeVideoID(sch.YoutubeLink); err != nil {
+			return nil, err
+		} else {
+			sch.YoutubeVideoID = videoID
+		}
+		FixSpeakers(sch)
+		i++
+	}
+	sort.Slice(schedules, func(i, j int) bool {
+		return schedules[i].Schedules[0].Before(schedules[j].Schedules[0])
+	})
+	return schedules, nil
+}
+
+func (s *Server) PastWebinarSchedules() ([]*WebinarSchedule, error) {
+	now := time.Now()
+
+	reader, err := gdrive.NewReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, 1)
+	if err == io.EOF {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	schedules := []*WebinarSchedule{}
+	if err := gocsv.UnmarshalCSV(reader, &schedules); err != nil { // Load clients from file
+		return nil, err
+	}
+
+	for i := 0; i < len(schedules); {
+		sch := schedules[i]
+
+		var dates []time.Time
+		for _, t := range sch.Schedules {
+			if t.Before(now) {
 				dates = append(dates, t)
 			}
 		}
