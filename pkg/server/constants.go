@@ -46,6 +46,9 @@ const (
 	WebinarCalendarId       = "c_gccijq3fpvbsgg68le9tq37pqs@group.calendar.google.com"
 	WebinarAlternativeHosts = "tamal@appscode.com"
 
+	NewsSnippetSpreadsheetId = "1kLewa3oGLlaFqzghV8Snh7u5xFMcS54Rl8I8BMpYTQs"
+	NewsSnippetSheet         = "News"
+
 	MailingList_Console    = "06a84456-bfdf-4edf-97c1-7e7d4ad48f67"
 	MailingList_KubeDB     = "a5f00cb2-f398-4408-a13a-28b6db8a32ba"
 	MailingList_Kubeform   = "cd797afa-04d4-45c8-86e0-642a59b2d7f4"
