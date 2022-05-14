@@ -19,7 +19,6 @@ package server
 import (
 	"io"
 	"log"
-	"math"
 	"net/http"
 	"sort"
 	"time"
@@ -41,12 +40,12 @@ func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
 		key := ctx.Req.URL.Path
 		out := c.Get(key)
 		if out == nil {
-			schedule, err := s.NextNewsSnippet()
+			news, err := s.NextNewsSnippet()
 			if err != nil {
 				ctx.Error(http.StatusInternalServerError, err.Error())
 				return
 			}
-			out = schedule
+			out = news
 			_ = c.Put(key, out, 60) // cache for 60 seconds
 		} else {
 			log.Println(key, "found")
@@ -61,7 +60,6 @@ func (s *Server) NextNewsSnippet() (*NewsSnippet, error) {
 	reader, err := gdrive.NewRowReader(s.srvSheets, NewsSnippetSpreadsheetId, NewsSnippetSheet, &gdrive.Predicate{
 		Header: "End Date",
 		By: func(column []interface{}) (int, error) {
-			pos := math.MaxInt
 			for i, v := range column {
 				var d Date
 				err := d.UnmarshalCSV(v.(string))
@@ -69,14 +67,10 @@ func (s *Server) NextNewsSnippet() (*NewsSnippet, error) {
 					return -1, err
 				}
 				if d.Time.After(now) {
-					pos = i
-					break
+					return i, nil
 				}
 			}
-			if pos == math.MaxInt {
-				return -1, io.EOF
-			}
-			return pos, nil
+			return -1, io.EOF
 		},
 	})
 	if err == io.EOF {
