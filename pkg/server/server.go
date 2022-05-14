@@ -315,6 +315,7 @@ func (s *Server) Run() error {
 	})
 
 	s.RegisterWebinarAPI(m)
+	s.RegisterNewsAPI(m)
 	// m.Post("/_/webhooks/mailgun/", s.HandleMailgunWebhook)
 
 	s.RegisterYoutubeAPI(m)
