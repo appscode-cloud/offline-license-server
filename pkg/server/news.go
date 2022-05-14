@@ -31,9 +31,9 @@ import (
 )
 
 type NewsSnippet struct {
-	Content   string   `json:"content" csv:"Content"`
-	StartDate DateTime `json:"startDate" csv:"Start Date"`
-	EndDate   DateTime `json:"endDate" csv:"End Date"`
+	Content   string `json:"content" csv:"Content"`
+	StartDate Date   `json:"startDate" csv:"Start Date"`
+	EndDate   Date   `json:"endDate" csv:"End Date"`
 }
 
 func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
@@ -63,7 +63,7 @@ func (s *Server) NextNewsSnippet() (*NewsSnippet, error) {
 		By: func(column []interface{}) (int, error) {
 			pos := math.MaxInt
 			for i, v := range column {
-				var d DateTime
+				var d Date
 				err := d.UnmarshalCSV(v.(string))
 				if err != nil {
 					return -1, err

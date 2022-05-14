@@ -48,6 +48,7 @@ const (
 
 	NewsSnippetSpreadsheetId = "1kLewa3oGLlaFqzghV8Snh7u5xFMcS54Rl8I8BMpYTQs"
 	NewsSnippetSheet         = "News"
+	DateFormat               = "1/2/2006"
 
 	MailingList_Console    = "06a84456-bfdf-4edf-97c1-7e7d4ad48f67"
 	MailingList_KubeDB     = "a5f00cb2-f398-4408-a13a-28b6db8a32ba"

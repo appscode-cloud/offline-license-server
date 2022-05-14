@@ -147,6 +147,21 @@ func (date *DateTime) UnmarshalCSV(csv string) (err error) {
 	return err
 }
 
+type Date struct {
+	time.Time
+}
+
+// Convert the internal date as CSV string
+func (date *Date) MarshalCSV() (string, error) {
+	return date.Time.Format(DateFormat), nil
+}
+
+// Convert the CSV string as internal date
+func (date *Date) UnmarshalCSV(csv string) (err error) {
+	date.Time, err = time.Parse(DateFormat, csv)
+	return err
+}
+
 type StringSlice []string
 
 // Convert the internal date as CSV string
