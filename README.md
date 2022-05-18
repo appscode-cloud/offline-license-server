@@ -87,6 +87,7 @@ These instructions are useful if you are trying to deploy your own license serve
 curl -fsSL -O https://github.com/appscode/offline-license-server/releases/download/v0.0.31/offline-license-server-linux-amd64
 chmod +x offline-license-server-linux-amd64
 mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
+sudo systemctl restart offline-license-server
 ```
 
 - Install systemd service
