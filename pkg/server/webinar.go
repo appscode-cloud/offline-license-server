@@ -286,7 +286,6 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 	reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Predicate{
 		Header: "Schedules",
 		By: func(column []interface{}) (int, error) {
-			pos := math.MaxInt
 			for i, v := range column {
 				schedules := Dates{}
 				err := schedules.UnmarshalCSV(v.(string))
@@ -296,15 +295,12 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 
 				// 3/11/2021 3:00:00
 				for _, t := range schedules {
-					if t.After(now) && i < pos {
-						pos = i
+					if t.After(now) {
+						return i, nil
 					}
 				}
 			}
-			if pos == math.MaxInt {
-				return -1, io.EOF
-			}
-			return pos, nil
+			return -1, io.EOF
 		},
 	})
 	if err == io.EOF {
@@ -317,12 +313,8 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 	if err := gocsv.UnmarshalCSV(reader, &schedules); err != nil { // Load clients from file
 		return nil, err
 	}
-	sort.Slice(schedules, func(i, j int) bool {
-		return schedules[i].Schedules[0].Before(schedules[j].Schedules[0])
-	})
-
-	if len(schedules) > 0 {
-		sch := schedules[0]
+	for i := 0; i < len(schedules); {
+		sch := schedules[i]
 
 		var dates []time.Time
 		for _, t := range sch.Schedules {
@@ -330,14 +322,26 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 				dates = append(dates, t)
 			}
 		}
-		sch.Schedules = dates
+		if len(dates) == 0 {
+			// pass webinar
+			schedules = append(schedules[:i], schedules[i+1:]...)
+			continue
+		}
+		sch.Schedules = []time.Time{dates[0]}
 		if videoID, err := YoutubeVideoID(sch.YoutubeLink); err != nil {
 			return nil, err
 		} else {
 			sch.YoutubeVideoID = videoID
 		}
 		FixSpeakers(sch)
-		return sch, nil
+		i++
+	}
+	sort.Slice(schedules, func(i, j int) bool {
+		return schedules[i].Schedules[0].Before(schedules[j].Schedules[0])
+	})
+
+	if len(schedules) > 0 {
+		return schedules[0], nil
 	}
 	return &WebinarSchedule{}, nil
 }
