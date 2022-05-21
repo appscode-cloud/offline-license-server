@@ -28,6 +28,8 @@ import (
 )
 
 func TestServer_NextWebinarSchedule(t *testing.T) {
+	t.SkipNow()
+
 	client, err := gdrive.DefaultClient("/Users/tamal/go/src/github.com/appscodelabs/offline-license-server", youtube.YoutubeReadonlyScope)
 	if err != nil {
 		t.Fatal(err)
