@@ -107,7 +107,7 @@ func (date *Dates) MarshalCSV() (string, error) {
 	})
 	parts := make([]string, 0, len(*date))
 	for _, d := range dates {
-		parts = append(parts, d.Format(WebinarScheduleFormat))
+		parts = append(parts, d.Format(TimestampFormat))
 	}
 	return strings.Join(parts, ","), nil
 }
@@ -118,7 +118,7 @@ func (date *Dates) UnmarshalCSV(csv string) (err error) {
 
 	dates := make([]time.Time, 0, len(parts))
 	for _, part := range parts {
-		d, err := time.Parse(WebinarScheduleFormat, part)
+		d, err := time.Parse(TimestampFormat, part)
 		if err != nil {
 			return err
 		}
@@ -132,18 +132,18 @@ func (date *Dates) UnmarshalCSV(csv string) (err error) {
 	return nil
 }
 
-type DateTime struct {
+type Timestamp struct {
 	time.Time
 }
 
 // Convert the internal date as CSV string
-func (date *DateTime) MarshalCSV() (string, error) {
-	return date.Time.Format(WebinarScheduleFormat), nil
+func (date *Timestamp) MarshalCSV() (string, error) {
+	return date.Time.Format(TimestampFormat), nil
 }
 
 // Convert the CSV string as internal date
-func (date *DateTime) UnmarshalCSV(csv string) (err error) {
-	date.Time, err = time.Parse(WebinarScheduleFormat, csv)
+func (date *Timestamp) UnmarshalCSV(csv string) (err error) {
+	date.Time, err = time.Parse(TimestampFormat, csv)
 	return err
 }
 
@@ -620,7 +620,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 					},
 					Webinar: WebinarRecord{
 						Title:           result.Title,
-						Schedule:        DateTime{schedule},
+						Schedule:        Timestamp{schedule},
 						Speaker:         result.Speaker,
 						ClusterProvider: form.ClusterProvider,
 						ExperienceLevel: form.ExperienceLevel,

@@ -882,8 +882,8 @@ gomodules.xyz/flags v0.1.3/go.mod h1:e+kvBLnqdEWGG670SKOYag1CXStM2Slrxq01OIK3tFs
 gomodules.xyz/freshsales-client-go v0.0.2 h1:yUwJH8SG7jNmHEJtTfm5Hh7s2XN+FLAGgMPkONuUOPw=
 gomodules.xyz/freshsales-client-go v0.0.2/go.mod h1:kAkUx/THh9+yQ04y9FUkVVSSUuJctvBQAY9c9kfXSrM=
 gomodules.xyz/gdrive-utils v0.0.2/go.mod h1:4tDMdl8oLLBpyXa+irckhrpebuD1ySeBF+Jelb8XlmI=
-gomodules.xyz/gdrive-utils v0.0.3 h1:obKyQsyUoa7OusZkQyAyYx/8vnWQn1lJ0rECj6tH+H8=
-gomodules.xyz/gdrive-utils v0.0.3/go.mod h1:4tDMdl8oLLBpyXa+irckhrpebuD1ySeBF+Jelb8XlmI=
+gomodules.xyz/gdrive-utils v0.0.4 h1:zq0hp/EWb/wx9NZM1KjvjrEgSkiQHRqlBcFXaw2YIu4=
+gomodules.xyz/gdrive-utils v0.0.4/go.mod h1:87BYibv0jNssaGkuMqCJveUFD5X/9cvOUA1Zp8cSZ3s=
 gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84/go.mod h1:rNt5O0KsgdJjAD/UXuxhO2N3b5TegqEk1T8HG9eraH4=
 gomodules.xyz/homedir v0.1.0 h1:qnY/+0XQbMk/UcpImZCJYeSI1rNa2BFtcJ/xqxzCpow=
 gomodules.xyz/homedir v0.1.0/go.mod h1:rNt5O0KsgdJjAD/UXuxhO2N3b5TegqEk1T8HG9eraH4=

@@ -371,7 +371,7 @@ gomodules.xyz/flags
 # gomodules.xyz/freshsales-client-go v0.0.2
 ## explicit; go 1.16
 gomodules.xyz/freshsales-client-go
-# gomodules.xyz/gdrive-utils v0.0.3
+# gomodules.xyz/gdrive-utils v0.0.4
 ## explicit; go 1.17
 gomodules.xyz/gdrive-utils
 # gomodules.xyz/homedir v0.1.0

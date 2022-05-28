@@ -30,7 +30,7 @@ require (
 	gomodules.xyz/email-providers v0.1.4
 	gomodules.xyz/errors v0.1.0
 	gomodules.xyz/freshsales-client-go v0.0.2
-	gomodules.xyz/gdrive-utils v0.0.3
+	gomodules.xyz/gdrive-utils v0.0.4
 	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/listmonk-client-go v0.0.3
 	gomodules.xyz/logs v0.0.6

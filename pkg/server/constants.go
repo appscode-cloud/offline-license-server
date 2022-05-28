@@ -41,14 +41,15 @@ const (
 	LicenseBucket     = "licenses.appscode.com"
 
 	WebinarSpreadsheetId    = "1VW9K1yRLw6IFnr4o9ZJqaEamBahfqnjfl79EHeAZBzg"
-	WebinarScheduleFormat   = "1/2/2006 15:04:05"
 	WebinarScheduleSheet    = "Schedule"
 	WebinarCalendarId       = "c_gccijq3fpvbsgg68le9tq37pqs@group.calendar.google.com"
 	WebinarAlternativeHosts = "tamal@appscode.com"
 
 	NewsSnippetSpreadsheetId = "1kLewa3oGLlaFqzghV8Snh7u5xFMcS54Rl8I8BMpYTQs"
 	NewsSnippetSheet         = "News"
-	DateFormat               = "1/2/2006"
+
+	DateFormat      = "1/2/2006"
+	TimestampFormat = "1/2/2006 15:04:05"
 
 	MailingList_Console    = "06a84456-bfdf-4edf-97c1-7e7d4ad48f67"
 	MailingList_KubeDB     = "a5f00cb2-f398-4408-a13a-28b6db8a32ba"
