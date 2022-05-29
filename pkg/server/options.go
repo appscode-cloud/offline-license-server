@@ -62,7 +62,7 @@ func NewOptions() *Options {
 		Issuer:               "",
 		CertDir:              "certs",
 		CertEmail:            "tamal@appscode.com",
-		Hosts:                []string{"license-issuer.appscode.com"},
+		Hosts:                []string{"license-issuer.appscode.com", "x.appscode.com"},
 		Port:                 4000,
 		GeoCityDatabase:      "",
 		LicenseBucket:        LicenseBucket,
