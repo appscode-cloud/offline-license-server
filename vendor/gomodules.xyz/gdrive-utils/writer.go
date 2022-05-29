@@ -3,7 +3,6 @@ package gdrive_utils
 import (
 	"context"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/gocarina/gocsv"
@@ -183,51 +182,45 @@ func (w *SheetWriter) Flush() {
 				w.e = fmt.Errorf("unable to retrieve data from sheet: %v", err)
 				return
 			}
-			if len(resp.Values) == 0 {
-				// column only has header row
-				w.e = io.EOF
-				return
-			}
-
-			idx, err := w.filter.By(resp.Values[0])
-			if err != nil {
-				w.e = err
-				return
-			}
-			if idx == -1 {
-				w.e = io.EOF
-				return
-			}
-
-			vals = sheets.ValueRange{
-				MajorDimension: "ROWS",
-				Range:          fmt.Sprintf("%s!A%d", w.sheetName, idx+2),
-				Values:         make([][]interface{}, len(w.data)-1), // skip header
-			}
-			// reorder values as idmap
-			d22 := w.data[1:]
-			for i := range d22 {
-				vals.Values[i] = make([]interface{}, headerLength) // header length
-				for j := range d22[i] {
-					vals.Values[i][idmap[j]] = d22[i][j]
+			idx := -1
+			if len(resp.Values) > 0 {
+				idx, err = w.filter.By(resp.Values[0])
+				if err != nil {
+					w.e = err
+					return
 				}
 			}
-			// update row in place
-			_, err = w.srv.Spreadsheets.Values.Update(w.spreadsheetId, vals.Range, &vals).
-				IncludeValuesInResponse(false).
-				ValueInputOption("USER_ENTERED").
-				Do()
-			if err != nil {
-				w.e = fmt.Errorf("unable to write data to sheet: %v", err)
-				return
+			if idx > -1 {
+				vals = sheets.ValueRange{
+					MajorDimension: "ROWS",
+					Range:          fmt.Sprintf("%s!A%d", w.sheetName, idx+2),
+					Values:         make([][]interface{}, len(w.data)-1), // skip header
+				}
+				// reorder values as idmap
+				d22 := w.data[1:]
+				for i := range d22 {
+					vals.Values[i] = make([]interface{}, headerLength) // header length
+					for j := range d22[i] {
+						vals.Values[i][idmap[j]] = d22[i][j]
+					}
+				}
+				// update row in place
+				_, err = w.srv.Spreadsheets.Values.Update(w.spreadsheetId, vals.Range, &vals).
+					IncludeValuesInResponse(false).
+					ValueInputOption("USER_ENTERED").
+					Do()
+				if err != nil {
+					w.e = fmt.Errorf("unable to write data to sheet: %v", err)
+					return
+				}
+				return // Done
 			}
-			return // Done
-		} else {
-			vals = sheets.ValueRange{
-				MajorDimension: "ROWS",
-				Range:          fmt.Sprintf("%s!A%d", w.sheetName, 1+len(resp.Values[0])),
-				Values:         make([][]interface{}, len(w.data)-1), // skip header
-			}
+		}
+
+		vals = sheets.ValueRange{
+			MajorDimension: "ROWS",
+			Range:          fmt.Sprintf("%s!A%d", w.sheetName, 1+len(resp.Values[0])),
+			Values:         make([][]interface{}, len(w.data)-1), // skip header
 		}
 		// reorder values as idmap
 		d22 := w.data[1:]

@@ -25,14 +25,15 @@ import (
 
 	"github.com/go-macaron/cache"
 	"github.com/gocarina/gocsv"
+	csvtypes "gomodules.xyz/encoding/csv/types"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"gopkg.in/macaron.v1"
 )
 
 type NewsSnippet struct {
-	Content   string `json:"content" csv:"Content"`
-	StartDate Date   `json:"startDate" csv:"Start Date"`
-	EndDate   Date   `json:"endDate" csv:"End Date"`
+	Content   string        `json:"content" csv:"Content"`
+	StartDate csvtypes.Date `json:"startDate" csv:"Start Date"`
+	EndDate   csvtypes.Date `json:"endDate" csv:"End Date"`
 }
 
 func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
@@ -61,7 +62,7 @@ func (s *Server) NextNewsSnippet() (*NewsSnippet, error) {
 		Header: "End Date",
 		By: func(column []interface{}) (int, error) {
 			for i, v := range column {
-				var d Date
+				var d csvtypes.Date
 				err := d.UnmarshalCSV(v.(string))
 				if err != nil {
 					return -1, err
