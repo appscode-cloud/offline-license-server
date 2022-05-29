@@ -3,9 +3,11 @@ package gdrive_utils
 import (
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 
 	"github.com/gocarina/gocsv"
+	"google.golang.org/api/googleapi"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -225,7 +227,9 @@ func (r *SheetReader) readHeader() ([][]interface{}, error) {
 		ValueRenderOption(r.ValueRenderOption).
 		DateTimeRenderOption(r.DateTimeRenderOption).
 		Do()
-	if err != nil {
+	if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusBadRequest {
+		return nil, io.EOF
+	} else if err != nil {
 		return nil, fmt.Errorf("unable to retrieve data from sheet: %v", err)
 	}
 	if len(resp.Values) == 0 {

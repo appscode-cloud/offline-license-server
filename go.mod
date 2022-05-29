@@ -11,7 +11,7 @@ require (
 	github.com/go-macaron/cache v0.0.0-20200329073519-53bb48172687
 	github.com/go-macaron/cors v0.0.0-20210206180111-00b7f53a9308
 	github.com/gobuffalo/flect v0.2.2
-	github.com/gocarina/gocsv v0.0.0-20211020200912-82fc2684cc48
+	github.com/gocarina/gocsv v0.0.0-20220520193141-bb9bebb918c3
 	github.com/google/uuid v1.3.0
 	github.com/himalayan-institute/zoom-lib-golang v1.0.0
 	github.com/k3a/html2text v1.0.7
@@ -28,9 +28,10 @@ require (
 	gomodules.xyz/blobfs v0.1.7
 	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.4
+	gomodules.xyz/encoding v0.0.5
 	gomodules.xyz/errors v0.1.0
 	gomodules.xyz/freshsales-client-go v0.0.2
-	gomodules.xyz/gdrive-utils v0.0.4
+	gomodules.xyz/gdrive-utils v0.0.6
 	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/listmonk-client-go v0.0.3
 	gomodules.xyz/logs v0.0.6
@@ -59,6 +60,7 @@ require (
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210512163311-63b5d3c536b0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0 // indirect
+	github.com/fatih/structs v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.1-rc1 // indirect
 	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191 // indirect
@@ -94,7 +96,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
 	gomodules.xyz/email v0.1.0 // indirect
-	gomodules.xyz/encoding v0.0.2 // indirect
 	gomodules.xyz/flags v0.1.3 // indirect
 	gomodules.xyz/wait v0.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

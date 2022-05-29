@@ -16,7 +16,10 @@ limitations under the License.
 
 package server
 
-import freshsalesclient "gomodules.xyz/freshsales-client-go"
+import (
+	csvtypes "gomodules.xyz/encoding/csv/types"
+	freshsalesclient "gomodules.xyz/freshsales-client-go"
+)
 
 type EventQuotationGenerated struct {
 	freshsalesclient.BaseNoteDescription `json:",inline,omitempty"`
@@ -56,9 +59,9 @@ type EventWebinarRegistration struct {
 }
 
 type WebinarRecord struct {
-	Title    string    `json:"title" csv:"Title" form:"title"`
-	Schedule Timestamp `json:"schedule" csv:"Schedule" form:"schedule"`
-	Speaker  string    `json:"speaker" csv:"Speaker" form:"speaker"`
+	Title    string             `json:"title" csv:"Title" form:"title"`
+	Schedule csvtypes.Timestamp `json:"schedule" csv:"Schedule" form:"schedule"`
+	Speaker  string             `json:"speaker" csv:"Speaker" form:"speaker"`
 
 	ClusterProvider []string `json:"cluster_provider,omitempty" csv:"Cluster Provider" form:"cluster_provider"`
 	ExperienceLevel string   `json:"experience_level,omitempty" csv:"Experience Level" form:"experience_level"`

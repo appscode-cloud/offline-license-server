@@ -34,6 +34,7 @@ import (
 	"github.com/go-macaron/binding"
 	"github.com/go-macaron/cache"
 	"github.com/gocarina/gocsv"
+	csvtypes "gomodules.xyz/encoding/csv/types"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
 	listmonkclient "gomodules.xyz/listmonk-client-go"
@@ -48,16 +49,16 @@ type SpeakerInfo struct {
 }
 
 type WebinarSchedule struct {
-	Title          string        `json:"title" csv:"Title" form:"title"`
-	Schedules      Dates         `json:"schedules" csv:"Schedules" form:"schedules"`
-	Summary        string        `json:"summary" csv:"Summary" form:"summary"`
-	Speaker        string        `json:"speaker" csv:"Speaker" form:"speaker"`
-	SpeakerTitle   string        `json:"speaker_title" csv:"Speaker Title" form:"speaker_title"`
-	SpeakerBio     string        `json:"speaker_bio" csv:"Speaker Bio" form:"speaker_bio"`
-	SpeakerPicture string        `json:"speaker_picture" csv:"Speaker Picture" form:"speaker_picture"`
-	Speakers       []SpeakerInfo `json:"speakers" csv:"-" form:"-"`
-	YoutubeLink    string        `json:"-" csv:"Youtube Link" form:"-"`
-	YoutubeVideoID string        `json:"youtube_video_id" csv:"-" form:"-"`
+	Title          string         `json:"title" csv:"Title" form:"title"`
+	Schedules      csvtypes.Dates `json:"schedules" csv:"Schedules" form:"schedules"`
+	Summary        string         `json:"summary" csv:"Summary" form:"summary"`
+	Speaker        string         `json:"speaker" csv:"Speaker" form:"speaker"`
+	SpeakerTitle   string         `json:"speaker_title" csv:"Speaker Title" form:"speaker_title"`
+	SpeakerBio     string         `json:"speaker_bio" csv:"Speaker Bio" form:"speaker_bio"`
+	SpeakerPicture string         `json:"speaker_picture" csv:"Speaker Picture" form:"speaker_picture"`
+	Speakers       []SpeakerInfo  `json:"speakers" csv:"-" form:"-"`
+	YoutubeLink    string         `json:"-" csv:"Youtube Link" form:"-"`
+	YoutubeVideoID string         `json:"youtube_video_id" csv:"-" form:"-"`
 }
 
 type WebinarMeetingID struct {
@@ -88,78 +89,6 @@ type WebinarRegistrationForm struct {
 
 type WebinarRegistrationEmail struct {
 	WorkEmail string `json:"work_email" csv:"Work Email" form:"work_email"`
-}
-
-type Dates []time.Time
-
-// Convert the internal date as CSV string
-func (date *Dates) MarshalCSV() (string, error) {
-	if date == nil {
-		return "", nil
-	}
-
-	dates := make([]time.Time, 0, len(*date))
-	for _, d := range *date {
-		dates = append(dates, d)
-	}
-	sort.Slice(dates, func(i, j int) bool {
-		return dates[i].Before(dates[j])
-	})
-	parts := make([]string, 0, len(*date))
-	for _, d := range dates {
-		parts = append(parts, d.Format(TimestampFormat))
-	}
-	return strings.Join(parts, ","), nil
-}
-
-// Convert the CSV string as internal date
-func (date *Dates) UnmarshalCSV(csv string) (err error) {
-	parts := strings.Split(csv, ",")
-
-	dates := make([]time.Time, 0, len(parts))
-	for _, part := range parts {
-		d, err := time.Parse(TimestampFormat, part)
-		if err != nil {
-			return err
-		}
-		dates = append(dates, d)
-	}
-	sort.Slice(dates, func(i, j int) bool {
-		return dates[i].Before(dates[j])
-	})
-
-	*date = dates
-	return nil
-}
-
-type Timestamp struct {
-	time.Time
-}
-
-// Convert the internal date as CSV string
-func (date *Timestamp) MarshalCSV() (string, error) {
-	return date.Time.Format(TimestampFormat), nil
-}
-
-// Convert the CSV string as internal date
-func (date *Timestamp) UnmarshalCSV(csv string) (err error) {
-	date.Time, err = time.Parse(TimestampFormat, csv)
-	return err
-}
-
-type Date struct {
-	time.Time
-}
-
-// Convert the internal date as CSV string
-func (date *Date) MarshalCSV() (string, error) {
-	return date.Time.Format(DateFormat), nil
-}
-
-// Convert the CSV string as internal date
-func (date *Date) UnmarshalCSV(csv string) (err error) {
-	date.Time, err = time.Parse(DateFormat, csv)
-	return err
 }
 
 type StringSlice []string
@@ -287,7 +216,7 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 		Header: "Schedules",
 		By: func(column []interface{}) (int, error) {
 			for i, v := range column {
-				schedules := Dates{}
+				schedules := csvtypes.Dates{}
 				err := schedules.UnmarshalCSV(v.(string))
 				if err != nil {
 					return -1, err
@@ -354,7 +283,7 @@ func (s *Server) UpcomingWebinarSchedules() ([]*WebinarSchedule, error) {
 		By: func(column []interface{}) (int, error) {
 			pos := math.MaxInt
 			for i, v := range column {
-				schedules := Dates{}
+				schedules := csvtypes.Dates{}
 				err := schedules.UnmarshalCSV(v.(string))
 				if err != nil {
 					return -1, err
@@ -539,7 +468,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 				Header: "Schedules",
 				By: func(values []interface{}) (int, error) {
 					for i, v := range values {
-						schedules := Dates{}
+						schedules := csvtypes.Dates{}
 						err := schedules.UnmarshalCSV(v.(string))
 						if err != nil {
 							return -1, err
@@ -620,7 +549,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 					},
 					Webinar: WebinarRecord{
 						Title:           result.Title,
-						Schedule:        Timestamp{schedule},
+						Schedule:        csvtypes.Timestamp{Time: schedule},
 						Speaker:         result.Speaker,
 						ClusterProvider: form.ClusterProvider,
 						ExperienceLevel: form.ExperienceLevel,
@@ -650,7 +579,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 				Header: "Schedules",
 				By: func(values []interface{}) (int, error) {
 					for i, v := range values {
-						schedules := Dates{}
+						schedules := csvtypes.Dates{}
 						err := schedules.UnmarshalCSV(v.(string))
 						if err != nil {
 							return -1, err
