@@ -3,6 +3,7 @@ package gdrive_utils
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/gocarina/gocsv"
@@ -185,7 +186,7 @@ func (w *SheetWriter) Flush() {
 			idx := -1
 			if len(resp.Values) > 0 {
 				idx, err = w.filter.By(resp.Values[0])
-				if err != nil {
+				if err != nil && err != io.EOF {
 					w.e = err
 					return
 				}

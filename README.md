@@ -84,7 +84,7 @@ These instructions are useful if you are trying to deploy your own license serve
 - Download pre-built binary into a server
 
 ```bash
-curl -fsSL -O https://github.com/appscode/offline-license-server/releases/download/v0.0.31/offline-license-server-linux-amd64
+curl -fsSL -O https://github.com/appscode/offline-license-server/releases/download/v0.0.32/offline-license-server-linux-amd64
 chmod +x offline-license-server-linux-amd64
 mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
 sudo systemctl restart offline-license-server
@@ -93,7 +93,7 @@ sudo systemctl restart offline-license-server
 - Install systemd service
 
 ```bash
-curl -fsSL -O https://github.com/appscode/offline-license-server/raw/v0.0.31/hack/systemd/offline-license-server.service
+curl -fsSL -O https://github.com/appscode/offline-license-server/raw/v0.0.32/hack/systemd/offline-license-server.service
 chmod +x offline-license-server.service
 
 # 1. Copy Google cloud service account json key to /root/app/gcloud.json
@@ -146,4 +146,14 @@ offline-license-server quotation generate \
 curl -X POST \
   -d "first_name=Tamal&last_name=Saha&phone=+1-1234567890&job_title=CEO&work_email=tamal@appscode.com&company=AppsCode&cluster_provider=aws&experience_level=tried&marketing_reach=word" \
   http://localhost:4000/_/webinars/2021-3-15/register
+```
+
+## Test configure
+
+```
+offline-license-server qa configure \
+  --test.config-doc-id=1KB_Efi9jQcJ0_tCRF4fSLc6TR7QxaBKg05cKXAwbC9E \
+  --test.qa-template-doc-id=16Ff6Lum3F6IeyAEy3P5Xy7R8CITIZRjdwnsRwBg9rD4 \
+  --test.days-to-take-test=3 \
+  --test.duration=60m
 ```
