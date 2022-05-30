@@ -43,6 +43,7 @@ const (
 
 type QuestionConfig struct {
 	ConfigType            ConfigType        `json:"configType" csv:"Config Type"`
+	TestName              string            `json:"testName" csv:"Test Name"`
 	QuestionTemplateDocId string            `json:"questionTemplateDocId" csv:"Question Template Doc Id"`
 	StartDate             csvtypes.Date     `json:"startDate" csv:"Start Date"`
 	EndDate               csvtypes.Date     `json:"endDate" csv:"End Date"`
@@ -212,7 +213,7 @@ func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) 
 		if err != nil {
 			return err
 		}
-		docName := fmt.Sprintf("%s - Test %s", email, ans.StartDate.Format("2006-01-02"))
+		docName := fmt.Sprintf("%s - %s %s", email, cfg.TestName, ans.StartDate.Format("2006-01-02"))
 		replacements := map[string]string{
 			"{{email}}": email,
 		}
@@ -283,6 +284,9 @@ func (s *Server) RegisterQAAPI(m *macaron.Macaron) {
 		} else {
 			ctx.Data["TimeLeft"] = time.Until(cfg.EndDate.Time).Round(time.Minute)
 			ctx.Data["Duration"] = int(cfg.Duration.Minutes())
+		}
+		if cfg != nil {
+			ctx.Data["TestName"] = cfg.TestName
 		}
 
 		ctx.Data["ConfigDocId"] = configDocId

@@ -15,7 +15,7 @@
       <div class="container">
         <div class="columns is-mobile is-centered">
           <div class="column is-half">
-            <h1 class="title">Question Paper</h1>
+            <h1 class="title">{{.TestName}}</h1>
             {{ if .Err }}
             <article class="message is-danger">
               <div class="message-body">
@@ -31,7 +31,7 @@
                 </ul>
               </div>
             </article>
-            <form action="/_/qa/{{.ConfigDocId}}/start" method="post">
+            <form action="/_/qa/{{.ConfigDocId}}/start" method="post" onSubmit="return confirmStart();">
               <div class="field">
                 <label class="label">Email</label>
                 <div class="control">
@@ -56,5 +56,10 @@
         </div>
       </div>
     </section>
+  <script>
+  function confirmStart() {
+    return confirm("You have to finish the test in {{.Duration}} minutes.\n Click OK to start!");
+  }
+  </script>
   </body>
 </html>
