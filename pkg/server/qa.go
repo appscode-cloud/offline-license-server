@@ -166,7 +166,7 @@ func LoadTestAnswer(svcSheets *sheets.Service, configDocId, email string) (*Test
 	return answers[0], nil
 }
 
-func (s *Server) startTest(c cache.Cache, configDocId, email string) error {
+func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) error {
 	// already submitted
 	// started and x min left to finish the test, redirect, embed
 	// did not start, copy file, stat clock
@@ -202,12 +202,23 @@ func (s *Server) startTest(c cache.Cache, configDocId, email string) error {
 			return err
 		}
 		docName := fmt.Sprintf("%s - Test %s", email, ans.StartDate.Format("2006-01-02"))
+		replacements := map[string]string{
+			"{{email}}": email,
+		}
+		location := GeoLocation{
+			IP: ip,
+		}
+		DecorateGeoData(s.geodb, &location)
+		if tz, err := time.LoadLocation(location.Timezone); err == nil {
+			replacements["{{start-time}}"] = ans.StartDate.In(tz).Format(time.RFC1123)
+			replacements["{{end-time}}"] = ans.EndDate.In(tz).Format(time.RFC1123)
+		} else {
+			replacements["{{start-time}}"] = ans.StartDate.Format(time.RFC1123)
+			replacements["{{end-time}}"] = ans.EndDate.Format(time.RFC1123)
+		}
+
 		docId, err := gdrive.CopyDoc(
-			s.srvDrive, s.srvDoc, cfg.QuestionTemplateDocId, folderId, docName, map[string]string{
-				"{{email}}":      email,
-				"{{start-time}}": ans.StartDate.Format(time.RFC3339),
-				"{{end-time}}":   ans.EndDate.Format(time.RFC3339),
-			})
+			s.srvDrive, s.srvDoc, cfg.QuestionTemplateDocId, folderId, docName, replacements)
 		if err != nil {
 			return err
 		}
@@ -275,7 +286,7 @@ func (s *Server) RegisterQAAPI(m *macaron.Macaron) {
 		configDocId := ctx.Params("configDocId")
 
 		go func() {
-			err := s.startTest(c, configDocId, info.Email)
+			err := s.startTest(c, GetIP(ctx.Req.Request), configDocId, info.Email)
 			if err != nil {
 				log.Println(err)
 			}
