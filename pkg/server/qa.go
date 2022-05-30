@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/go-macaron/binding"
+	"github.com/go-macaron/cache"
 	"github.com/gocarina/gocsv"
 	"github.com/pkg/errors"
 	csvtypes "gomodules.xyz/encoding/csv/types"
@@ -72,7 +73,7 @@ func SaveConfig(svcSheets *sheets.Service, configDocId string, cfg QuestionConfi
 	return gocsv.MarshalCSV(data, w)
 }
 
-func LoadConfig(svcSheets *sheets.Service, configDocId string) (*QuestionConfig, error) {
+func loadConfig(svcSheets *sheets.Service, configDocId string) (*QuestionConfig, error) {
 	r, err := gdrive.NewRowReader(svcSheets, configDocId, ProjectConfigSheet, &gdrive.Predicate{
 		Header: "Config Type",
 		By: func(column []interface{}) (int, error) {
@@ -95,6 +96,22 @@ func LoadConfig(svcSheets *sheets.Service, configDocId string) (*QuestionConfig,
 		return nil, err
 	}
 	return configs[0], nil
+}
+
+func LoadConfig(svcSheets *sheets.Service, c cache.Cache, configDocId string) (*QuestionConfig, error) {
+	key := fmt.Sprintf("api/LoadConfig/%s", configDocId)
+	out := c.Get(key)
+	if out == nil {
+		cfg, err := loadConfig(svcSheets, configDocId)
+		if err != nil {
+			return nil, err
+		}
+		out = cfg
+		_ = c.Put(key, out, 24*60*60) // cache for 60 seconds
+	} else {
+		log.Println(key, "found")
+	}
+	return out.(*QuestionConfig), nil
 }
 
 type TestAnswer struct {
@@ -149,14 +166,14 @@ func LoadTestAnswer(svcSheets *sheets.Service, configDocId, email string) (*Test
 	return answers[0], nil
 }
 
-func (s *Server) startTest(configDocId, email string) error {
+func (s *Server) startTest(c cache.Cache, configDocId, email string) error {
 	// already submitted
 	// started and x min left to finish the test, redirect, embed
 	// did not start, copy file, stat clock
 
 	now := time.Now()
 
-	cfg, err := LoadConfig(s.srvSheets, configDocId)
+	cfg, err := LoadConfig(s.srvSheets, c, configDocId)
 	if err != nil {
 		return err
 	}
@@ -235,14 +252,14 @@ func (s *Server) RevokePermission(args []byte) error {
 }
 
 func (s *Server) RegisterQAAPI(m *macaron.Macaron) {
-	m.Get("/_/qa/:configDocId/", func(ctx *macaron.Context, log *log.Logger) {
+	m.Get("/_/qa/:configDocId/", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
 		configDocId := ctx.Params("configDocId")
 
-		cfg, err := LoadConfig(s.srvSheets, configDocId)
+		cfg, err := LoadConfig(s.srvSheets, c, configDocId)
 		if err != nil {
-			panic(err)
-		}
-		if time.Now().After(cfg.EndDate.Time) {
+			ctx.Data["Err"] = "Time passed for this test"
+			log.Println(err)
+		} else if time.Now().After(cfg.EndDate.Time) {
 			ctx.Data["Err"] = "Time passed for this test"
 			log.Println(err)
 		} else {
@@ -250,15 +267,16 @@ func (s *Server) RegisterQAAPI(m *macaron.Macaron) {
 			ctx.Data["Duration"] = int(cfg.Duration.Minutes())
 			// fmt.Printf("%s left to take the test!", time.Until(cfg.EndDate.Time))
 		}
+
 		ctx.Data["ConfigDocId"] = configDocId
 		ctx.HTML(200, "qa_form") // 200 is the response code.
 	})
 
-	m.Post("/_/qa/:configDocId/start", binding.Bind(RegisterRequest{}), func(ctx *macaron.Context, info RegisterRequest, log *log.Logger) {
+	m.Post("/_/qa/:configDocId/start", binding.Bind(RegisterRequest{}), func(ctx *macaron.Context, info RegisterRequest, c cache.Cache, log *log.Logger) {
 		configDocId := ctx.Params("configDocId")
 
 		go func() {
-			err := s.startTest(configDocId, info.Email)
+			err := s.startTest(c, configDocId, info.Email)
 			if err != nil {
 				log.Println(err)
 			}
