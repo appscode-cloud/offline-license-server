@@ -119,6 +119,9 @@ type TestAnswer struct {
 	DocId     string             `json:"docId"  csv:"Doc Id"`
 	StartDate csvtypes.Timestamp `json:"startDate" csv:"Start Date"`
 	EndDate   csvtypes.Timestamp `json:"endDate" csv:"End Date"`
+	IP        string             `json:"ip,omitempty" csv:"IP"`
+	City      string             `json:"city,omitempty" csv:"City"`
+	Country   string             `json:"country,omitempty" csv:"Country"`
 }
 
 func SaveTestAnswer(svcSheets *sheets.Service, configDocId string, ans TestAnswer) error {
@@ -190,11 +193,19 @@ func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) 
 			return fmt.Errorf("%s passed after test has ended!", time.Since(ans.EndDate.Time))
 		}
 	} else {
+		location := GeoLocation{
+			IP: ip,
+		}
+		DecorateGeoData(s.geodb, &location)
+
 		ans = &TestAnswer{
 			Email:     email,
 			DocId:     "",
 			StartDate: csvtypes.Timestamp{Time: now},
 			EndDate:   csvtypes.Timestamp{Time: now.Add(cfg.Duration.Duration)},
+			IP:        location.IP,
+			City:      location.City,
+			Country:   location.Country,
 		}
 
 		folderId, err := gdrive.GetFolderId(s.srvDrive, configDocId, path.Join("candidates", email))
@@ -205,10 +216,6 @@ func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) 
 		replacements := map[string]string{
 			"{{email}}": email,
 		}
-		location := GeoLocation{
-			IP: ip,
-		}
-		DecorateGeoData(s.geodb, &location)
 		if tz, err := time.LoadLocation(location.Timezone); err == nil {
 			replacements["{{start-time}}"] = ans.StartDate.In(tz).Format(time.RFC1123)
 			replacements["{{end-time}}"] = ans.EndDate.In(tz).Format(time.RFC1123)
