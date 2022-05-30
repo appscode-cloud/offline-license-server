@@ -36,6 +36,7 @@ func NewCmdQATestConfigure() *cobra.Command {
 	opts := struct {
 		GoogleCredentialDir string
 		ConfigDocId         string
+		TestName            string
 		QATemplateDocId     string
 		StartDate           string
 		TestDays            int
@@ -52,6 +53,9 @@ func NewCmdQATestConfigure() *cobra.Command {
 		Short:             "Configure Test",
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if opts.TestName == "" {
+				return errors.New("missing test name.")
+			}
 			if opts.ConfigDocId == "" {
 				return errors.New("missing config doc id.")
 			}
@@ -74,6 +78,7 @@ func NewCmdQATestConfigure() *cobra.Command {
 
 			cfg := server.QuestionConfig{
 				ConfigType:            server.ConfigTypeQuestion,
+				TestName:              opts.TestName,
 				QuestionTemplateDocId: opts.QATemplateDocId,
 				StartDate:             csvtypes.Date{Time: startDate},
 				EndDate:               csvtypes.Date{Time: startDate.Add(time.Duration(opts.TestDays) * 24 * time.Hour)},
@@ -93,6 +98,7 @@ func NewCmdQATestConfigure() *cobra.Command {
 
 	cmd.Flags().StringVar(&opts.GoogleCredentialDir, "google.credential-dir", opts.GoogleCredentialDir, "Directory used to store Google credential")
 	cmd.Flags().StringVar(&opts.ConfigDocId, "test.config-doc-id", opts.ConfigDocId, "Google sheets id for config spread sheet")
+	cmd.Flags().StringVar(&opts.TestName, "test.name", opts.TestName, "Name of the test")
 	cmd.Flags().StringVar(&opts.QATemplateDocId, "test.qa-template-doc-id", opts.QATemplateDocId, "Google docs id for QA template")
 	cmd.Flags().StringVar(&opts.StartDate, "test.start-date", opts.StartDate, "Start date for test")
 	cmd.Flags().IntVar(&opts.TestDays, "test.days-to-take-test", opts.TestDays, "Number of days available to take the test")

@@ -73,6 +73,7 @@ func DecorateGeoData(db *geoip2.Reader, entry *GeoLocation) {
 		return
 	}
 
+	entry.IP = ip.String()
 	entry.City = record.City.Names["en"]
 	entry.Country = record.Country.IsoCode
 	entry.Timezone = record.Location.TimeZone

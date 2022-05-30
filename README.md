@@ -152,6 +152,7 @@ curl -X POST \
 
 ```
 offline-license-server qa configure \
+  --test.name='AppsCode Written Test' \
   --test.config-doc-id=1KB_Efi9jQcJ0_tCRF4fSLc6TR7QxaBKg05cKXAwbC9E \
   --test.qa-template-doc-id=16Ff6Lum3F6IeyAEy3P5Xy7R8CITIZRjdwnsRwBg9rD4 \
   --test.days-to-take-test=3 \
