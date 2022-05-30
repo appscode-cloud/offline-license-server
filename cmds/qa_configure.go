@@ -18,6 +18,7 @@ package cmds
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -78,7 +79,15 @@ func NewCmdQATestConfigure() *cobra.Command {
 				EndDate:               csvtypes.Date{Time: startDate.Add(time.Duration(opts.TestDays) * 24 * time.Hour)},
 				Duration:              csvtypes.Duration{Duration: opts.Duration},
 			}
-			return server.SaveConfig(svcSheets, opts.ConfigDocId, cfg)
+			err = server.SaveConfig(svcSheets, opts.ConfigDocId, cfg)
+			if err != nil {
+				return errors.Wrap(err, "failed to save config")
+			}
+
+			fmt.Println()
+			fmt.Println("Email the following link to candidates:")
+			fmt.Printf("https://x.appscode.com/_/qa/%s/\n", opts.ConfigDocId)
+			return nil
 		},
 	}
 

@@ -107,7 +107,7 @@ func LoadConfig(svcSheets *sheets.Service, c cache.Cache, configDocId string) (*
 			return nil, err
 		}
 		out = cfg
-		_ = c.Put(key, out, 24*60*60) // cache for 60 seconds
+		_ = c.Put(key, out, 10*60) // cache for 10 minutes
 	} else {
 		log.Println(key, "found")
 	}
@@ -265,7 +265,6 @@ func (s *Server) RegisterQAAPI(m *macaron.Macaron) {
 		} else {
 			ctx.Data["TimeLeft"] = time.Until(cfg.EndDate.Time).Round(time.Minute)
 			ctx.Data["Duration"] = int(cfg.Duration.Minutes())
-			// fmt.Printf("%s left to take the test!", time.Until(cfg.EndDate.Time))
 		}
 
 		ctx.Data["ConfigDocId"] = configDocId
