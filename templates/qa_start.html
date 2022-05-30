@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AppsCode Test Paper</title>
+    <link rel="shortcut icon" type="image/png" href="https://cdn.appscode.com/images/products/appscode/icons/favicon-32x32.png">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css"
+    />
+  </head>
+  <body>
+    <section class="section">
+      <div class="container">
+        <div class="columns is-mobile is-centered">
+          <div class="column is-full">
+            <h1 id="demo" class="title">Loading ...</h1>
+            <iframe id="doc" src="" width="1080" height="1000" frameborder="0" marginheight="0" marginwidth="0">Loading ...</iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script type="text/javascript">
+      // width="1080" height="1000"
+      function showCountDown(endTime) {
+        // Set the date we're counting down to
+        var countDownDate = new Date(endTime).getTime();
+
+        // https://www.w3schools.com/howto/howto_js_countdown.asp
+        // Update the count down every 1 second
+        var x = setInterval(function() {
+
+          // Get today's date and time
+          var now = new Date().getTime();
+
+          // Find the distance between now and the count down date
+          var distance = countDownDate - now;
+
+          // Time calculations for days, hours, minutes and seconds
+          var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+          // Display the result in the element with id="demo"
+          document.getElementById("demo").innerHTML = hours + "h "
+          + minutes + "m " + seconds + "s ";
+
+          // If the count down is finished, write some text
+          if (distance < 0) {
+            clearInterval(x);
+            document.getElementById("demo").innerHTML = "Time out!";
+          }
+        }, 1000);
+      }
+      const pollTimeout = setInterval(function () {
+        var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              var result = JSON.parse(xhr.responseText);
+              if (result.wait) {
+                console.log("wait...")
+              } else {
+                clearInterval(pollTimeout);
+                if (result.err) {
+                  // show err
+                  console.log(result.err);
+                  document.getElementById("demo").innerHTML = result.err;
+                } else {
+                  console.log(result.docId);
+                  console.log(result.endTime);
+                  showCountDown(result.endTime);
+                  document.getElementById("doc").src = "https://docs.google.com/document/d/" + result.docId + "/edit?embedded=true";
+                }
+              }
+            }
+          }
+        }
+        xhr.open('GET', 'https://x.appscode.com/_/qa/status?id={{.ConfigDocId}}&email={{.Email}}');
+        xhr.send();
+      }, 5000); // poll every 5 sec
+    </script>
+  </body>
+</html>

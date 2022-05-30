@@ -71,6 +71,7 @@ type Server struct {
 	freshsales *freshsalesclient.Client
 	listmonk   *listmonkclient.Client
 	geodb      *geoip2.Reader
+	sch        *Scheduler
 
 	driveClient *http.Client
 	srvDrive    *drive.Service
@@ -111,6 +112,11 @@ func New(opts *Options) (*Server, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	sch, err := NewScheduler()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create scheduler")
 	}
 
 	client, err := gdrive.DefaultClient(opts.GoogleCredentialDir, youtube.YoutubeReadonlyScope)
@@ -165,6 +171,7 @@ func New(opts *Options) (*Server, error) {
 		freshsales:       freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
 		listmonk:         listmonkclient.New(opts.listmonkHost, opts.listmonkUsername, opts.listmonkPassword),
 		geodb:            geodb,
+		sch:              sch,
 		driveClient:      client,
 		srvDrive:         srvDrive,
 		srvDoc:           srvDoc,
@@ -180,7 +187,10 @@ func New(opts *Options) (*Server, error) {
 
 func (s *Server) Close() {
 	if s.geodb != nil {
-		s.geodb.Close()
+		_ = s.geodb.Close()
+	}
+	if s.sch != nil {
+		_ = s.sch.Close()
 	}
 }
 
@@ -319,6 +329,7 @@ func (s *Server) Run() error {
 	// m.Post("/_/webhooks/mailgun/", s.HandleMailgunWebhook)
 
 	s.RegisterYoutubeAPI(m)
+	s.RegisterQAAPI(m)
 
 	if !s.opts.EnableSSL {
 		addr := fmt.Sprintf(":%d", s.opts.Port)
@@ -357,6 +368,11 @@ func (s *Server) Run() error {
 			}
 		}()
 	}
+	go func() {
+		if err := s.sch.Cleanup(s.RevokePermission); err != nil {
+			_, _ = fmt.Fprintln(os.Stderr, err.Error())
+		}
+	}()
 	go func() {
 		// does automatic http to https redirects
 		err := http.ListenAndServe(":http", certManager.HTTPHandler(nil))

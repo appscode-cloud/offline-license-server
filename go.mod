@@ -15,11 +15,14 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/himalayan-institute/zoom-lib-golang v1.0.0
 	github.com/k3a/html2text v1.0.7
+	github.com/madflojo/tasks v1.0.3
 	github.com/oschwald/geoip2-golang v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/rickb777/date v1.15.3
+	github.com/rs/xid v1.4.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
+	github.com/syndtr/goleveldb v1.0.0
 	github.com/yuin/goldmark v1.4.4
 	gocloud.dev v0.20.0
 	golang.org/x/crypto v0.0.0-20220126234351-aa10faf2a1f8
@@ -31,7 +34,7 @@ require (
 	gomodules.xyz/encoding v0.0.5
 	gomodules.xyz/errors v0.1.0
 	gomodules.xyz/freshsales-client-go v0.0.2
-	gomodules.xyz/gdrive-utils v0.0.6
+	gomodules.xyz/gdrive-utils v0.0.8
 	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/listmonk-client-go v0.0.3
 	gomodules.xyz/logs v0.0.6
@@ -69,6 +72,7 @@ require (
 	github.com/golang-jwt/jwt v0.0.0-00010101000000-000000000000 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect

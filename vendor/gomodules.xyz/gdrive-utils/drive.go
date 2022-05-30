@@ -11,13 +11,16 @@ import (
 	"google.golang.org/api/drive/v3"
 )
 
-func AddPermission(svc *drive.Service, docId string, email string, role string) error {
-	_, err := svc.Permissions.Create(docId, &drive.Permission{
+func AddPermission(svc *drive.Service, docId string, email string, role string) (string, error) {
+	perm, err := svc.Permissions.Create(docId, &drive.Permission{
 		EmailAddress: email,
 		Role:         role,
 		Type:         "user",
 	}).Fields("id").Do()
-	return err
+	if err != nil {
+		return "", err
+	}
+	return perm.Id, nil
 }
 
 // https://developers.google.com/youtube/v3/getting-started#partial
