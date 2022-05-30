@@ -114,7 +114,7 @@ func New(opts *Options) (*Server, error) {
 		}
 	}
 
-	sch, err := NewScheduler()
+	sch, err := NewScheduler(opts.TaskDir)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create scheduler")
 	}

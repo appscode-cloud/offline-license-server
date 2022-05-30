@@ -34,6 +34,8 @@ type Options struct {
 
 	GeoCityDatabase string
 
+	TaskDir string
+
 	LicenseBucket        string
 	LicenseSpreadsheetId string
 
@@ -65,6 +67,7 @@ func NewOptions() *Options {
 		Hosts:                []string{"license-issuer.appscode.com", "x.appscode.com"},
 		Port:                 4000,
 		GeoCityDatabase:      "",
+		TaskDir:              "tasks",
 		LicenseBucket:        LicenseBucket,
 		LicenseSpreadsheetId: LicenseSpreadsheetId,
 		SMTPAddress:          os.Getenv("SMTP_ADDRESS"),
@@ -90,6 +93,8 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&s.EnableSSL, "ssl", s.EnableSSL, "Set true to enable SSL via Let's Encrypt")
 
 	fs.StringVar(&s.GeoCityDatabase, "geo-city-database-file", s.GeoCityDatabase, "Path to GeoLite2-City.mmdb")
+
+	fs.StringVar(&s.TaskDir, "scheduler.db-dir", s.TaskDir, "Directory where task db files are stored")
 
 	fs.StringVar(&s.LicenseBucket, "bucket", s.LicenseBucket, "Name of GCS bucket used to store licenses")
 	fs.StringVar(&s.LicenseSpreadsheetId, "spreadsheet-id", s.LicenseSpreadsheetId, "Google Spreadsheet Id used to store license issue log")

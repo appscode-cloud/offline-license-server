@@ -19,7 +19,6 @@ package server
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sync"
 	"time"
@@ -39,9 +38,12 @@ type Scheduler struct {
 	s  *tasks.Scheduler
 }
 
-func NewScheduler() (*Scheduler, error) {
-	path, _ := ioutil.TempDir("", "tasks")
-	db, err := leveldb.OpenFile(path, nil)
+func NewScheduler(dir string) (*Scheduler, error) {
+	err := os.MkdirAll(dir, 0o755)
+	if err != nil {
+		return nil, err
+	}
+	db, err := leveldb.OpenFile(dir, nil)
 	if err != nil {
 		return nil, err
 	}
