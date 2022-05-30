@@ -147,3 +147,13 @@ curl -X POST \
   -d "first_name=Tamal&last_name=Saha&phone=+1-1234567890&job_title=CEO&work_email=tamal@appscode.com&company=AppsCode&cluster_provider=aws&experience_level=tried&marketing_reach=word" \
   http://localhost:4000/_/webinars/2021-3-15/register
 ```
+
+## Test configure
+
+```
+offline-license-server qa configure \
+  --test.config-doc-id=1KB_Efi9jQcJ0_tCRF4fSLc6TR7QxaBKg05cKXAwbC9E \
+  --test.qa-template-doc-id=16Ff6Lum3F6IeyAEy3P5Xy7R8CITIZRjdwnsRwBg9rD4 \
+  --test.days-to-take-test=3 \
+  --test.duration=60m
+```
