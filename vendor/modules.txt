@@ -128,7 +128,7 @@ github.com/go-resty/resty/v2
 # github.com/gobuffalo/flect v0.2.2
 ## explicit; go 1.13
 github.com/gobuffalo/flect
-# github.com/gocarina/gocsv v0.0.0-20220520193141-bb9bebb918c3
+# github.com/gocarina/gocsv v0.0.0-20211020200912-82fc2684cc48
 ## explicit; go 1.13
 github.com/gocarina/gocsv
 # github.com/gogo/protobuf v1.3.2

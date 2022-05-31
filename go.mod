@@ -11,7 +11,7 @@ require (
 	github.com/go-macaron/cache v0.0.0-20200329073519-53bb48172687
 	github.com/go-macaron/cors v0.0.0-20210206180111-00b7f53a9308
 	github.com/gobuffalo/flect v0.2.2
-	github.com/gocarina/gocsv v0.0.0-20220520193141-bb9bebb918c3
+	github.com/gocarina/gocsv v0.0.0-20211020200912-82fc2684cc48
 	github.com/google/uuid v1.3.0
 	github.com/himalayan-institute/zoom-lib-golang v1.0.0
 	github.com/k3a/html2text v1.0.7
