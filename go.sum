@@ -217,9 +217,8 @@ github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LB
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/gobuffalo/flect v0.2.2 h1:PAVD7sp0KOdfswjAw9BpLCU9hXo7wFSzgpQ+zNeks/A=
 github.com/gobuffalo/flect v0.2.2/go.mod h1:vmkQwuZYhN5Pc4ljYQZzP+1sq+NEkK+lh20jmEmX3jc=
+github.com/gocarina/gocsv v0.0.0-20211020200912-82fc2684cc48 h1:hLeicZW4XBuaISuJPfjkprg0SP0xxsQmb31aJZ6lnIw=
 github.com/gocarina/gocsv v0.0.0-20211020200912-82fc2684cc48/go.mod h1:5YoVOkjYAQumqlV356Hj3xeYh4BdZuLE0/nRkf2NKkI=
-github.com/gocarina/gocsv v0.0.0-20220520193141-bb9bebb918c3 h1:Cs2c2+FTKl8Ngpp0jQezzTgRnX4Wd2A0YxYgigyoQB8=
-github.com/gocarina/gocsv v0.0.0-20220520193141-bb9bebb918c3/go.mod h1:5YoVOkjYAQumqlV356Hj3xeYh4BdZuLE0/nRkf2NKkI=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/gogo/protobuf v1.2.1/go.mod h1:hp+jE20tsWTFYpLwKvXlhS1hjn+gTNwPg2I6zVXpSg4=
