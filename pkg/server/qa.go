@@ -215,7 +215,8 @@ func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) 
 		}
 		docName := fmt.Sprintf("%s - %s %s", email, cfg.TestName, ans.StartDate.Format("2006-01-02"))
 		replacements := map[string]string{
-			"{{email}}": email,
+			"{{email}}":    email,
+			"{{duration}}": fmt.Sprintf("%d minutes", int(cfg.Duration.Minutes())),
 		}
 		if tz, err := time.LoadLocation(location.Timezone); err == nil {
 			replacements["{{start-time}}"] = ans.StartDate.In(tz).Format(time.RFC1123)
