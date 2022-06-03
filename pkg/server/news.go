@@ -32,6 +32,7 @@ import (
 
 type NewsSnippet struct {
 	Content   string        `json:"content" csv:"Content"`
+	Link      string        `json:"link" csv:"Link"`
 	StartDate csvtypes.Date `json:"startDate" csv:"Start Date"`
 	EndDate   csvtypes.Date `json:"endDate" csv:"End Date"`
 }
