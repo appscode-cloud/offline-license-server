@@ -35,11 +35,14 @@ import (
 	"gopkg.in/macaron.v1"
 )
 
+const (
+	MailCareer = "career+qa@appscode.com"
+)
+
 type ConfigType string
 
 const (
 	ConfigTypeQuestion ConfigType = "QuestionConfig"
-	MailCareer                    = "career+qa@appscode.com"
 )
 
 type QuestionConfig struct {
