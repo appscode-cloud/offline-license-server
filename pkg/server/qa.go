@@ -39,6 +39,7 @@ type ConfigType string
 
 const (
 	ConfigTypeQuestion ConfigType = "QuestionConfig"
+	MailCareer                    = "career+qa@appscode.com"
 )
 
 type QuestionConfig struct {
@@ -259,7 +260,15 @@ func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) 
 		}
 		return err
 	}
-	return s.sch.Schedule(ans.EndDate.Time, fn, args)
+	err = s.sch.Schedule(ans.EndDate.Time, fn, args)
+	if err != nil {
+		return errors.Wrapf(err, "failed to schedule revoke permission task for docId %s, email %s", ans.DocId, ans.Email)
+	}
+
+	// mail career
+	mailer := NewTestStartedMailer(cfg.TestName, ans)
+	fmt.Println("sending email for generated offer letter", ans.Email)
+	return mailer.SendMail(s.mg, MailHR, "", nil)
 }
 
 func (s *Server) RevokePermission(args []byte) error {
