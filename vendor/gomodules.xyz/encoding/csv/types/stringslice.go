@@ -21,23 +21,31 @@ import "strings"
 type StringSlice []string
 
 // Convert the internal date as CSV string
-func (slice *StringSlice) MarshalCSV() (string, error) {
-	if slice == nil {
+func (s *StringSlice) MarshalCSV() (string, error) {
+	if s == nil {
 		return "", nil
 	}
-	return strings.Join(*slice, ","), nil
+	return strings.Join(*s, ","), nil
 }
 
 // You could also use the standard Stringer interface
-func (slice *StringSlice) String() string {
-	if slice == nil {
+func (s *StringSlice) String() string {
+	if s == nil {
 		return ""
 	}
-	return strings.Join(*slice, ",")
+	return strings.Join(*s, ",")
 }
 
 // Convert the CSV string as internal date
-func (slice *StringSlice) UnmarshalCSV(csv string) error {
-	*slice = strings.Split(csv, ",")
+func (s *StringSlice) UnmarshalCSV(csv string) error {
+	parts := strings.Split(csv, ",")
+	if len(parts) <= 1 {
+		*s = parts
+	} else {
+		*s = make([]string, len(parts))
+		for i, part := range parts {
+			(*s)[i] = strings.TrimSpace(part)
+		}
+	}
 	return nil
 }
