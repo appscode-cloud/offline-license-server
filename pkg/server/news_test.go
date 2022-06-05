@@ -28,7 +28,7 @@ import (
 )
 
 func TestServer_NextNewsSnippet(t *testing.T) {
-	// t.SkipNow()
+	t.SkipNow()
 
 	client, err := gdrive.DefaultClient("/Users/tamal/go/src/github.com/appscodelabs/offline-license-server", youtube.YoutubeReadonlyScope)
 	if err != nil {
