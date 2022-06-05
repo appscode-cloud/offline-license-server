@@ -82,37 +82,13 @@ type WebinarRegistrationForm struct {
 	Company   string `json:"company" csv:"Company" form:"company"`
 	WorkEmail string `json:"work_email" csv:"Work Email" form:"work_email"`
 
-	ClusterProvider StringSlice `json:"cluster_provider,omitempty" csv:"Cluster Provider" form:"cluster_provider"`
-	ExperienceLevel string      `json:"experience_level,omitempty" csv:"Experience Level" form:"experience_level"`
-	MarketingReach  string      `json:"marketing_reach,omitempty" csv:"Marketing Reach" form:"marketing_reach"`
+	ClusterProvider csvtypes.StringSlice `json:"cluster_provider,omitempty" csv:"Cluster Provider" form:"cluster_provider"`
+	ExperienceLevel string               `json:"experience_level,omitempty" csv:"Experience Level" form:"experience_level"`
+	MarketingReach  string               `json:"marketing_reach,omitempty" csv:"Marketing Reach" form:"marketing_reach"`
 }
 
 type WebinarRegistrationEmail struct {
 	WorkEmail string `json:"work_email" csv:"Work Email" form:"work_email"`
-}
-
-type StringSlice []string
-
-// Convert the internal date as CSV string
-func (slice *StringSlice) MarshalCSV() (string, error) {
-	if slice == nil {
-		return "", nil
-	}
-	return strings.Join(*slice, ","), nil
-}
-
-// You could also use the standard Stringer interface
-func (slice *StringSlice) String() string {
-	if slice == nil {
-		return ""
-	}
-	return strings.Join(*slice, ",")
-}
-
-// Convert the CSV string as internal date
-func (slice *StringSlice) UnmarshalCSV(csv string) error {
-	*slice = strings.Split(csv, ",")
-	return nil
 }
 
 func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
@@ -126,7 +102,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 				return
 			}
 			out = schedule
-			_ = c.Put(key, out, 60) // cache for 60 seconds
+			_ = c.Put(key, out, 600) // cache for 10 mins
 		} else {
 			log.Println(key, "found")
 		}
@@ -143,7 +119,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 				return
 			}
 			out = schedule
-			_ = c.Put(key, out, 60) // cache for 60 seconds
+			_ = c.Put(key, out, 600) // cache for 10 mins
 		} else {
 			log.Println(key, "found")
 		}
@@ -160,7 +136,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 				return
 			}
 			out = schedule
-			_ = c.Put(key, out, 60) // cache for 60 seconds
+			_ = c.Put(key, out, 600) // cache for 10 mins
 		} else {
 			log.Println(key, "found")
 		}

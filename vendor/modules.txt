@@ -385,7 +385,7 @@ gomodules.xyz/email
 # gomodules.xyz/email-providers v0.1.4
 ## explicit; go 1.14
 gomodules.xyz/email-providers
-# gomodules.xyz/encoding v0.0.5
+# gomodules.xyz/encoding v0.0.6
 ## explicit; go 1.17
 gomodules.xyz/encoding/csv/types
 gomodules.xyz/encoding/json
