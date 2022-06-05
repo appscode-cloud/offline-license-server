@@ -27,14 +27,16 @@ import (
 	"github.com/gocarina/gocsv"
 	csvtypes "gomodules.xyz/encoding/csv/types"
 	gdrive "gomodules.xyz/gdrive-utils"
+	"gomodules.xyz/sets"
 	"gopkg.in/macaron.v1"
 )
 
 type NewsSnippet struct {
-	Content   string        `json:"content" csv:"Content"`
-	Link      string        `json:"link" csv:"Link"`
-	StartDate csvtypes.Date `json:"startDate" csv:"Start Date"`
-	EndDate   csvtypes.Date `json:"endDate" csv:"End Date"`
+	Content   string               `json:"content" csv:"Content"`
+	Link      string               `json:"link" csv:"Link"`
+	StartDate csvtypes.Date        `json:"startDate" csv:"Start Date"`
+	EndDate   csvtypes.Date        `json:"endDate" csv:"End Date"`
+	Products  csvtypes.StringSlice `json:"products" csv:"Products"`
 }
 
 func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
@@ -42,7 +44,11 @@ func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
 		key := ctx.Req.URL.Path
 		out := c.Get(key)
 		if out == nil {
-			news, err := s.NextNewsSnippet()
+			p := ctx.Query("p")
+			if p == "" {
+				p = "AppsCode"
+			}
+			news, err := s.NextNewsSnippet(p)
 			if err != nil {
 				ctx.Error(http.StatusInternalServerError, err.Error())
 				return
@@ -56,7 +62,7 @@ func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
 	})
 }
 
-func (s *Server) NextNewsSnippet() (*NewsSnippet, error) {
+func (s *Server) NextNewsSnippet(p string) (*NewsSnippet, error) {
 	now := time.Now()
 
 	reader, err := gdrive.NewRowReader(s.srvSheets, NewsSnippetSpreadsheetId, NewsSnippetSheet, &gdrive.Predicate{
@@ -88,14 +94,30 @@ func (s *Server) NextNewsSnippet() (*NewsSnippet, error) {
 	sort.Slice(snippets, func(i, j int) bool {
 		return snippets[i].EndDate.Before(snippets[j].EndDate.Time)
 	})
+	// keep unexpired news
 	for i, s := range snippets {
 		if s.EndDate.After(now) {
 			snippets = snippets[i:]
 			break
 		}
 	}
-	if now.After(snippets[0].StartDate.Time) {
-		return snippets[0], nil
+	// only keep relevant product news
+	for i := 0; i < len(snippets); i++ {
+		if !sets.NewString(snippets[i].Products...).Has(p) {
+			snippets = append(snippets[:i], snippets[i+1:]...)
+		} else {
+			i++
+		}
 	}
-	return &NewsSnippet{}, nil
+
+	var result NewsSnippet
+	for _, s := range snippets {
+		if now.After(s.StartDate.Time) {
+			// take the most recently published news
+			if result.Content == "" || s.StartDate.After(result.StartDate.Time) {
+				result = *s
+			}
+		}
+	}
+	return &result, nil
 }
