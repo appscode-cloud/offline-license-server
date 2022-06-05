@@ -102,7 +102,7 @@ func (s *Server) NextNewsSnippet(p string) (*NewsSnippet, error) {
 		}
 	}
 	// only keep relevant product news
-	for i := 0; i < len(snippets); i++ {
+	for i := 0; i < len(snippets); {
 		if !sets.NewString(snippets[i].Products...).Has(p) {
 			snippets = append(snippets[:i], snippets[i+1:]...)
 		} else {

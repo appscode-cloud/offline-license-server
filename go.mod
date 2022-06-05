@@ -31,7 +31,7 @@ require (
 	gomodules.xyz/blobfs v0.1.7
 	gomodules.xyz/cert v1.2.0
 	gomodules.xyz/email-providers v0.1.4
-	gomodules.xyz/encoding v0.0.6
+	gomodules.xyz/encoding v0.0.7
 	gomodules.xyz/errors v0.1.0
 	gomodules.xyz/freshsales-client-go v0.0.2
 	gomodules.xyz/gdrive-utils v0.0.8
@@ -39,7 +39,7 @@ require (
 	gomodules.xyz/listmonk-client-go v0.0.3
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/mailer v0.0.18
-	gomodules.xyz/password-generator v0.2.7
+	gomodules.xyz/password-generator v0.2.8
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/sets v0.2.1
 	gomodules.xyz/x v0.0.13

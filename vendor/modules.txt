@@ -385,7 +385,7 @@ gomodules.xyz/email
 # gomodules.xyz/email-providers v0.1.4
 ## explicit; go 1.14
 gomodules.xyz/email-providers
-# gomodules.xyz/encoding v0.0.6
+# gomodules.xyz/encoding v0.0.7
 ## explicit; go 1.17
 gomodules.xyz/encoding/csv/types
 gomodules.xyz/encoding/json
@@ -413,7 +413,7 @@ gomodules.xyz/logs
 # gomodules.xyz/mailer v0.0.18
 ## explicit; go 1.17
 gomodules.xyz/mailer
-# gomodules.xyz/password-generator v0.2.7
+# gomodules.xyz/password-generator v0.2.8
 ## explicit; go 1.15
 gomodules.xyz/password-generator
 # gomodules.xyz/pointer v0.1.0
