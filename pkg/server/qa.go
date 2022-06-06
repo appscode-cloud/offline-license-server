@@ -271,7 +271,7 @@ func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) 
 	// mail career
 	mailer := NewTestStartedMailer(cfg.TestName, ans)
 	fmt.Println("sending email for generated offer letter", ans.Email)
-	return mailer.SendMail(s.mg, MailHR, "", nil)
+	return mailer.SendMail(s.mg, MailCareer, "", nil)
 }
 
 func (s *Server) RevokePermission(args []byte) error {
