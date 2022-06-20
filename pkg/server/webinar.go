@@ -93,7 +93,7 @@ type WebinarRegistrationEmail struct {
 
 func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 	m.Get("/_/webinars", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
-		key := ctx.Req.URL.Path
+		key := ctx.Req.URL.String()
 		out := c.Get(key)
 		if out == nil {
 			schedule, err := s.NextWebinarSchedule()
@@ -110,7 +110,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 	})
 
 	m.Get("/_/upcoming_webinars", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
-		key := ctx.Req.URL.Path
+		key := ctx.Req.URL.String()
 		out := c.Get(key)
 		if out == nil {
 			schedule, err := s.UpcomingWebinarSchedules()
@@ -127,7 +127,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 	})
 
 	m.Get("/_/past_webinars", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
-		key := ctx.Req.URL.Path
+		key := ctx.Req.URL.String()
 		out := c.Get(key)
 		if out == nil {
 			schedule, err := s.PastWebinarSchedules()

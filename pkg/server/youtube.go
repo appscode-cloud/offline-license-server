@@ -31,7 +31,7 @@ const youtubeChannelID = "UCxObRDZ0DtaQe_cCP-dN-xg"
 
 func (s *Server) RegisterYoutubeAPI(m *macaron.Macaron) {
 	m.Get("/_/playlists", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
-		key := ctx.Req.URL.Path
+		key := ctx.Req.URL.String()
 		out := c.Get(key)
 		if out == nil {
 			lists, err := s.ListPlaylists(youtubeChannelID)
@@ -48,7 +48,7 @@ func (s *Server) RegisterYoutubeAPI(m *macaron.Macaron) {
 	})
 
 	m.Get("/_/playlists/:id", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
-		key := ctx.Req.URL.Path
+		key := ctx.Req.URL.String()
 		out := c.Get(key)
 		if out == nil {
 			playlistID := ctx.Params("id")

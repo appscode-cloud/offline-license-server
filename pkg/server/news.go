@@ -41,7 +41,7 @@ type NewsSnippet struct {
 
 func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
 	m.Get("/_/news", func(ctx *macaron.Context, c cache.Cache, log *log.Logger) {
-		key := ctx.Req.URL.Path
+		key := ctx.Req.URL.String()
 		out := c.Get(key)
 		if out == nil {
 			p := ctx.Query("p")
