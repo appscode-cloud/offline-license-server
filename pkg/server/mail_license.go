@@ -31,8 +31,8 @@ func NewLicenseMailer(info LicenseMailData) mailer.Mailer {
 		toTimeStamp = err.Error()
 	} else {
 		for _, crt := range crts {
-			fromTimestamp = crt.NotBefore.UTC().Format("02 Jan 2006")
-			toTimeStamp = crt.NotAfter.UTC().Format("02 Jan 2006")
+			fromTimestamp = crt.NotBefore.UTC().Format("02 Jan, 2006")
+			toTimeStamp = crt.NotAfter.UTC().Format("02 Jan, 2006")
 			break
 		}
 	}
