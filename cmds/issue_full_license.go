@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/appscodelabs/offline-license-server/pkg/server"
+	"github.com/pkg/errors"
 	"github.com/rickb777/date/period"
 	"github.com/spf13/cobra"
 )
@@ -34,6 +35,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 		Product: "",
 		Cluster: "",
 	}
+	var clusters []string
 	var ccList []string
 	d, _ := period.NewOf(server.DefaultTTLForEnterpriseProduct)
 	var featureFlags map[string]string
@@ -65,7 +67,15 @@ func NewCmdIssueFullLicense() *cobra.Command {
 			if err := ff.IsValid(); err != nil {
 				panic(err)
 			}
-			return s.IssueEnterpriseLicense(info, d2, ff)
+
+			for _, cluster := range clusters {
+				fmt.Println("cluster:", cluster)
+				info.Cluster = cluster
+				if err := s.IssueEnterpriseLicense(info, d2, ff); err != nil {
+					return errors.Wrapf(err, "failed to issue license for cluster %s", cluster)
+				}
+			}
+			return nil
 		},
 	}
 	opts.AddFlags(cmd.Flags())
@@ -73,7 +83,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 	cmd.Flags().StringVar(&info.Email, "email", info.Email, "Email of the user receiving the license")
 	cmd.Flags().StringSliceVar(&ccList, "cc", ccList, "CC the license to these emails")
 	cmd.Flags().StringVar(&info.Product, "product", info.Product, "Product for which license will be issued")
-	cmd.Flags().StringVar(&info.Cluster, "cluster", info.Cluster, "Cluster ID for which license will be issued")
+	cmd.Flags().StringSliceVar(&clusters, "cluster", clusters, "Cluster IDs for which license will be issued")
 	cmd.Flags().Var(&d, "duration", "Duration for the new license")
 	cmd.Flags().StringToStringVar(&featureFlags, "feature-flag", featureFlags, "List of feature flags")
 
