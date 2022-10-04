@@ -19,12 +19,29 @@ package server
 import (
 	"fmt"
 
+	"gomodules.xyz/cert"
 	"gomodules.xyz/mailer"
 )
 
 func NewEnterpriseLicenseMailer(info LicenseMailData) mailer.Mailer {
+	var fromTimestamp, toTimeStamp string
+	crts, err := cert.ParseCertsPEM([]byte(info.License))
+	if err != nil {
+		fromTimestamp = err.Error()
+		toTimeStamp = err.Error()
+	} else {
+		for _, crt := range crts {
+			fromTimestamp = crt.NotBefore.UTC().Format("02 Jan, 2006")
+			toTimeStamp = crt.NotAfter.UTC().Format("02 Jan, 2006")
+			break
+		}
+	}
+
 	src := fmt.Sprintf(`Hi {{.Name}},
 Thanks for purchasing license for {{.Product}}. The full license for Kubernetes cluster {{.Cluster}} is attached with this email. 
+
+Valid From: %s
+Valid To: %s
 
 %s
 {{ .License | trim }}
@@ -36,7 +53,7 @@ Regards,
 Team AppsCode
 
 [![Website](https://cdn.appscode.com/images/website.png)](https://appscode.com) [![Linkedin](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/ln.png)](https://www.linkedin.com/company/appscode/) [![Twitter](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/tt.png)](https://twitter.com/AppsCodeHQ) [![Youtube](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/yt.png)](https://www.youtube.com/c/AppsCodeInc)
-`, "```", "```")
+`, fromTimestamp, toTimeStamp, "```", "```")
 
 	return mailer.Mailer{
 		Sender:          MailLicenseSender,
