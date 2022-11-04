@@ -19,14 +19,12 @@ package server
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"net/smtp"
 	"os"
-	"path"
 	"time"
 
 	"github.com/appscodelabs/offline-license-server/templates"
@@ -42,7 +40,6 @@ import (
 	"github.com/zoom-lib-golang/zoom-lib-golang"
 	"golang.org/x/crypto/acme/autocert"
 	"gomodules.xyz/blobfs"
-	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
 	. "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
@@ -53,6 +50,7 @@ import (
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 	"google.golang.org/api/youtube/v3"
 	"gopkg.in/macaron.v1"
@@ -90,69 +88,59 @@ type Server struct {
 func New(opts *Options) (*Server, error) {
 	fs := blobfs.New("gs://" + opts.LicenseBucket)
 
-	caCertPath := CACertificatesPath()
-	issuerName := LicenseIssuerName
-	if opts.Issuer != "" {
-		caCertPath = path.Join(CACertificatesPath(), opts.Issuer)
-		issuerName = opts.Issuer
-	}
-	certs, err := certstore.New(fs, caCertPath, issuerName)
+	certs, err := GetCertStore(fs, opts.Issuer)
 	if err != nil {
 		return nil, err
 	}
-	err = certs.InitCA()
+
+	var geodb *geoip2.Reader
+	if opts.GeoCityDatabase != "" {
+		geodb, err = geoip2.Open(opts.GeoCityDatabase)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	sch, err := NewScheduler(opts.TaskDir)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create scheduler")
+	}
+
+	client, err := gdrive.DefaultClient(opts.GoogleCredentialDir, youtube.YoutubeReadonlyScope)
 	if err != nil {
 		return nil, err
 	}
-	//
-	//var geodb *geoip2.Reader
-	//if opts.GeoCityDatabase != "" {
-	//	geodb, err = geoip2.Open(opts.GeoCityDatabase)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//}
-	//
-	//sch, err := NewScheduler(opts.TaskDir)
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "failed to create scheduler")
-	//}
-	//
-	//client, err := gdrive.DefaultClient(opts.GoogleCredentialDir, youtube.YoutubeReadonlyScope)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//srvDrive, err := drive.NewService(context.TODO(), option.WithHTTPClient(client))
-	//if err != nil {
-	//	return nil, fmt.Errorf("unable to retrieve Drive client: %v", err)
-	//}
-	//
-	//srvDoc, err := docs.NewService(context.TODO(), option.WithHTTPClient(client))
-	//if err != nil {
-	//	return nil, fmt.Errorf("unable to retrieve Docs client: %v", err)
-	//}
-	//
-	//sheetsService, err := sheets.NewService(context.TODO(), option.WithHTTPClient(client))
-	//if err != nil {
-	//	return nil, fmt.Errorf("unable to retrieve Sheets client: %v", err)
-	//}
-	//
-	//sheet, err := gdrive.NewSpreadsheet(sheetsService, opts.LicenseSpreadsheetId) // Share this sheet with the service account email
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//srvCalendar, err := calendar.NewService(context.TODO(), option.WithHTTPClient(client))
-	//if err != nil {
-	//	return nil, fmt.Errorf("unable to retrieve Calendar gc: %v", err)
-	//}
-	//
-	//srvYT, err := youtube.NewService(context.TODO(), option.WithHTTPClient(client))
-	//if err != nil {
-	//	return nil, fmt.Errorf("unable to create YouTube client: %v", err)
-	//}
-	//
+
+	srvDrive, err := drive.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Drive client: %v", err)
+	}
+
+	srvDoc, err := docs.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Docs client: %v", err)
+	}
+
+	sheetsService, err := sheets.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Sheets client: %v", err)
+	}
+
+	sheet, err := gdrive.NewSpreadsheet(sheetsService, opts.LicenseSpreadsheetId) // Share this sheet with the service account email
+	if err != nil {
+		return nil, err
+	}
+
+	srvCalendar, err := calendar.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Calendar gc: %v", err)
+	}
+
+	srvYT, err := youtube.NewService(context.TODO(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to create YouTube client: %v", err)
+	}
+
 	smtpHost, _, err := net.SplitHostPort(opts.SMTPAddress)
 	if err != nil {
 		return nil, err
@@ -162,25 +150,25 @@ func New(opts *Options) (*Server, error) {
 		Auth:    smtp.PlainAuth("", opts.SMTPUsername, opts.SMTPPassword, smtpHost),
 	}
 	return &Server{
-		opts:  opts,
-		certs: certs,
-		fs:    fs,
-		mg:    mg,
-		// sheet:            sheet,
-		// freshsales:       freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
-		// listmonk:         listmonkclient.New(opts.listmonkHost, opts.listmonkUsername, opts.listmonkPassword),
-		// geodb:            geodb,
-		// sch:              sch,
-		// driveClient:      client,
-		// srvDrive:         srvDrive,
-		// srvDoc:           srvDoc,
-		// srvSheets:        sheetsService,
-		// srvCalendar:      srvCalendar,
-		// srvYT:            srvYT,
-		// zc:               zoom.NewClient(os.Getenv("ZOOM_API_KEY"), os.Getenv("ZOOM_API_SECRET")),
-		// zoomAccountEmail: os.Getenv("ZOOM_ACCOUNT_EMAIL"),
-		// blockedDomains:   sets.NewString(opts.BlockedDomains...),
-		// blockedEmails:    sets.NewString(opts.BlockedEmails...),
+		opts:             opts,
+		certs:            certs,
+		fs:               fs,
+		mg:               mg,
+		sheet:            sheet,
+		freshsales:       freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
+		listmonk:         listmonkclient.New(opts.listmonkHost, opts.listmonkUsername, opts.listmonkPassword),
+		geodb:            geodb,
+		sch:              sch,
+		driveClient:      client,
+		srvDrive:         srvDrive,
+		srvDoc:           srvDoc,
+		srvSheets:        sheetsService,
+		srvCalendar:      srvCalendar,
+		srvYT:            srvYT,
+		zc:               zoom.NewClient(os.Getenv("ZOOM_API_KEY"), os.Getenv("ZOOM_API_SECRET")),
+		zoomAccountEmail: os.Getenv("ZOOM_ACCOUNT_EMAIL"),
+		blockedDomains:   sets.NewString(opts.BlockedDomains...),
+		blockedEmails:    sets.NewString(opts.BlockedEmails...),
 	}, nil
 }
 
@@ -602,7 +590,7 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
-	err = LogLicense(s.sheet, accesslog)
+	err = LogLicense(s.sheet, &accesslog)
 	if err != nil {
 		return err
 	}
@@ -684,60 +672,10 @@ func (s *Server) CreateOrRetrieveLicense(info LicenseForm, license ProductLicens
 			return s.fs.ReadFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
 		}
 	}
-	return s.CreateLicense(info, license, cluster, nil)
+	return CreateLicense(s.fs, s.certs, info, license, cluster, nil)
 }
 
-func (s *Server) CreateLicense(info LicenseForm, license ProductLicense, cluster string, ff FeatureFlags) ([]byte, error) {
-	// agreement, TTL
-	sans := AltNames{
-		DNSNames: []string{cluster},
-		EmailAddresses: []string{
-			fmt.Sprintf("%s <%s>", info.Name, info.Email),
-			info.Email,
-		},
-	}
-	cfg := Config{
-		CommonName:         getCN(sans),
-		Country:            SupportedProducts[license.Product].ProductLine,
-		Province:           SupportedProducts[license.Product].TierName,
-		Organization:       SupportedProducts[license.Product].Features,
-		OrganizationalUnit: license.Product, // plan
-		Locality:           ff.ToSlice(),
-		AltNames:           sans,
-		Usages:             []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-	now := time.Now()
-	cfg.NotBefore = now
-	if license.Agreement != nil {
-		cfg.NotAfter = license.Agreement.ExpiryDate.UTC()
-	} else if license.TTL != nil {
-		cfg.NotAfter = now.Add(license.TTL.Duration).UTC()
-	} else {
-		return nil, apierrors.NewInternalError(fmt.Errorf("Missing license TTL")) // this should never happen
-	}
-
-	key, err := cert.NewPrivateKey()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate private key")
-	}
-	crt, err := NewSignedCert(cfg, key, s.certs.CACert(), s.certs.CAKey())
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate client certificate")
-	}
-
-	err = s.fs.WriteFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster), cert.EncodeCertPEM(crt))
-	if err != nil {
-		return nil, err
-	}
-	err = s.fs.WriteFile(context.TODO(), LicenseKeyPath(license.Domain, license.Product, cluster), cert.EncodePrivateKeyPEM(key))
-	if err != nil {
-		return nil, err
-	}
-
-	return cert.EncodeCertPEM(crt), nil
-}
-
-func LogLicense(si *gdrive.Spreadsheet, info LogEntry) error {
+func LogLicense(si *gdrive.Spreadsheet, info *LogEntry) error {
 	const sheetName = "License Issue Log"
 
 	sheetId, err := si.EnsureSheet(sheetName, LogEntry{}.Headers())
