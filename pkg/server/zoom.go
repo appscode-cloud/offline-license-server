@@ -21,8 +21,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/himalayan-institute/zoom-lib-golang"
 	"github.com/k3a/html2text"
+	"github.com/zoom-lib-golang/zoom-lib-golang"
 	passgen "gomodules.xyz/password-generator"
 	"gomodules.xyz/pointer"
 	"gomodules.xyz/sets"
