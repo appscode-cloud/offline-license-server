@@ -18,7 +18,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/unknwon/com"
+	"github.com/Unknwon/com"
 )
 
 type patternType int8

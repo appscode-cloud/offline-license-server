@@ -29,21 +29,27 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Unknwon/com"
 	"github.com/gorilla/schema"
-	"github.com/unknwon/com"
 	"gopkg.in/macaron.v1"
 )
 
+const _VERSION = "0.6.0"
+
+func Version() string {
+	return _VERSION
+}
+
 func bind(ctx *macaron.Context, obj interface{}, ifacePtr ...interface{}) {
 	contentType := ctx.Req.Header.Get("Content-Type")
-	if ctx.Req.Method == "POST" || ctx.Req.Method == "PUT" || ctx.Req.Method == "PATCH" || ctx.Req.Method == "DELETE" {
+	if ctx.Req.Method == "POST" || ctx.Req.Method == "PUT" || len(contentType) > 0 {
 		switch {
 		case strings.Contains(contentType, "form-urlencoded"):
-			_, _ = ctx.Invoke(Form(obj, ifacePtr...))
+			ctx.Invoke(Form(obj, ifacePtr...))
 		case strings.Contains(contentType, "multipart/form-data"):
-			_, _ = ctx.Invoke(MultipartForm(obj, ifacePtr...))
+			ctx.Invoke(MultipartForm(obj, ifacePtr...))
 		case strings.Contains(contentType, "json"):
-			_, _ = ctx.Invoke(Json(obj, ifacePtr...))
+			ctx.Invoke(Json(obj, ifacePtr...))
 		default:
 			var errors Errors
 			if contentType == "" {
@@ -55,7 +61,7 @@ func bind(ctx *macaron.Context, obj interface{}, ifacePtr ...interface{}) {
 			ctx.Map(obj) // Map a fake struct so handler won't panic.
 		}
 	} else {
-		_, _ = ctx.Invoke(Form(obj, ifacePtr...))
+		ctx.Invoke(Form(obj, ifacePtr...))
 	}
 }
 
@@ -84,13 +90,10 @@ func errorHandler(errs Errors, rw http.ResponseWriter) {
 			rw.WriteHeader(STATUS_UNPROCESSABLE_ENTITY)
 		}
 		errOutput, _ := json.Marshal(errs)
-		_, _ = rw.Write(errOutput)
+		rw.Write(errOutput)
 		return
 	}
 }
-
-// CustomErrorHandler will be invoked if errors occured.
-var CustomErrorHandler func(*macaron.Context, Errors)
 
 // Bind wraps up the functionality of the Form and Json middleware
 // according to the Content-Type and verb of the request.
@@ -104,11 +107,9 @@ func Bind(obj interface{}, ifacePtr ...interface{}) macaron.Handler {
 	return func(ctx *macaron.Context) {
 		bind(ctx, obj, ifacePtr...)
 		if handler, ok := obj.(ErrorHandler); ok {
-			_, _ = ctx.Invoke(handler.Error)
-		} else if CustomErrorHandler != nil {
-			_, _ = ctx.Invoke(CustomErrorHandler)
+			ctx.Invoke(handler.Error)
 		} else {
-			_, _ = ctx.Invoke(errorHandler)
+			ctx.Invoke(errorHandler)
 		}
 	}
 }
@@ -177,7 +178,7 @@ func MultipartForm(formStruct interface{}, ifacePtr ...interface{}) macaron.Hand
 				}
 
 				if ctx.Req.Form == nil {
-					_ = ctx.Req.ParseForm()
+					ctx.Req.ParseForm()
 				}
 				for k, v := range form.Value {
 					ctx.Req.Form[k] = append(ctx.Req.Form[k], v...)
@@ -230,25 +231,6 @@ func Json(jsonStruct interface{}, ifacePtr ...interface{}) macaron.Handler {
 			errors.Add([]string{}, ERR_DESERIALIZATION, err.Error())
 		}
 		validateAndMap(jsonStruct, ctx, errors, ifacePtr...)
-	}
-}
-
-// URL is the middleware to parse URL parameters into struct fields.
-func URL(obj interface{}, ifacePtr ...interface{}) macaron.Handler {
-	return func(ctx *macaron.Context) {
-		var errors Errors
-
-		ensureNotPointer(obj)
-		obj := reflect.New(reflect.TypeOf(obj))
-
-		val := obj.Elem()
-		for k, v := range ctx.AllParams() {
-			field := val.FieldByName(k[1:])
-			if field.IsValid() {
-				errors = setWithProperType(field.Kind(), v, field, k, errors)
-			}
-		}
-		validateAndMap(obj, ctx, errors, ifacePtr...)
 	}
 }
 
@@ -306,8 +288,8 @@ func Validate(obj interface{}) macaron.Handler {
 }
 
 var (
-	AlphaDashPattern    = regexp.MustCompile(`[^\d\w-_]`)
-	AlphaDashDotPattern = regexp.MustCompile(`[^\d\w-_\.]`)
+	AlphaDashPattern    = regexp.MustCompile("[^\\d\\w-_]")
+	AlphaDashDotPattern = regexp.MustCompile("[^\\d\\w-_\\.]")
 	EmailPattern        = regexp.MustCompile("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[a-zA-Z0-9](?:[\\w-]*[\\w])?")
 )
 
@@ -766,7 +748,7 @@ func ensureNotPointer(obj interface{}) {
 // with errors from deserialization, then maps both the
 // resulting struct and the errors to the context.
 func validateAndMap(obj reflect.Value, ctx *macaron.Context, errors Errors, ifacePtr ...interface{}) {
-	_, _ = ctx.Invoke(Validate(obj.Interface()))
+	ctx.Invoke(Validate(obj.Interface()))
 	errors = append(errors, getErrors(ctx)...)
 	ctx.Map(errors)
 	ctx.Map(obj.Elem().Interface())

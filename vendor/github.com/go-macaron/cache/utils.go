@@ -31,54 +31,54 @@ func DecodeGob(data []byte, out *Item) error {
 	return gob.NewDecoder(buf).Decode(&out)
 }
 
-func Incr(val interface{}) (v interface{}, _ error) {
-	switch val := val.(type) {
+func Incr(val interface{}) (interface{}, error) {
+	switch val.(type) {
 	case int:
-		v = val + 1
+		val = val.(int) + 1
 	case int32:
-		v = val + 1
+		val = val.(int32) + 1
 	case int64:
-		v = val + 1
+		val = val.(int64) + 1
 	case uint:
-		v = val + 1
+		val = val.(uint) + 1
 	case uint32:
-		v = val + 1
+		val = val.(uint32) + 1
 	case uint64:
-		v = val + 1
+		val = val.(uint64) + 1
 	default:
 		return val, errors.New("item value is not int-type")
 	}
-	return v, nil
+	return val, nil
 }
 
-func Decr(val interface{}) (v interface{}, _ error) {
-	switch val := val.(type) {
+func Decr(val interface{}) (interface{}, error) {
+	switch val.(type) {
 	case int:
-		v = val - 1
+		val = val.(int) - 1
 	case int32:
-		v = val - 1
+		val = val.(int32) - 1
 	case int64:
-		v = val - 1
+		val = val.(int64) - 1
 	case uint:
-		if val > 0 {
-			v = val - 1
+		if val.(uint) > 0 {
+			val = val.(uint) - 1
 		} else {
 			return val, errors.New("item value is less than 0")
 		}
 	case uint32:
-		if val > 0 {
-			v = val - 1
+		if val.(uint32) > 0 {
+			val = val.(uint32) - 1
 		} else {
 			return val, errors.New("item value is less than 0")
 		}
 	case uint64:
-		if val > 0 {
-			v = val - 1
+		if val.(uint64) > 0 {
+			val = val.(uint64) - 1
 		} else {
 			return val, errors.New("item value is less than 0")
 		}
 	default:
 		return val, errors.New("item value is not int-type")
 	}
-	return v, nil
+	return val, nil
 }

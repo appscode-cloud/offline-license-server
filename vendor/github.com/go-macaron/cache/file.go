@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/unknwon/com"
+	"github.com/Unknwon/com"
 	"gopkg.in/macaron.v1"
 )
 
@@ -61,7 +61,7 @@ func (c *FileCacher) filepath(key string) string {
 }
 
 // Put puts value into cache with key and expire time.
-// If expired is 0, it will not be deleted by GC.
+// If expired is 0, it will be deleted by next GC operation.
 func (c *FileCacher) Put(key string, val interface{}, expire int64) error {
 	filename := c.filepath(key)
 	item := &Item{val, time.Now().Unix(), expire}
@@ -70,10 +70,7 @@ func (c *FileCacher) Put(key string, val interface{}, expire int64) error {
 		return err
 	}
 
-	err = os.MkdirAll(filepath.Dir(filename), os.ModePerm)
-	if err != nil {
-		return err
-	}
+	os.MkdirAll(filepath.Dir(filename), os.ModePerm)
 	return ioutil.WriteFile(filename, data, os.ModePerm)
 }
 
@@ -167,7 +164,7 @@ func (c *FileCacher) startGC() {
 
 		data, err := ioutil.ReadFile(path)
 		if err != nil && !os.IsNotExist(err) {
-			return fmt.Errorf("ReadFile: %v", err)
+			fmt.Errorf("ReadFile: %v", err)
 		}
 
 		item := new(Item)

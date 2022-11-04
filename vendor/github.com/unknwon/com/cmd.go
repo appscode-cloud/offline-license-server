@@ -1,4 +1,4 @@
-// +build go1.3
+// +build go1.2
 
 // Copyright 2013 com authors
 //
