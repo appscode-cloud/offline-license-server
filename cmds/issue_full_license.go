@@ -71,7 +71,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 			for _, cluster := range clusters {
 				fmt.Println("cluster:", cluster)
 				info.Cluster = cluster
-				if err := s.IssueEnterpriseLicense(info, d2, ff); err != nil {
+				if _, err := s.IssueEnterpriseLicense(info, d2, ff, true); err != nil {
 					return errors.Wrapf(err, "failed to issue license for cluster %s", cluster)
 				}
 			}
