@@ -62,7 +62,7 @@ func (form LicenseForm) Validate() error {
 	if err != nil {
 		return err
 	}
-	if _, found := supportedProducts[form.Product]; !found {
+	if _, found := SupportedProducts[form.Product]; !found {
 		return fmt.Errorf("unknown product: %s", form.Product)
 	}
 	if agree, _ := strconv.ParseBool(form.Tos); !agree {

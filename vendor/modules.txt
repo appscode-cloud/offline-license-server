@@ -8,7 +8,7 @@ cloud.google.com/go/internal
 cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
-# cloud.google.com/go/storage v1.10.0
+# cloud.google.com/go/storage v1.12.0
 ## explicit; go 1.11
 cloud.google.com/go/storage
 # github.com/Masterminds/goutils v1.1.1
@@ -23,7 +23,7 @@ github.com/Masterminds/sprig/v3
 # github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
 ## explicit
 github.com/avct/uasurfer
-# github.com/census-instrumentation/opencensus-proto v0.2.1
+# github.com/census-instrumentation/opencensus-proto v0.3.0
 ## explicit
 github.com/census-instrumentation/opencensus-proto/gen-go/resource/v1
 github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1
@@ -174,9 +174,6 @@ github.com/google/uuid
 # github.com/google/wire v0.4.0
 ## explicit; go 1.12
 github.com/google/wire
-# github.com/googleapis/gax-go v2.0.2+incompatible
-## explicit
-github.com/googleapis/gax-go
 # github.com/googleapis/gax-go/v2 v2.1.1
 ## explicit; go 1.11
 github.com/googleapis/gax-go/v2
@@ -298,7 +295,7 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# gocloud.dev v0.20.0
+# gocloud.dev v0.22.0
 ## explicit; go 1.12
 gocloud.dev/blob
 gocloud.dev/blob/driver
@@ -370,11 +367,11 @@ golang.org/x/text/unicode/norm
 ## explicit; go 1.11
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# gomodules.xyz/blobfs v0.1.7
+# gomodules.xyz/blobfs v0.1.12-0.20220924052729-1b66a62602d2
 ## explicit; go 1.14
 gomodules.xyz/blobfs
-# gomodules.xyz/cert v1.2.0
-## explicit; go 1.12
+# gomodules.xyz/cert v1.5.1-0.20220924053658-29a73f2ab65e
+## explicit; go 1.17
 gomodules.xyz/cert
 gomodules.xyz/cert/certstore
 # gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f

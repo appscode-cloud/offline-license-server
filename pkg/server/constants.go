@@ -74,7 +74,7 @@ type PlanInfo struct {
 }
 
 // plan name => features
-var supportedProducts = map[string]PlanInfo{
+var SupportedProducts = map[string]PlanInfo{
 	"kubedb-community": {
 		DisplayName:    "KubeDB",
 		ProductLine:    "kubedb",

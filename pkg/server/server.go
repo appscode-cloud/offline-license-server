@@ -66,7 +66,7 @@ type Server struct {
 	opts *Options
 
 	certs      *certstore.CertStore
-	fs         *blobfs.BlobFS
+	fs         blobfs.Interface
 	mg         *mailer.SMTPService
 	freshsales *freshsalesclient.Client
 	listmonk   *listmonkclient.Client
@@ -495,10 +495,10 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 				Name:                info.Name,
 				Cluster:             info.Cluster,
 				Product:             info.Product,
-				ProductDisplayName:  supportedProducts[info.Product].DisplayName,
+				ProductDisplayName:  SupportedProducts[info.Product].DisplayName,
 				IsEnterpriseProduct: IsEnterpriseProduct(info.Product),
-				TwitterHandle:       supportedProducts[info.Product].TwitterHandle,
-				QuickstartLink:      supportedProducts[info.Product].QuickstartLink,
+				TwitterHandle:       SupportedProducts[info.Product].TwitterHandle,
+				QuickstartLink:      SupportedProducts[info.Product].QuickstartLink,
 			}
 
 			var dc *mailer.DripCampaign
@@ -608,11 +608,11 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
-	if len(supportedProducts[info.Product].MailingLists) > 0 {
+	if len(SupportedProducts[info.Product].MailingLists) > 0 {
 		err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
 			Email:        info.Email,
 			Name:         info.Name,
-			MailingLists: supportedProducts[info.Product].MailingLists,
+			MailingLists: SupportedProducts[info.Product].MailingLists,
 		})
 		if err != nil {
 			return err
@@ -699,9 +699,9 @@ func (s *Server) CreateLicense(info LicenseForm, license ProductLicense, cluster
 	}
 	cfg := Config{
 		CommonName:         getCN(sans),
-		Country:            supportedProducts[license.Product].ProductLine,
-		Province:           supportedProducts[license.Product].TierName,
-		Organization:       supportedProducts[license.Product].Features,
+		Country:            SupportedProducts[license.Product].ProductLine,
+		Province:           SupportedProducts[license.Product].TierName,
+		Organization:       SupportedProducts[license.Product].Features,
 		OrganizationalUnit: license.Product, // plan
 		Locality:           ff.ToSlice(),
 		AltNames:           sans,

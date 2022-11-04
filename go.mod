@@ -24,12 +24,12 @@ require (
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/yuin/goldmark v1.4.4
 	github.com/zoom-lib-golang/zoom-lib-golang v1.0.2
-	gocloud.dev v0.20.0
+	gocloud.dev v0.22.0
 	golang.org/x/crypto v0.0.0-20220126234351-aa10faf2a1f8
 	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
 	golang.org/x/text v0.3.6
-	gomodules.xyz/blobfs v0.1.7
-	gomodules.xyz/cert v1.2.0
+	gomodules.xyz/blobfs v0.1.12-0.20220924052729-1b66a62602d2
+	gomodules.xyz/cert v1.5.1-0.20220924053658-29a73f2ab65e
 	gomodules.xyz/email-providers v0.1.4
 	gomodules.xyz/encoding v0.0.7
 	gomodules.xyz/errors v0.1.0
@@ -52,11 +52,11 @@ require (
 
 require (
 	cloud.google.com/go v0.97.0 // indirect
-	cloud.google.com/go/storage v1.10.0 // indirect
+	cloud.google.com/go/storage v1.12.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
-	github.com/census-instrumentation/opencensus-proto v0.2.1 // indirect
+	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403 // indirect
 	github.com/cncf/xds/go v0.0.0-20210312221358-fbca930ec8ed // indirect
@@ -77,7 +77,6 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/wire v0.4.0 // indirect
-	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
