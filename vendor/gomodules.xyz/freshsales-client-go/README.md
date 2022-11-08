@@ -1,1 +1,0 @@
-# freshsales-client-go
