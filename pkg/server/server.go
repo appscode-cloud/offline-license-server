@@ -19,14 +19,12 @@ package server
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"net/smtp"
 	"os"
-	"path"
 	"time"
 
 	"github.com/appscodelabs/offline-license-server/templates"
@@ -42,7 +40,6 @@ import (
 	"github.com/zoom-lib-golang/zoom-lib-golang"
 	"golang.org/x/crypto/acme/autocert"
 	"gomodules.xyz/blobfs"
-	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
 	. "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
@@ -91,17 +88,7 @@ type Server struct {
 func New(opts *Options) (*Server, error) {
 	fs := blobfs.New("gs://" + opts.LicenseBucket)
 
-	caCertPath := CACertificatesPath()
-	issuerName := LicenseIssuerName
-	if opts.Issuer != "" {
-		caCertPath = path.Join(CACertificatesPath(), opts.Issuer)
-		issuerName = opts.Issuer
-	}
-	certs, err := certstore.New(fs, caCertPath, issuerName)
-	if err != nil {
-		return nil, err
-	}
-	err = certs.InitCA()
+	certs, err := GetCertStore(fs, opts.Issuer)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +196,7 @@ func (s *Server) Run() error {
 	m.Use(cors.CORS(cors.Options{
 		Section:          "",
 		Scheme:           "*",
-		AllowDomain:      []string{"*"}, //{"appscode.com", "kubedb.com", "stash.run", "kubevault.com", "kubeform.cloud"},
+		AllowDomain:      "*", //{"appscode.com", "kubedb.com", "stash.run", "kubevault.com", "kubeform.cloud"},
 		AllowSubdomain:   true,
 		Methods:          []string{http.MethodGet, http.MethodPost},
 		MaxAgeSeconds:    600,
@@ -603,7 +590,7 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
-	err = LogLicense(s.sheet, accesslog)
+	err = LogLicense(s.sheet, &accesslog)
 	if err != nil {
 		return err
 	}
@@ -685,60 +672,10 @@ func (s *Server) CreateOrRetrieveLicense(info LicenseForm, license ProductLicens
 			return s.fs.ReadFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
 		}
 	}
-	return s.CreateLicense(info, license, cluster, nil)
+	return CreateLicense(s.fs, s.certs, info, license, cluster, nil)
 }
 
-func (s *Server) CreateLicense(info LicenseForm, license ProductLicense, cluster string, ff FeatureFlags) ([]byte, error) {
-	// agreement, TTL
-	sans := AltNames{
-		DNSNames: []string{cluster},
-		EmailAddresses: []string{
-			fmt.Sprintf("%s <%s>", info.Name, info.Email),
-			info.Email,
-		},
-	}
-	cfg := Config{
-		CommonName:         getCN(sans),
-		Country:            SupportedProducts[license.Product].ProductLine,
-		Province:           SupportedProducts[license.Product].TierName,
-		Organization:       SupportedProducts[license.Product].Features,
-		OrganizationalUnit: license.Product, // plan
-		Locality:           ff.ToSlice(),
-		AltNames:           sans,
-		Usages:             []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-	now := time.Now()
-	cfg.NotBefore = now
-	if license.Agreement != nil {
-		cfg.NotAfter = license.Agreement.ExpiryDate.UTC()
-	} else if license.TTL != nil {
-		cfg.NotAfter = now.Add(license.TTL.Duration).UTC()
-	} else {
-		return nil, apierrors.NewInternalError(fmt.Errorf("Missing license TTL")) // this should never happen
-	}
-
-	key, err := cert.NewPrivateKey()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate private key")
-	}
-	crt, err := NewSignedCert(cfg, key, s.certs.CACert(), s.certs.CAKey())
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate client certificate")
-	}
-
-	err = s.fs.WriteFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster), cert.EncodeCertPEM(crt))
-	if err != nil {
-		return nil, err
-	}
-	err = s.fs.WriteFile(context.TODO(), LicenseKeyPath(license.Domain, license.Product, cluster), cert.EncodePrivateKeyPEM(key))
-	if err != nil {
-		return nil, err
-	}
-
-	return cert.EncodeCertPEM(crt), nil
-}
-
-func LogLicense(si *gdrive.Spreadsheet, info LogEntry) error {
+func LogLicense(si *gdrive.Spreadsheet, info *LogEntry) error {
 	const sheetName = "License Issue Log"
 
 	sheetId, err := si.EnsureSheet(sheetName, LogEntry{}.Headers())

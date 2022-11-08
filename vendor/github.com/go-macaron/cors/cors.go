@@ -11,39 +11,17 @@ import (
 	macaron "gopkg.in/macaron.v1"
 )
 
-const version = "0.1.1"
+const _VERSION = "0.1.0"
 
-const anyDomain = "!*"
-
-// Version returns the version of this module
 func Version() string {
-	return version
+	return _VERSION
 }
 
-/*
-Options to configure the CORS middleware read from the [cors] section of the ini configuration file.
-
-SCHEME may be http or https as accepted schemes or the '*' wildcard to accept any scheme.
-
-ALLOW_DOMAIN may be a comma separated list of domains that are allowed to run CORS requests
-Special values are the  a single '*' wildcard that will allow any domain to send requests without
-credentials and the special '!*' wildcard which will reply with requesting domain in the 'access-control-allow-origin'
-header and hence allow requess from any domain *with* credentials.
-
-ALLOW_SUBDOMAIN set to true accepts requests from any subdomain of ALLOW_DOMAIN.
-
-METHODS may be a comma separated list of HTTP-methods to be accepted.
-
-MAX_AGE_SECONDS may be the duration in secs for which the response is cached (default 600).
-ref: https://stackoverflow.com/questions/54300997/is-it-possible-to-cache-http-options-response?noredirect=1#comment95790277_54300997
-ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
-
-ALLOW_CREDENTIALS set to false rejects any request with credentials.
-*/
+// Options represents a struct for specifying configuration options for the CORS middleware.
 type Options struct {
 	Section          string
 	Scheme           string
-	AllowDomain      []string
+	AllowDomain      string
 	AllowSubdomain   bool
 	Methods          []string
 	MaxAgeSeconds    int
@@ -65,10 +43,7 @@ func prepareOptions(options []Options) Options {
 		opt.Scheme = sec.Key("SCHEME").MustString("http")
 	}
 	if len(opt.AllowDomain) == 0 {
-		opt.AllowDomain = sec.Key("ALLOW_DOMAIN").Strings(",")
-		if len(opt.AllowDomain) == 0 {
-			opt.AllowDomain = []string{"*"}
-		}
+		opt.AllowDomain = sec.Key("ALLOW_DOMAIN").MustString("*")
 	}
 	if !opt.AllowSubdomain {
 		opt.AllowSubdomain = sec.Key("ALLOW_SUBDOMAIN").MustBool(false)
@@ -88,6 +63,9 @@ func prepareOptions(options []Options) Options {
 		}
 	}
 	if opt.MaxAgeSeconds <= 0 {
+		// cache options response for 600 secs
+		// ref: https://stackoverflow.com/questions/54300997/is-it-possible-to-cache-http-options-response?noredirect=1#comment95790277_54300997
+		// ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
 		opt.MaxAgeSeconds = sec.Key("MAX_AGE_SECONDS").MustInt(600)
 	}
 	if !opt.AllowCredentials {
@@ -97,9 +75,9 @@ func prepareOptions(options []Options) Options {
 	return opt
 }
 
-// CORS responds to preflight requests with adequat access-control-* respond headers
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
 // https://fetch.spec.whatwg.org/#cors-protocol-and-credentials
+// For requests without credentials, the server may specify "*" as a wildcard, thereby allowing any origin to access the resource.
 func CORS(options ...Options) macaron.Handler {
 	opt := prepareOptions(options)
 	return func(ctx *macaron.Context, log *log.Logger) {
@@ -110,9 +88,9 @@ func CORS(options ...Options) macaron.Handler {
 			"access-control-allow-headers": ctx.Req.Header.Get("access-control-request-headers"),
 			"access-control-max-age":       strconv.Itoa(opt.MaxAgeSeconds),
 		}
-		if opt.AllowDomain[0] == "*" {
+		if opt.AllowDomain == "*" {
 			headers["access-control-allow-origin"] = "*"
-		} else {
+		} else if opt.AllowDomain != "" {
 			origin := ctx.Req.Header.Get("Origin")
 			if reqOptions && origin == "" {
 				respErrorf(ctx, log, http.StatusBadRequest, "missing origin header in CORS request")
@@ -125,17 +103,10 @@ func CORS(options ...Options) macaron.Handler {
 				return
 			}
 
-			ok := false
-			for _, d := range opt.AllowDomain {
-				if u.Hostname() == d || (opt.AllowSubdomain && strings.HasSuffix(u.Hostname(), "."+d)) || d == anyDomain {
-					ok = true
-					break
-				}
-			}
+			ok := u.Hostname() == opt.AllowDomain ||
+				(opt.AllowSubdomain && strings.HasSuffix(u.Hostname(), "."+opt.AllowDomain))
 			if ok {
-				if opt.Scheme != "*" {
-					u.Scheme = opt.Scheme
-				}
+				u.Scheme = opt.Scheme
 				headers["access-control-allow-origin"] = u.String()
 				headers["access-control-allow-credentials"] = strconv.FormatBool(opt.AllowCredentials)
 				headers["vary"] = "Origin"
@@ -151,8 +122,7 @@ func CORS(options ...Options) macaron.Handler {
 			}
 		})
 		if reqOptions {
-			ctx.Resp.WriteHeader(200) // return response
-			return
+			ctx.Status(200) // return response
 		}
 	}
 }

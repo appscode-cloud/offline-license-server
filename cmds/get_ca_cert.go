@@ -20,7 +20,7 @@ import (
 	"bufio"
 	"crypto/rsa"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"reflect"
 
@@ -37,7 +37,7 @@ func NewCmdGetCACert() *cobra.Command {
 		DisableAutoGenTag: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			reader := bufio.NewReader(os.Stdin)
-			keyBytes, err := ioutil.ReadAll(reader)
+			keyBytes, err := io.ReadAll(reader)
 			if err != nil {
 				Fatal(errors.Wrap(err, "failed to read private key"))
 			}
