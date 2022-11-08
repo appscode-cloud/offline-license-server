@@ -1,0 +1,21 @@
+---
+language: go
+go:
+  - 1.16.x
+jobs:
+  include:
+    - stage: format check
+      script: ./fmtpolice
+    - stage: go vet
+      script: go vet
+    - stage: tests
+      script: go test -v ./...
+    - stage: integration tests
+      script: go test -tags integration -v ./...
+      if: type != pull_request
+notifications:
+  email:
+    recipients:
+      - rafael.colton@gmail.com
+    on_success: never
+    on_failure: change
