@@ -20,7 +20,9 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/go-macaron/cache"
 	"google.golang.org/api/youtube/v3"
@@ -70,6 +72,8 @@ func (s *Server) RegisterYoutubeAPI(m *macaron.Macaron) {
 func (s *Server) ListPlaylists(channelID string) ([]*youtube.Playlist, error) {
 	call := s.srvYT.Playlists.List(strings.Split("snippet,contentDetails,status", ","))
 	// call = call.Fields("items(id,snippet(title,description,publishedAt,tags,thumbnails(high)),contentDetails,status)")
+	// BUG: https://issuetracker.google.com/issues/35171641
+	call = call.MaxResults(500)
 	call = call.ChannelId(channelID)
 
 	var out []*youtube.Playlist
@@ -84,12 +88,27 @@ func (s *Server) ListPlaylists(channelID string) ([]*youtube.Playlist, error) {
 func (s *Server) ListPlaylistItems(playlistID string) ([]*youtube.PlaylistItem, error) {
 	call := s.srvYT.PlaylistItems.List(strings.Split("snippet,contentDetails,status", ","))
 	call = call.Fields("items(snippet(title,description,position,thumbnails(high)),contentDetails,status)")
+	// BUG: https://issuetracker.google.com/issues/35171641
+	call = call.MaxResults(500)
 	call = call.PlaylistId(playlistID)
 
 	var out []*youtube.PlaylistItem
 	err := call.Pages(context.Background(), func(resp *youtube.PlaylistItemListResponse) error {
-		out = append(out, resp.Items...)
+		for i := range resp.Items {
+			if resp.Items[i].Status.PrivacyStatus != "private" {
+				out = append(out, resp.Items[i])
+			}
+		}
 		return nil
 	})
-	return out, err
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		ti, _ := time.Parse(time.RFC3339, out[i].ContentDetails.VideoPublishedAt)
+		tj, _ := time.Parse(time.RFC3339, out[j].ContentDetails.VideoPublishedAt)
+		return ti.After(tj)
+	})
+	return out, nil
 }
