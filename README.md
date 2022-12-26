@@ -73,9 +73,7 @@ curl -X POST -H "Content-Type: application/json" \
  - kubeform-community
  - voyager-enterprise
  - voyager-community
- - console-enterprise
- - auditor-enterprise
- - panopticon-enterprise
+ - platform-enterprise
 
 ## Installation
 

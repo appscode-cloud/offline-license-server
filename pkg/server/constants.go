@@ -48,13 +48,12 @@ const (
 	NewsSnippetSpreadsheetId = "1kLewa3oGLlaFqzghV8Snh7u5xFMcS54Rl8I8BMpYTQs"
 	NewsSnippetSheet         = "News"
 
-	MailingList_Console    = "06a84456-bfdf-4edf-97c1-7e7d4ad48f67"
+	MailingList_Platform   = "06a84456-bfdf-4edf-97c1-7e7d4ad48f67"
 	MailingList_KubeDB     = "a5f00cb2-f398-4408-a13a-28b6db8a32ba"
 	MailingList_Kubeform   = "cd797afa-04d4-45c8-86e0-642a59b2d7f4"
 	MailingList_KubeVault  = "b0a46c28-43c3-4048-8059-c3897474b577"
 	MailingList_Stash      = "3ab3161e-d02c-42cf-ad96-bb406620d693"
 	MailingList_Voyager    = "6c6d1338-bb38-40f6-bab4-ff09c2f6e184"
-	MailingList_Auditor    = "65e961d0-d60e-4bf5-8a22-3a5ec28a32c5"
 	MailingList_Panopticon = "47ae2f13-5034-483e-be9a-682b32b39315"
 )
 
@@ -165,34 +164,10 @@ var SupportedProducts = map[string]PlanInfo{
 		Features:       []string{"voyager-enterprise", "voyager-community", "panopticon-enterprise"},
 		MailingLists:   []string{MailingList_Voyager, MailingList_Panopticon},
 	},
-	"console-enterprise": {
-		ProductLine:  "console",
+	"platform-enterprise": {
+		ProductLine:  "platform",
 		TierName:     "enterprise",
-		Features:     []string{"console-enterprise", "auditor-enterprise", "panopticon-enterprise", "cluster-connector"},
-		MailingLists: []string{MailingList_Console, MailingList_Panopticon},
-	},
-	"auditor-enterprise": {
-		ProductLine:  "auditor",
-		TierName:     "enterprise",
-		Features:     []string{"auditor-enterprise"},
-		MailingLists: []string{MailingList_Auditor},
-	},
-	"panopticon-community": {
-		DisplayName:    "Panopticon",
-		ProductLine:    "panopticon",
-		TierName:       "community",
-		TwitterHandle:  "Kubeops",
-		QuickstartLink: "https://blog.byte.builders/post/introducing-panopticon/",
-		Features:       []string{"panopticon-community"},
-		MailingLists:   []string{MailingList_Panopticon},
-	},
-	"panopticon-enterprise": {
-		DisplayName:    "Panopticon",
-		ProductLine:    "panopticon",
-		TierName:       "enterprise",
-		TwitterHandle:  "Kubeops",
-		QuickstartLink: "https://blog.byte.builders/post/introducing-panopticon/",
-		Features:       []string{"panopticon-enterprise", "panopticon-community"},
-		MailingLists:   []string{MailingList_Panopticon},
+		Features:     []string{"panopticon-enterprise", "platform-backend", "scanner"},
+		MailingLists: []string{MailingList_Platform, MailingList_Panopticon},
 	},
 }
