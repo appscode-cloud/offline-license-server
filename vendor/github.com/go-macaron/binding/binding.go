@@ -29,27 +29,24 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Unknwon/com"
 	"github.com/gorilla/schema"
+	"github.com/unknwon/com"
 	"gopkg.in/macaron.v1"
+	"gopkg.in/yaml.v3"
 )
-
-const _VERSION = "0.6.0"
-
-func Version() string {
-	return _VERSION
-}
 
 func bind(ctx *macaron.Context, obj interface{}, ifacePtr ...interface{}) {
 	contentType := ctx.Req.Header.Get("Content-Type")
-	if ctx.Req.Method == "POST" || ctx.Req.Method == "PUT" || len(contentType) > 0 {
+	if ctx.Req.Method == "POST" || ctx.Req.Method == "PUT" || ctx.Req.Method == "PATCH" || ctx.Req.Method == "DELETE" {
 		switch {
 		case strings.Contains(contentType, "form-urlencoded"):
-			ctx.Invoke(Form(obj, ifacePtr...))
+			_, _ = ctx.Invoke(Form(obj, ifacePtr...))
 		case strings.Contains(contentType, "multipart/form-data"):
-			ctx.Invoke(MultipartForm(obj, ifacePtr...))
+			_, _ = ctx.Invoke(MultipartForm(obj, ifacePtr...))
 		case strings.Contains(contentType, "json"):
-			ctx.Invoke(Json(obj, ifacePtr...))
+			_, _ = ctx.Invoke(Json(obj, ifacePtr...))
+		case strings.Contains(contentType, "yaml"):
+			_, _ = ctx.Invoke(Yaml(obj, ifacePtr...))
 		default:
 			var errors Errors
 			if contentType == "" {
@@ -61,12 +58,13 @@ func bind(ctx *macaron.Context, obj interface{}, ifacePtr ...interface{}) {
 			ctx.Map(obj) // Map a fake struct so handler won't panic.
 		}
 	} else {
-		ctx.Invoke(Form(obj, ifacePtr...))
+		_, _ = ctx.Invoke(Form(obj, ifacePtr...))
 	}
 }
 
 const (
 	_JSON_CONTENT_TYPE          = "application/json; charset=utf-8"
+	_YAML_CONTENT_TYPE          = "text/yaml; charset=utf-8"
 	STATUS_UNPROCESSABLE_ENTITY = 422
 )
 
@@ -90,10 +88,13 @@ func errorHandler(errs Errors, rw http.ResponseWriter) {
 			rw.WriteHeader(STATUS_UNPROCESSABLE_ENTITY)
 		}
 		errOutput, _ := json.Marshal(errs)
-		rw.Write(errOutput)
+		_, _ = rw.Write(errOutput)
 		return
 	}
 }
+
+// CustomErrorHandler will be invoked if errors occured.
+var CustomErrorHandler func(*macaron.Context, Errors)
 
 // Bind wraps up the functionality of the Form and Json middleware
 // according to the Content-Type and verb of the request.
@@ -107,9 +108,11 @@ func Bind(obj interface{}, ifacePtr ...interface{}) macaron.Handler {
 	return func(ctx *macaron.Context) {
 		bind(ctx, obj, ifacePtr...)
 		if handler, ok := obj.(ErrorHandler); ok {
-			ctx.Invoke(handler.Error)
+			_, _ = ctx.Invoke(handler.Error)
+		} else if CustomErrorHandler != nil {
+			_, _ = ctx.Invoke(CustomErrorHandler)
 		} else {
-			ctx.Invoke(errorHandler)
+			_, _ = ctx.Invoke(errorHandler)
 		}
 	}
 }
@@ -178,7 +181,7 @@ func MultipartForm(formStruct interface{}, ifacePtr ...interface{}) macaron.Hand
 				}
 
 				if ctx.Req.Form == nil {
-					ctx.Req.ParseForm()
+					_ = ctx.Req.ParseForm()
 				}
 				for k, v := range form.Value {
 					ctx.Req.Form[k] = append(ctx.Req.Form[k], v...)
@@ -210,27 +213,74 @@ func Json(jsonStruct interface{}, ifacePtr ...interface{}) macaron.Handler {
 		var errors Errors
 		ensureNotPointer(jsonStruct)
 		jsonStruct := reflect.New(reflect.TypeOf(jsonStruct))
-		var err error
 		if ctx.Req.URL != nil {
 			if params := ctx.Req.URL.Query(); len(params) > 0 {
 				d := schema.NewDecoder()
 				d.SetAliasTag("json")
-				err = d.Decode(jsonStruct.Interface(), params)
+				err := d.Decode(jsonStruct.Interface(), params)
+				if err != nil && err != io.EOF {
+					errors.Add([]string{}, ERR_DESERIALIZATION, err.Error())
+				}
 			}
 		}
 		if ctx.Req.Method == "POST" || ctx.Req.Method == "PUT" || ctx.Req.Method == "PATCH" {
 			if ctx.Req.Request.Body != nil {
 				v := jsonStruct.Interface()
-				e := json.NewDecoder(ctx.Req.Request.Body).Decode(v)
-				if err == nil {
-					err = e
+				err := json.NewDecoder(ctx.Req.Request.Body).Decode(v)
+				if err != nil && err != io.EOF {
+					errors.Add([]string{}, ERR_DESERIALIZATION, err.Error())
 				}
 			}
 		}
-		if err != nil && err != io.EOF {
-			errors.Add([]string{}, ERR_DESERIALIZATION, err.Error())
+		if errors != nil {
+			ctx.Map(errors)
+			return
 		}
 		validateAndMap(jsonStruct, ctx, errors, ifacePtr...)
+	}
+}
+
+// Yaml is middleware to deserialize a YAML payload from the request
+// into the struct that is passed in. The resulting struct is then
+// validated, but no error handling is actually performed here.
+// An interface pointer can be added as a second argument in order
+// to map the struct to a specific interface.
+func Yaml(yamlStruct interface{}, ifacePtr ...interface{}) macaron.Handler {
+	return func(ctx *macaron.Context) {
+		var errors Errors
+		ensureNotPointer(yamlStruct)
+		yamlStruct := reflect.New(reflect.TypeOf(yamlStruct))
+		if ctx.Req.Request.Body != nil {
+			defer ctx.Req.Request.Body.Close()
+			err := yaml.NewDecoder(ctx.Req.Request.Body).Decode(yamlStruct.Interface())
+			if err != nil && err != io.EOF {
+				errors.Add([]string{}, ERR_DESERIALIZATION, err.Error())
+			}
+		}
+		if errors != nil {
+			ctx.Map(errors)
+			return
+		}
+		validateAndMap(yamlStruct, ctx, errors, ifacePtr...)
+	}
+}
+
+// URL is the middleware to parse URL parameters into struct fields.
+func URL(obj interface{}, ifacePtr ...interface{}) macaron.Handler {
+	return func(ctx *macaron.Context) {
+		var errors Errors
+
+		ensureNotPointer(obj)
+		obj := reflect.New(reflect.TypeOf(obj))
+
+		val := obj.Elem()
+		for k, v := range ctx.AllParams() {
+			field := val.FieldByName(k[1:])
+			if field.IsValid() {
+				errors = setWithProperType(field.Kind(), v, field, k, errors)
+			}
+		}
+		validateAndMap(obj, ctx, errors, ifacePtr...)
 	}
 }
 
@@ -288,14 +338,16 @@ func Validate(obj interface{}) macaron.Handler {
 }
 
 var (
-	AlphaDashPattern    = regexp.MustCompile("[^\\d\\w-_]")
-	AlphaDashDotPattern = regexp.MustCompile("[^\\d\\w-_\\.]")
+	AlphaDashPattern    = regexp.MustCompile(`[^\d\w-_]`)
+	AlphaDashDotPattern = regexp.MustCompile(`[^\d\w-_\.]`)
 	EmailPattern        = regexp.MustCompile("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[a-zA-Z0-9](?:[\\w-]*[\\w])?")
 )
 
 // Copied from github.com/asaskevich/govalidator.
-const _MAX_URL_RUNE_COUNT = 2083
-const _MIN_URL_RUNE_COUNT = 3
+const (
+	_MAX_URL_RUNE_COUNT = 2083
+	_MIN_URL_RUNE_COUNT = 3
+)
 
 var (
 	urlSchemaRx    = `((ftp|tcp|udp|wss?|https?):\/\/)`
@@ -305,7 +357,7 @@ var (
 	urlSubdomainRx = `((www\.)|([a-zA-Z0-9]([-\.][-\._a-zA-Z0-9]+)*))`
 	urlPortRx      = `(:(\d{1,5}))`
 	urlPathRx      = `((\/|\?|#)[^\s]*)`
-	URLPattern     = regexp.MustCompile(`^` + urlSchemaRx + `?` + urlUsernameRx + `?` + `((` + urlIPRx + `|(\[` + ipRx + `\])|(([a-zA-Z0-9]([a-zA-Z0-9-_]+)?[a-zA-Z0-9]([-\.][a-zA-Z0-9]+)*)|(` + urlSubdomainRx + `?))?(([a-zA-Z\x{00a1}-\x{ffff}0-9]+-?-?)*[a-zA-Z\x{00a1}-\x{ffff}0-9]+)(?:\.([a-zA-Z\x{00a1}-\x{ffff}]{1,}))?))\.?` + urlPortRx + `?` + urlPathRx + `?$`)
+	URLPattern     = regexp.MustCompile(`^` + urlSchemaRx + urlUsernameRx + `?` + `((` + urlIPRx + `|(\[` + ipRx + `\])|(([a-zA-Z0-9]([a-zA-Z0-9-_]+)?[a-zA-Z0-9]([-\.][a-zA-Z0-9]+)*)|(` + urlSubdomainRx + `?))?(([a-zA-Z\x{00a1}-\x{ffff}0-9]+-?-?)*[a-zA-Z\x{00a1}-\x{ffff}0-9]+)(?:\.([a-zA-Z\x{00a1}-\x{ffff}]{1,}))?))\.?` + urlPortRx + `?` + urlPathRx + `?$`)
 )
 
 // IsURL check if the string is an URL.
@@ -324,7 +376,6 @@ func isURL(str string) bool {
 		return false
 	}
 	return URLPattern.MatchString(str)
-
 }
 
 type (
@@ -350,8 +401,10 @@ type (
 	ParamRuleMapper []*ParamRule
 )
 
-var ruleMapper RuleMapper
-var paramRuleMapper ParamRuleMapper
+var (
+	ruleMapper      RuleMapper
+	paramRuleMapper ParamRuleMapper
+)
 
 // AddRule adds new validation rule.
 func AddRule(r *Rule) {
@@ -586,21 +639,19 @@ VALIDATE_RULES:
 // NameMapper represents a form tag name mapper.
 type NameMapper func(string) string
 
-var (
-	nameMapper = func(field string) string {
-		newstr := make([]rune, 0, len(field))
-		for i, chr := range field {
-			if isUpper := 'A' <= chr && chr <= 'Z'; isUpper {
-				if i > 0 {
-					newstr = append(newstr, '_')
-				}
-				chr -= ('A' - 'a')
+var nameMapper = func(field string) string {
+	newstr := make([]rune, 0, len(field))
+	for i, chr := range field {
+		if isUpper := 'A' <= chr && chr <= 'Z'; isUpper {
+			if i > 0 {
+				newstr = append(newstr, '_')
 			}
-			newstr = append(newstr, chr)
+			chr -= ('A' - 'a')
 		}
-		return string(newstr)
+		newstr = append(newstr, chr)
 	}
-)
+	return string(newstr)
+}
 
 // SetNameMapper sets name mapper.
 func SetNameMapper(nm NameMapper) {
@@ -609,8 +660,8 @@ func SetNameMapper(nm NameMapper) {
 
 // Takes values from the form data and puts them into a struct
 func mapForm(formStruct reflect.Value, form map[string][]string,
-	formfile map[string][]*multipart.FileHeader, errors Errors) Errors {
-
+	formfile map[string][]*multipart.FileHeader, errors Errors,
+) Errors {
 	if formStruct.Kind() == reflect.Ptr {
 		formStruct = formStruct.Elem()
 	}
@@ -748,7 +799,7 @@ func ensureNotPointer(obj interface{}) {
 // with errors from deserialization, then maps both the
 // resulting struct and the errors to the context.
 func validateAndMap(obj reflect.Value, ctx *macaron.Context, errors Errors, ifacePtr ...interface{}) {
-	ctx.Invoke(Validate(obj.Interface()))
+	_, _ = ctx.Invoke(Validate(obj.Interface()))
 	errors = append(errors, getErrors(ctx)...)
 	ctx.Map(errors)
 	ctx.Map(obj.Elem().Interface())

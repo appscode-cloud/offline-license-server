@@ -69,7 +69,9 @@ func (c *MemoryCacher) Get(key string) interface{} {
 		return nil
 	}
 	if item.hasExpired() {
-		go c.Delete(key)
+		go func() {
+			_ = c.Delete(key)
+		}()
 		return nil
 	}
 	return item.val
@@ -140,13 +142,6 @@ func (c *MemoryCacher) checkRawExpiration(key string) {
 	}
 }
 
-func (c *MemoryCacher) checkExpiration(key string) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-
-	c.checkRawExpiration(key)
-}
-
 func (c *MemoryCacher) startGC() {
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -156,7 +151,7 @@ func (c *MemoryCacher) startGC() {
 	}
 
 	if c.items != nil {
-		for key, _ := range c.items {
+		for key := range c.items {
 			c.checkRawExpiration(key)
 		}
 	}
