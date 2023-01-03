@@ -7,20 +7,21 @@ on:
   push:
     branches:
       - master
-
   workflow_dispatch:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
+
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.18
+          go-version: 1.19
         id: go
 
       - name: Check out code into the Go module directory
@@ -29,3 +30,9 @@ jobs:
       - name: Run checks
         run: |
           make ci
+
+      - name: Test Vulnerability
+        run: |
+          # https://go.dev/blog/vuln
+          GOBIN=/usr/local/bin go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...

@@ -1,15 +1,15 @@
 module github.com/appscodelabs/offline-license-server
 
-go 1.17
+go 1.18
 
 require (
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
 	github.com/davegardnerisme/phonegeocode v0.0.0-20160120101024-a49b977f8889
 	github.com/go-macaron/auth v0.0.0-20161228062157-884c0e6c9b92
 	github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e
-	github.com/go-macaron/binding v1.1.1
-	github.com/go-macaron/cache v0.0.0-20151013081102-561735312776
-	github.com/go-macaron/cors v0.0.0-20190418220122-6fd6a9bfe14e
+	github.com/go-macaron/binding v1.2.0
+	github.com/go-macaron/cache v0.0.0-20200329073519-53bb48172687
+	github.com/go-macaron/cors v0.0.0-20210206180111-00b7f53a9308
 	github.com/gobuffalo/flect v0.2.2
 	github.com/gocarina/gocsv v0.0.0-20211020200912-82fc2684cc48
 	github.com/google/uuid v1.3.0
@@ -56,7 +56,6 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
-	github.com/Unknwon/com v0.0.0-20190321035513-0fed4efef755 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403 // indirect
@@ -67,7 +66,7 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.1-rc1 // indirect
 	github.com/go-logr/logr v1.2.0 // indirect
-	github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191 // indirect
+	github.com/go-macaron/inject v0.0.0-20200308113650-138e5925c53b // indirect
 	github.com/go-resty/resty/v2 v2.6.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.0.0 // indirect
@@ -93,6 +92,7 @@ require (
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/tchap/go-patricia v2.3.0+incompatible // indirect
+	github.com/unknwon/com v1.0.2-0.20200817130700-b41c64acd94b // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 // indirect
@@ -112,10 +112,8 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.0 // indirect
 )
 
-replace (
-	github.com/go-macaron/binding => github.com/gomodules/binding v0.0.0-20200811095211-d487297d19a9
-	github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
-	gopkg.in/macaron.v1 => github.com/gomodules/macaron v1.3.2
-)
+replace github.com/go-macaron/binding => github.com/wandrs/macaron-binding v0.0.0-20230103140222-6e6306e07bec
+
+replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 
 replace helm.sh/helm/v3 => github.com/kubepack/helm/v3 v3.6.1-0.20210518225915-c3e0ce48dd1b
