@@ -27,7 +27,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/appscodelabs/offline-license-server/templates"
+	"go.bytebuilders.dev/offline-license-server/templates"
+
 	"github.com/avct/uasurfer"
 	"github.com/go-macaron/auth"
 	"github.com/go-macaron/bindata"

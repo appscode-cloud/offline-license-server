@@ -22,7 +22,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/appscodelabs/offline-license-server/pkg/server"
+	"go.bytebuilders.dev/offline-license-server/pkg/server"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	csvtypes "gomodules.xyz/encoding/csv/types"

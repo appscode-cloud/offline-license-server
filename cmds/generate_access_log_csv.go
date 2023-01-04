@@ -26,7 +26,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscodelabs/offline-license-server/pkg/server"
+	"go.bytebuilders.dev/offline-license-server/pkg/server"
+
 	"github.com/oschwald/geoip2-golang"
 	"github.com/spf13/cobra"
 	"gocloud.dev/blob"

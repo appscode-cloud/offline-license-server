@@ -24,7 +24,7 @@ var root = newMIME("application/octet-stream", "",
 	gzip, class, swf, crx, ttf, woff, woff2, otf, ttc, eot, wasm, shx, dbf, dcm, rar,
 	djvu, mobi, lit, bpg, sqlite3, dwg, nes, lnk, macho, qcp, icns, heic,
 	heicSeq, heif, heifSeq, hdr, mrc, mdb, accdb, zstd, cab, rpm, xz, lzip,
-	torrent, cpio, tzif, xcf, pat, gbr, glb, avif,
+	torrent, cpio, tzif, xcf, pat, gbr, glb, avif, cabIS,
 	// Keep text last because it is the slowest check
 	text,
 )
@@ -94,8 +94,9 @@ var (
 	vtt    = newMIME("text/vtt", ".vtt", magic.Vtt)
 	lua    = newMIME("text/x-lua", ".lua", magic.Lua)
 	perl   = newMIME("text/x-perl", ".pl", magic.Perl)
-	python = newMIME("application/x-python", ".py", magic.Python)
-	tcl    = newMIME("text/x-tcl", ".tcl", magic.Tcl).
+	python = newMIME("text/x-python", ".py", magic.Python).
+		alias("text/x-script.python", "application/x-python")
+	tcl = newMIME("text/x-tcl", ".tcl", magic.Tcl).
 		alias("application/x-tcl")
 	vCard     = newMIME("text/vcard", ".vcf", magic.VCard)
 	iCalendar = newMIME("text/calendar", ".ics", magic.ICalendar)
@@ -187,8 +188,8 @@ var (
 	ttc     = newMIME("font/collection", ".ttc", magic.Ttc)
 	eot     = newMIME("application/vnd.ms-fontobject", ".eot", magic.Eot)
 	wasm    = newMIME("application/wasm", ".wasm", magic.Wasm)
-	shp     = newMIME("application/octet-stream", ".shp", magic.Shp)
-	shx     = newMIME("application/octet-stream", ".shx", magic.Shx, shp)
+	shp     = newMIME("application/vnd.shp", ".shp", magic.Shp)
+	shx     = newMIME("application/vnd.shx", ".shx", magic.Shx, shp)
 	dbf     = newMIME("application/x-dbf", ".dbf", magic.Dbf)
 	exe     = newMIME("application/vnd.microsoft.portable-executable", ".exe", magic.Exe)
 	elf     = newMIME("application/x-elf", "", magic.Elf, elfObj, elfExe, elfLib, elfDump)
@@ -243,6 +244,7 @@ var (
 	accdb   = newMIME("application/x-msaccess", ".accdb", magic.MsAccessAce)
 	zstd    = newMIME("application/zstd", ".zst", magic.Zstd)
 	cab     = newMIME("application/vnd.ms-cab-compressed", ".cab", magic.Cab)
+	cabIS   = newMIME("application/x-installshield", ".cab", magic.InstallShieldCab)
 	lzip    = newMIME("application/lzip", ".lz", magic.Lzip).alias("application/x-lzip")
 	torrent = newMIME("application/x-bittorrent", ".torrent", magic.Torrent)
 	cpio    = newMIME("application/x-cpio", ".cpio", magic.Cpio)

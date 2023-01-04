@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC.
+// Copyright 2022 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,35 +8,35 @@
 //
 // For product documentation, see: https://developers.google.com/google-apps/calendar/firstapp
 //
-// Creating a client
+// # Creating a client
 //
 // Usage example:
 //
-//   import "google.golang.org/api/calendar/v3"
-//   ...
-//   ctx := context.Background()
-//   calendarService, err := calendar.NewService(ctx)
+//	import "google.golang.org/api/calendar/v3"
+//	...
+//	ctx := context.Background()
+//	calendarService, err := calendar.NewService(ctx)
 //
 // In this example, Google Application Default Credentials are used for authentication.
 //
 // For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
-// Other authentication options
+// # Other authentication options
 //
 // By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
 //
-//   calendarService, err := calendar.NewService(ctx, option.WithScopes(calendar.CalendarSettingsReadonlyScope))
+//	calendarService, err := calendar.NewService(ctx, option.WithScopes(calendar.CalendarSettingsReadonlyScope))
 //
 // To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
 //
-//   calendarService, err := calendar.NewService(ctx, option.WithAPIKey("AIza..."))
+//	calendarService, err := calendar.NewService(ctx, option.WithAPIKey("AIza..."))
 //
 // To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
 //
-//   config := &oauth2.Config{...}
-//   // ...
-//   token, err := config.Exchange(ctx, ...)
-//   calendarService, err := calendar.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
+//	config := &oauth2.Config{...}
+//	// ...
+//	token, err := config.Exchange(ctx, ...)
+//	calendarService, err := calendar.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
 // See https://godoc.org/google.golang.org/api/option/ for details on options.
 package calendar // import "google.golang.org/api/calendar/v3"
@@ -54,6 +54,7 @@ import (
 	"strings"
 
 	googleapi "google.golang.org/api/googleapi"
+	internal "google.golang.org/api/internal"
 	gensupport "google.golang.org/api/internal/gensupport"
 	option "google.golang.org/api/option"
 	internaloption "google.golang.org/api/option/internaloption"
@@ -102,7 +103,7 @@ const (
 
 // NewService creates a new Service.
 func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, error) {
-	scopesOption := option.WithScopes(
+	scopesOption := internaloption.WithDefaultScopes(
 		"https://www.googleapis.com/auth/calendar",
 		"https://www.googleapis.com/auth/calendar.events",
 		"https://www.googleapis.com/auth/calendar.events.readonly",
@@ -879,9 +880,7 @@ type ConferenceData struct {
 	Parameters *ConferenceParameters `json:"parameters,omitempty"`
 
 	// Signature: The signature of the conference data.
-	// Generated on server side. Must be preserved while copying the
-	// conference data between events, otherwise the conference data will
-	// not be copied.
+	// Generated on server side.
 	// Unset for a conference with a failed create request.
 	// Optional for a conference with a pending create request.
 	Signature string `json:"signature,omitempty"`
@@ -1303,8 +1302,7 @@ type Event struct {
 	// (deprecated). Optional. The default is False.
 	AnyoneCanAddSelf bool `json:"anyoneCanAddSelf,omitempty"`
 
-	// Attachments: File attachments for the event. Currently only Google
-	// Drive attachments are supported.
+	// Attachments: File attachments for the event.
 	// In order to modify attachments the supportsAttachments request
 	// parameter should be set to true.
 	// There can be at most 25 attachments per event,
@@ -1361,6 +1359,7 @@ type Event struct {
 	// are:
 	// - "default" - A regular event or not further specified.
 	// - "outOfOffice" - An out-of-office event.
+	// - "focusTime" - A focus-time event.
 	EventType string `json:"eventType,omitempty"`
 
 	// ExtendedProperties: Extended properties of the event.
@@ -1398,10 +1397,13 @@ type Event struct {
 	// ICalUID: Event unique identifier as defined in RFC5545. It is used to
 	// uniquely identify events accross calendaring systems and must be
 	// supplied when importing events via the import method.
-	// Note that the icalUID and the id are not identical and only one of
+	// Note that the iCalUID and the id are not identical and only one of
 	// them should be supplied at event creation time. One difference in
 	// their semantics is that in recurring events, all occurrences of one
-	// event have different ids while they all share the same icalUIDs.
+	// event have different ids while they all share the same iCalUIDs. To
+	// retrieve an event using its iCalUID, call the events.list method
+	// using the iCalUID parameter. To retrieve an event using its id, call
+	// the events.get method.
 	ICalUID string `json:"iCalUID,omitempty"`
 
 	// Id: Opaque identifier of the event. When creating new single or
@@ -1828,7 +1830,8 @@ type EventAttachment struct {
 	// Required when adding an attachment.
 	FileUrl string `json:"fileUrl,omitempty"`
 
-	// IconLink: URL link to the attachment's icon. Read-only.
+	// IconLink: URL link to the attachment's icon. This field can only be
+	// modified for custom third-party attachments.
 	IconLink string `json:"iconLink,omitempty"`
 
 	// MimeType: Internet media type (MIME type) of the attachment.
@@ -1895,12 +1898,17 @@ type EventAttendee struct {
 
 	// ResponseStatus: The attendee's response status. Possible values are:
 	//
-	// - "needsAction" - The attendee has not responded to the invitation.
-	//
+	// - "needsAction" - The attendee has not responded to the invitation
+	// (recommended for new events).
 	// - "declined" - The attendee has declined the invitation.
 	// - "tentative" - The attendee has tentatively accepted the invitation.
 	//
-	// - "accepted" - The attendee has accepted the invitation.
+	// - "accepted" - The attendee has accepted the invitation.  Warning: If
+	// you add an event using the values declined, tentative, or accepted,
+	// attendees with the "Add invitations to my calendar" setting set to
+	// "When I respond to invitation in email" won't see an event on their
+	// calendar unless they choose to change their invitation response in
+	// the event invitation email.
 	ResponseStatus string `json:"responseStatus,omitempty"`
 
 	// Self: Whether this entry represents the calendar on which this copy
@@ -2404,11 +2412,11 @@ type AclDeleteCall struct {
 
 // Delete: Deletes an access control rule.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - ruleId: ACL rule identifier.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - ruleId: ACL rule identifier.
 func (r *AclService) Delete(calendarId string, ruleId string) *AclDeleteCall {
 	c := &AclDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -2443,7 +2451,7 @@ func (c *AclDeleteCall) Header() http.Header {
 
 func (c *AclDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2474,7 +2482,7 @@ func (c *AclDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -2521,11 +2529,11 @@ type AclGetCall struct {
 
 // Get: Returns an access control rule.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - ruleId: ACL rule identifier.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - ruleId: ACL rule identifier.
 func (r *AclService) Get(calendarId string, ruleId string) *AclGetCall {
 	c := &AclGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -2570,7 +2578,7 @@ func (c *AclGetCall) Header() http.Header {
 
 func (c *AclGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2609,17 +2617,17 @@ func (c *AclGetCall) Do(opts ...googleapi.CallOption) (*AclRule, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AclRule{
 		ServerResponse: googleapi.ServerResponse{
@@ -2679,10 +2687,10 @@ type AclInsertCall struct {
 
 // Insert: Creates an access control rule.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *AclService) Insert(calendarId string, aclrule *AclRule) *AclInsertCall {
 	c := &AclInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -2725,7 +2733,7 @@ func (c *AclInsertCall) Header() http.Header {
 
 func (c *AclInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2765,17 +2773,17 @@ func (c *AclInsertCall) Do(opts ...googleapi.CallOption) (*AclRule, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AclRule{
 		ServerResponse: googleapi.ServerResponse{
@@ -2835,10 +2843,10 @@ type AclListCall struct {
 
 // List: Returns the rules in the access control list for the calendar.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *AclService) List(calendarId string) *AclListCall {
 	c := &AclListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -2879,7 +2887,8 @@ func (c *AclListCall) ShowDeleted(showDeleted bool) *AclListCall {
 // response code and the client should clear its storage and perform a
 // full synchronization without any syncToken.
 // Learn more about incremental synchronization.
-//  The default is to return all entries.
+//
+//	The default is to return all entries.
 func (c *AclListCall) SyncToken(syncToken string) *AclListCall {
 	c.urlParams_.Set("syncToken", syncToken)
 	return c
@@ -2922,7 +2931,7 @@ func (c *AclListCall) Header() http.Header {
 
 func (c *AclListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2960,17 +2969,17 @@ func (c *AclListCall) Do(opts ...googleapi.CallOption) (*Acl, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Acl{
 		ServerResponse: googleapi.ServerResponse{
@@ -3068,11 +3077,11 @@ type AclPatchCall struct {
 // Patch: Updates an access control rule. This method supports patch
 // semantics.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - ruleId: ACL rule identifier.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - ruleId: ACL rule identifier.
 func (r *AclService) Patch(calendarId string, ruleId string, aclrule *AclRule) *AclPatchCall {
 	c := &AclPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -3117,7 +3126,7 @@ func (c *AclPatchCall) Header() http.Header {
 
 func (c *AclPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3158,17 +3167,17 @@ func (c *AclPatchCall) Do(opts ...googleapi.CallOption) (*AclRule, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AclRule{
 		ServerResponse: googleapi.ServerResponse{
@@ -3236,11 +3245,11 @@ type AclUpdateCall struct {
 
 // Update: Updates an access control rule.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - ruleId: ACL rule identifier.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - ruleId: ACL rule identifier.
 func (r *AclService) Update(calendarId string, ruleId string, aclrule *AclRule) *AclUpdateCall {
 	c := &AclUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -3285,7 +3294,7 @@ func (c *AclUpdateCall) Header() http.Header {
 
 func (c *AclUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3326,17 +3335,17 @@ func (c *AclUpdateCall) Do(opts ...googleapi.CallOption) (*AclRule, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &AclRule{
 		ServerResponse: googleapi.ServerResponse{
@@ -3403,10 +3412,10 @@ type AclWatchCall struct {
 
 // Watch: Watch for changes to ACL resources.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *AclService) Watch(calendarId string, channel *Channel) *AclWatchCall {
 	c := &AclWatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -3448,7 +3457,8 @@ func (c *AclWatchCall) ShowDeleted(showDeleted bool) *AclWatchCall {
 // response code and the client should clear its storage and perform a
 // full synchronization without any syncToken.
 // Learn more about incremental synchronization.
-//  The default is to return all entries.
+//
+//	The default is to return all entries.
 func (c *AclWatchCall) SyncToken(syncToken string) *AclWatchCall {
 	c.urlParams_.Set("syncToken", syncToken)
 	return c
@@ -3481,7 +3491,7 @@ func (c *AclWatchCall) Header() http.Header {
 
 func (c *AclWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3521,17 +3531,17 @@ func (c *AclWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -3609,10 +3619,10 @@ type CalendarListDeleteCall struct {
 
 // Delete: Removes a calendar from the user's calendar list.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *CalendarListService) Delete(calendarId string) *CalendarListDeleteCall {
 	c := &CalendarListDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -3646,7 +3656,7 @@ func (c *CalendarListDeleteCall) Header() http.Header {
 
 func (c *CalendarListDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3676,7 +3686,7 @@ func (c *CalendarListDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -3715,10 +3725,10 @@ type CalendarListGetCall struct {
 
 // Get: Returns a calendar from the user's calendar list.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *CalendarListService) Get(calendarId string) *CalendarListGetCall {
 	c := &CalendarListGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -3762,7 +3772,7 @@ func (c *CalendarListGetCall) Header() http.Header {
 
 func (c *CalendarListGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3800,17 +3810,17 @@ func (c *CalendarListGetCall) Do(opts ...googleapi.CallOption) (*CalendarListEnt
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CalendarListEntry{
 		ServerResponse: googleapi.ServerResponse{
@@ -3904,7 +3914,7 @@ func (c *CalendarListInsertCall) Header() http.Header {
 
 func (c *CalendarListInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3941,17 +3951,17 @@ func (c *CalendarListInsertCall) Do(opts ...googleapi.CallOption) (*CalendarList
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CalendarListEntry{
 		ServerResponse: googleapi.ServerResponse{
@@ -4018,11 +4028,14 @@ func (c *CalendarListListCall) MaxResults(maxResults int64) *CalendarListListCal
 // default is no restriction.
 //
 // Possible values:
-//   "freeBusyReader" - The user can read free/busy information.
-//   "owner" - The user can read and modify events and access control
+//
+//	"freeBusyReader" - The user can read free/busy information.
+//	"owner" - The user can read and modify events and access control
+//
 // lists.
-//   "reader" - The user can read events that are not private.
-//   "writer" - The user can read and modify events.
+//
+//	"reader" - The user can read events that are not private.
+//	"writer" - The user can read and modify events.
 func (c *CalendarListListCall) MinAccessRole(minAccessRole string) *CalendarListListCall {
 	c.urlParams_.Set("minAccessRole", minAccessRole)
 	return c
@@ -4064,7 +4077,8 @@ func (c *CalendarListListCall) ShowHidden(showHidden bool) *CalendarListListCall
 // response code and the client should clear its storage and perform a
 // full synchronization without any syncToken.
 // Learn more about incremental synchronization.
-//  The default is to return all entries.
+//
+//	The default is to return all entries.
 func (c *CalendarListListCall) SyncToken(syncToken string) *CalendarListListCall {
 	c.urlParams_.Set("syncToken", syncToken)
 	return c
@@ -4107,7 +4121,7 @@ func (c *CalendarListListCall) Header() http.Header {
 
 func (c *CalendarListListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4142,17 +4156,17 @@ func (c *CalendarListListCall) Do(opts ...googleapi.CallOption) (*CalendarList, 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CalendarList{
 		ServerResponse: googleapi.ServerResponse{
@@ -4263,10 +4277,10 @@ type CalendarListPatchCall struct {
 // Patch: Updates an existing calendar on the user's calendar list. This
 // method supports patch semantics.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *CalendarListService) Patch(calendarId string, calendarlistentry *CalendarListEntry) *CalendarListPatchCall {
 	c := &CalendarListPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -4311,7 +4325,7 @@ func (c *CalendarListPatchCall) Header() http.Header {
 
 func (c *CalendarListPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4351,17 +4365,17 @@ func (c *CalendarListPatchCall) Do(opts ...googleapi.CallOption) (*CalendarListE
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CalendarListEntry{
 		ServerResponse: googleapi.ServerResponse{
@@ -4421,10 +4435,10 @@ type CalendarListUpdateCall struct {
 
 // Update: Updates an existing calendar on the user's calendar list.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *CalendarListService) Update(calendarId string, calendarlistentry *CalendarListEntry) *CalendarListUpdateCall {
 	c := &CalendarListUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -4469,7 +4483,7 @@ func (c *CalendarListUpdateCall) Header() http.Header {
 
 func (c *CalendarListUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4509,17 +4523,17 @@ func (c *CalendarListUpdateCall) Do(opts ...googleapi.CallOption) (*CalendarList
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CalendarListEntry{
 		ServerResponse: googleapi.ServerResponse{
@@ -4596,11 +4610,14 @@ func (c *CalendarListWatchCall) MaxResults(maxResults int64) *CalendarListWatchC
 // default is no restriction.
 //
 // Possible values:
-//   "freeBusyReader" - The user can read free/busy information.
-//   "owner" - The user can read and modify events and access control
+//
+//	"freeBusyReader" - The user can read free/busy information.
+//	"owner" - The user can read and modify events and access control
+//
 // lists.
-//   "reader" - The user can read events that are not private.
-//   "writer" - The user can read and modify events.
+//
+//	"reader" - The user can read events that are not private.
+//	"writer" - The user can read and modify events.
 func (c *CalendarListWatchCall) MinAccessRole(minAccessRole string) *CalendarListWatchCall {
 	c.urlParams_.Set("minAccessRole", minAccessRole)
 	return c
@@ -4642,7 +4659,8 @@ func (c *CalendarListWatchCall) ShowHidden(showHidden bool) *CalendarListWatchCa
 // response code and the client should clear its storage and perform a
 // full synchronization without any syncToken.
 // Learn more about incremental synchronization.
-//  The default is to return all entries.
+//
+//	The default is to return all entries.
 func (c *CalendarListWatchCall) SyncToken(syncToken string) *CalendarListWatchCall {
 	c.urlParams_.Set("syncToken", syncToken)
 	return c
@@ -4675,7 +4693,7 @@ func (c *CalendarListWatchCall) Header() http.Header {
 
 func (c *CalendarListWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4712,17 +4730,17 @@ func (c *CalendarListWatchCall) Do(opts ...googleapi.CallOption) (*Channel, erro
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -4815,10 +4833,10 @@ type CalendarsClearCall struct {
 // Clear: Clears a primary calendar. This operation deletes all events
 // associated with the primary calendar of an account.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *CalendarsService) Clear(calendarId string) *CalendarsClearCall {
 	c := &CalendarsClearCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -4852,7 +4870,7 @@ func (c *CalendarsClearCall) Header() http.Header {
 
 func (c *CalendarsClearCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4882,7 +4900,7 @@ func (c *CalendarsClearCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -4921,10 +4939,10 @@ type CalendarsDeleteCall struct {
 // Delete: Deletes a secondary calendar. Use calendars.clear for
 // clearing all events on primary calendars.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *CalendarsService) Delete(calendarId string) *CalendarsDeleteCall {
 	c := &CalendarsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -4958,7 +4976,7 @@ func (c *CalendarsDeleteCall) Header() http.Header {
 
 func (c *CalendarsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4988,7 +5006,7 @@ func (c *CalendarsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -5027,10 +5045,10 @@ type CalendarsGetCall struct {
 
 // Get: Returns metadata for a calendar.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *CalendarsService) Get(calendarId string) *CalendarsGetCall {
 	c := &CalendarsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -5074,7 +5092,7 @@ func (c *CalendarsGetCall) Header() http.Header {
 
 func (c *CalendarsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5112,17 +5130,17 @@ func (c *CalendarsGetCall) Do(opts ...googleapi.CallOption) (*Calendar, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Calendar{
 		ServerResponse: googleapi.ServerResponse{
@@ -5206,7 +5224,7 @@ func (c *CalendarsInsertCall) Header() http.Header {
 
 func (c *CalendarsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5243,17 +5261,17 @@ func (c *CalendarsInsertCall) Do(opts ...googleapi.CallOption) (*Calendar, error
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Calendar{
 		ServerResponse: googleapi.ServerResponse{
@@ -5298,10 +5316,10 @@ type CalendarsPatchCall struct {
 // Patch: Updates metadata for a calendar. This method supports patch
 // semantics.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *CalendarsService) Patch(calendarId string, calendar *Calendar) *CalendarsPatchCall {
 	c := &CalendarsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -5336,7 +5354,7 @@ func (c *CalendarsPatchCall) Header() http.Header {
 
 func (c *CalendarsPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5376,17 +5394,17 @@ func (c *CalendarsPatchCall) Do(opts ...googleapi.CallOption) (*Calendar, error)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Calendar{
 		ServerResponse: googleapi.ServerResponse{
@@ -5441,10 +5459,10 @@ type CalendarsUpdateCall struct {
 
 // Update: Updates metadata for a calendar.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *CalendarsService) Update(calendarId string, calendar *Calendar) *CalendarsUpdateCall {
 	c := &CalendarsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -5479,7 +5497,7 @@ func (c *CalendarsUpdateCall) Header() http.Header {
 
 func (c *CalendarsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5519,17 +5537,17 @@ func (c *CalendarsUpdateCall) Do(opts ...googleapi.CallOption) (*Calendar, error
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Calendar{
 		ServerResponse: googleapi.ServerResponse{
@@ -5615,7 +5633,7 @@ func (c *ChannelsStopCall) Header() http.Header {
 
 func (c *ChannelsStopCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5647,7 +5665,7 @@ func (c *ChannelsStopCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -5723,7 +5741,7 @@ func (c *ColorsGetCall) Header() http.Header {
 
 func (c *ColorsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5758,17 +5776,17 @@ func (c *ColorsGetCall) Do(opts ...googleapi.CallOption) (*Colors, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Colors{
 		ServerResponse: googleapi.ServerResponse{
@@ -5810,11 +5828,11 @@ type EventsDeleteCall struct {
 
 // Delete: Deletes an event.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - eventId: Event identifier.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - eventId: Event identifier.
 func (r *EventsService) Delete(calendarId string, eventId string) *EventsDeleteCall {
 	c := &EventsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -5837,10 +5855,14 @@ func (c *EventsDeleteCall) SendNotifications(sendNotifications bool) *EventsDele
 // should receive notifications about the deletion of the event.
 //
 // Possible values:
-//   "all" - Notifications are sent to all guests.
-//   "externalOnly" - Notifications are sent to non-Google Calendar
+//
+//	"all" - Notifications are sent to all guests.
+//	"externalOnly" - Notifications are sent to non-Google Calendar
+//
 // guests only.
-//   "none" - No notifications are sent. For calendar migration tasks,
+//
+//	"none" - No notifications are sent. For calendar migration tasks,
+//
 // consider using the Events.import method instead.
 func (c *EventsDeleteCall) SendUpdates(sendUpdates string) *EventsDeleteCall {
 	c.urlParams_.Set("sendUpdates", sendUpdates)
@@ -5874,7 +5896,7 @@ func (c *EventsDeleteCall) Header() http.Header {
 
 func (c *EventsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5905,7 +5927,7 @@ func (c *EventsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -5971,13 +5993,15 @@ type EventsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Returns an event.
+// Get: Returns an event based on its Google Calendar ID. To retrieve an
+// event using its iCalendar ID, call the events.list method using the
+// iCalUID parameter.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - eventId: Event identifier.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - eventId: Event identifier.
 func (r *EventsService) Get(calendarId string, eventId string) *EventsGetCall {
 	c := &EventsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -6048,7 +6072,7 @@ func (c *EventsGetCall) Header() http.Header {
 
 func (c *EventsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6087,17 +6111,17 @@ func (c *EventsGetCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Event{
 		ServerResponse: googleapi.ServerResponse{
@@ -6111,7 +6135,7 @@ func (c *EventsGetCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Returns an event.",
+	//   "description": "Returns an event based on its Google Calendar ID. To retrieve an event using its iCalendar ID, call the events.list method using the iCalUID parameter.",
 	//   "httpMethod": "GET",
 	//   "id": "calendar.events.get",
 	//   "parameterOrder": [
@@ -6177,10 +6201,10 @@ type EventsImportCall struct {
 // Import: Imports an event. This operation is used to add a private
 // copy of an existing event to a calendar.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *EventsService) Import(calendarId string, event *Event) *EventsImportCall {
 	c := &EventsImportCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -6235,7 +6259,7 @@ func (c *EventsImportCall) Header() http.Header {
 
 func (c *EventsImportCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6275,17 +6299,17 @@ func (c *EventsImportCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Event{
 		ServerResponse: googleapi.ServerResponse{
@@ -6354,10 +6378,10 @@ type EventsInsertCall struct {
 
 // Insert: Creates an event.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *EventsService) Insert(calendarId string, event *Event) *EventsInsertCall {
 	c := &EventsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -6402,11 +6426,18 @@ func (c *EventsInsertCall) SendNotifications(sendNotifications bool) *EventsInse
 // some emails might still be sent. The default is false.
 //
 // Possible values:
-//   "all" - Notifications are sent to all guests.
-//   "externalOnly" - Notifications are sent to non-Google Calendar
+//
+//	"all" - Notifications are sent to all guests.
+//	"externalOnly" - Notifications are sent to non-Google Calendar
+//
 // guests only.
-//   "none" - No notifications are sent. For calendar migration tasks,
-// consider using the Events.import method instead.
+//
+//	"none" - No notifications are sent. Warning: Using the value none
+//
+// can have significant adverse effects, including events not syncing to
+// external calendars or events being lost altogether for some users.
+// For calendar migration tasks, consider using the events.import method
+// instead.
 func (c *EventsInsertCall) SendUpdates(sendUpdates string) *EventsInsertCall {
 	c.urlParams_.Set("sendUpdates", sendUpdates)
 	return c
@@ -6447,7 +6478,7 @@ func (c *EventsInsertCall) Header() http.Header {
 
 func (c *EventsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6487,17 +6518,17 @@ func (c *EventsInsertCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Event{
 		ServerResponse: googleapi.ServerResponse{
@@ -6554,7 +6585,7 @@ func (c *EventsInsertCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 	//       "enumDescriptions": [
 	//         "Notifications are sent to all guests.",
 	//         "Notifications are sent to non-Google Calendar guests only.",
-	//         "No notifications are sent. For calendar migration tasks, consider using the Events.import method instead."
+	//         "No notifications are sent. Warning: Using the value none can have significant adverse effects, including events not syncing to external calendars or events being lost altogether for some users. For calendar migration tasks, consider using the events.import method instead."
 	//       ],
 	//       "location": "query",
 	//       "type": "string"
@@ -6594,11 +6625,11 @@ type EventsInstancesCall struct {
 
 // Instances: Returns instances of the specified recurring event.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - eventId: Recurring event identifier.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - eventId: Recurring event identifier.
 func (r *EventsService) Instances(calendarId string, eventId string) *EventsInstancesCall {
 	c := &EventsInstancesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -6718,7 +6749,7 @@ func (c *EventsInstancesCall) Header() http.Header {
 
 func (c *EventsInstancesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6757,17 +6788,17 @@ func (c *EventsInstancesCall) Do(opts ...googleapi.CallOption) (*Events, error) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Events{
 		ServerResponse: googleapi.ServerResponse{
@@ -6902,10 +6933,10 @@ type EventsListCall struct {
 
 // List: Returns events on the specified calendar.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *EventsService) List(calendarId string) *EventsListCall {
 	c := &EventsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -6922,8 +6953,9 @@ func (c *EventsListCall) AlwaysIncludeEmail(alwaysIncludeEmail bool) *EventsList
 	return c
 }
 
-// ICalUID sets the optional parameter "iCalUID": Specifies event ID in
-// the iCalendar format to be included in the response.
+// ICalUID sets the optional parameter "iCalUID": Specifies an event ID
+// in the iCalendar format to be provided in the response.  Use this if
+// you want to search for an event by its iCalendar ID.
 func (c *EventsListCall) ICalUID(iCalUID string) *EventsListCall {
 	c.urlParams_.Set("iCalUID", iCalUID)
 	return c
@@ -6955,10 +6987,13 @@ func (c *EventsListCall) MaxResults(maxResults int64) *EventsListCall {
 // order.
 //
 // Possible values:
-//   "startTime" - Order by the start date/time (ascending). This is
+//
+//	"startTime" - Order by the start date/time (ascending). This is
+//
 // only available when querying single events (i.e. the parameter
 // singleEvents is True)
-//   "updated" - Order by last modification time (ascending).
+//
+//	"updated" - Order by last modification time (ascending).
 func (c *EventsListCall) OrderBy(orderBy string) *EventsListCall {
 	c.urlParams_.Set("orderBy", orderBy)
 	return c
@@ -6982,8 +7017,8 @@ func (c *EventsListCall) PrivateExtendedProperty(privateExtendedProperty ...stri
 }
 
 // Q sets the optional parameter "q": Free text search terms to find
-// events that match these terms in any field, except for extended
-// properties.
+// events that match these terms in the following fields: summary,
+// description, location, attendee's displayName, attendee's email.
 func (c *EventsListCall) Q(q string) *EventsListCall {
 	c.urlParams_.Set("q", q)
 	return c
@@ -7049,7 +7084,8 @@ func (c *EventsListCall) SingleEvents(singleEvents bool) *EventsListCall {
 // 410 GONE response code and the client should clear its storage and
 // perform a full synchronization without any syncToken.
 // Learn more about incremental synchronization.
-//  The default is to return all entries.
+//
+//	The default is to return all entries.
 func (c *EventsListCall) SyncToken(syncToken string) *EventsListCall {
 	c.urlParams_.Set("syncToken", syncToken)
 	return c
@@ -7131,7 +7167,7 @@ func (c *EventsListCall) Header() http.Header {
 
 func (c *EventsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7169,17 +7205,17 @@ func (c *EventsListCall) Do(opts ...googleapi.CallOption) (*Events, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Events{
 		ServerResponse: googleapi.ServerResponse{
@@ -7212,7 +7248,7 @@ func (c *EventsListCall) Do(opts ...googleapi.CallOption) (*Events, error) {
 	//       "type": "string"
 	//     },
 	//     "iCalUID": {
-	//       "description": "Specifies event ID in the iCalendar format to be included in the response. Optional.",
+	//       "description": "Specifies an event ID in the iCalendar format to be provided in the response. Optional. Use this if you want to search for an event by its iCalendar ID.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -7256,7 +7292,7 @@ func (c *EventsListCall) Do(opts ...googleapi.CallOption) (*Events, error) {
 	//       "type": "string"
 	//     },
 	//     "q": {
-	//       "description": "Free text search terms to find events that match these terms in any field, except for extended properties. Optional.",
+	//       "description": "Free text search terms to find events that match these terms in the following fields: summary, description, location, attendee's displayName, attendee's email. Optional.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -7360,11 +7396,11 @@ type EventsMoveCall struct {
 // Move: Moves an event to another calendar, i.e. changes an event's
 // organizer.
 //
-// - calendarId: Calendar identifier of the source calendar where the
-//   event currently is on.
-// - destination: Calendar identifier of the target calendar where the
-//   event is to be moved to.
-// - eventId: Event identifier.
+//   - calendarId: Calendar identifier of the source calendar where the
+//     event currently is on.
+//   - destination: Calendar identifier of the target calendar where the
+//     event is to be moved to.
+//   - eventId: Event identifier.
 func (r *EventsService) Move(calendarId string, eventId string, destinationid string) *EventsMoveCall {
 	c := &EventsMoveCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -7389,10 +7425,14 @@ func (c *EventsMoveCall) SendNotifications(sendNotifications bool) *EventsMoveCa
 // organizer.
 //
 // Possible values:
-//   "all" - Notifications are sent to all guests.
-//   "externalOnly" - Notifications are sent to non-Google Calendar
+//
+//	"all" - Notifications are sent to all guests.
+//	"externalOnly" - Notifications are sent to non-Google Calendar
+//
 // guests only.
-//   "none" - No notifications are sent. For calendar migration tasks,
+//
+//	"none" - No notifications are sent. For calendar migration tasks,
+//
 // consider using the Events.import method instead.
 func (c *EventsMoveCall) SendUpdates(sendUpdates string) *EventsMoveCall {
 	c.urlParams_.Set("sendUpdates", sendUpdates)
@@ -7426,7 +7466,7 @@ func (c *EventsMoveCall) Header() http.Header {
 
 func (c *EventsMoveCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7462,17 +7502,17 @@ func (c *EventsMoveCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Event{
 		ServerResponse: googleapi.ServerResponse{
@@ -7560,11 +7600,11 @@ type EventsPatchCall struct {
 
 // Patch: Updates an event. This method supports patch semantics.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - eventId: Event identifier.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - eventId: Event identifier.
 func (r *EventsService) Patch(calendarId string, eventId string, event *Event) *EventsPatchCall {
 	c := &EventsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -7620,10 +7660,14 @@ func (c *EventsPatchCall) SendNotifications(sendNotifications bool) *EventsPatch
 // title changes, etc.).
 //
 // Possible values:
-//   "all" - Notifications are sent to all guests.
-//   "externalOnly" - Notifications are sent to non-Google Calendar
+//
+//	"all" - Notifications are sent to all guests.
+//	"externalOnly" - Notifications are sent to non-Google Calendar
+//
 // guests only.
-//   "none" - No notifications are sent. For calendar migration tasks,
+//
+//	"none" - No notifications are sent. For calendar migration tasks,
+//
 // consider using the Events.import method instead.
 func (c *EventsPatchCall) SendUpdates(sendUpdates string) *EventsPatchCall {
 	c.urlParams_.Set("sendUpdates", sendUpdates)
@@ -7665,7 +7709,7 @@ func (c *EventsPatchCall) Header() http.Header {
 
 func (c *EventsPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7706,17 +7750,17 @@ func (c *EventsPatchCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Event{
 		ServerResponse: googleapi.ServerResponse{
@@ -7823,11 +7867,11 @@ type EventsQuickAddCall struct {
 
 // QuickAdd: Creates an event based on a simple text string.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - text: The text describing the event to be created.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - text: The text describing the event to be created.
 func (r *EventsService) QuickAdd(calendarId string, text string) *EventsQuickAddCall {
 	c := &EventsQuickAddCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -7850,10 +7894,14 @@ func (c *EventsQuickAddCall) SendNotifications(sendNotifications bool) *EventsQu
 // should receive notifications about the creation of the new event.
 //
 // Possible values:
-//   "all" - Notifications are sent to all guests.
-//   "externalOnly" - Notifications are sent to non-Google Calendar
+//
+//	"all" - Notifications are sent to all guests.
+//	"externalOnly" - Notifications are sent to non-Google Calendar
+//
 // guests only.
-//   "none" - No notifications are sent. For calendar migration tasks,
+//
+//	"none" - No notifications are sent. For calendar migration tasks,
+//
 // consider using the Events.import method instead.
 func (c *EventsQuickAddCall) SendUpdates(sendUpdates string) *EventsQuickAddCall {
 	c.urlParams_.Set("sendUpdates", sendUpdates)
@@ -7887,7 +7935,7 @@ func (c *EventsQuickAddCall) Header() http.Header {
 
 func (c *EventsQuickAddCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7922,17 +7970,17 @@ func (c *EventsQuickAddCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Event{
 		ServerResponse: googleapi.ServerResponse{
@@ -8013,11 +8061,11 @@ type EventsUpdateCall struct {
 
 // Update: Updates an event.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
-// - eventId: Event identifier.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
+//   - eventId: Event identifier.
 func (r *EventsService) Update(calendarId string, eventId string, event *Event) *EventsUpdateCall {
 	c := &EventsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -8073,10 +8121,14 @@ func (c *EventsUpdateCall) SendNotifications(sendNotifications bool) *EventsUpda
 // title changes, etc.).
 //
 // Possible values:
-//   "all" - Notifications are sent to all guests.
-//   "externalOnly" - Notifications are sent to non-Google Calendar
+//
+//	"all" - Notifications are sent to all guests.
+//	"externalOnly" - Notifications are sent to non-Google Calendar
+//
 // guests only.
-//   "none" - No notifications are sent. For calendar migration tasks,
+//
+//	"none" - No notifications are sent. For calendar migration tasks,
+//
 // consider using the Events.import method instead.
 func (c *EventsUpdateCall) SendUpdates(sendUpdates string) *EventsUpdateCall {
 	c.urlParams_.Set("sendUpdates", sendUpdates)
@@ -8118,7 +8170,7 @@ func (c *EventsUpdateCall) Header() http.Header {
 
 func (c *EventsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8159,17 +8211,17 @@ func (c *EventsUpdateCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Event{
 		ServerResponse: googleapi.ServerResponse{
@@ -8277,10 +8329,10 @@ type EventsWatchCall struct {
 
 // Watch: Watch for changes to Events resources.
 //
-// - calendarId: Calendar identifier. To retrieve calendar IDs call the
-//   calendarList.list method. If you want to access the primary
-//   calendar of the currently logged in user, use the "primary"
-//   keyword.
+//   - calendarId: Calendar identifier. To retrieve calendar IDs call the
+//     calendarList.list method. If you want to access the primary
+//     calendar of the currently logged in user, use the "primary"
+//     keyword.
 func (r *EventsService) Watch(calendarId string, channel *Channel) *EventsWatchCall {
 	c := &EventsWatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.calendarId = calendarId
@@ -8298,8 +8350,9 @@ func (c *EventsWatchCall) AlwaysIncludeEmail(alwaysIncludeEmail bool) *EventsWat
 	return c
 }
 
-// ICalUID sets the optional parameter "iCalUID": Specifies event ID in
-// the iCalendar format to be included in the response.
+// ICalUID sets the optional parameter "iCalUID": Specifies an event ID
+// in the iCalendar format to be provided in the response.  Use this if
+// you want to search for an event by its iCalendar ID.
 func (c *EventsWatchCall) ICalUID(iCalUID string) *EventsWatchCall {
 	c.urlParams_.Set("iCalUID", iCalUID)
 	return c
@@ -8331,10 +8384,13 @@ func (c *EventsWatchCall) MaxResults(maxResults int64) *EventsWatchCall {
 // order.
 //
 // Possible values:
-//   "startTime" - Order by the start date/time (ascending). This is
+//
+//	"startTime" - Order by the start date/time (ascending). This is
+//
 // only available when querying single events (i.e. the parameter
 // singleEvents is True)
-//   "updated" - Order by last modification time (ascending).
+//
+//	"updated" - Order by last modification time (ascending).
 func (c *EventsWatchCall) OrderBy(orderBy string) *EventsWatchCall {
 	c.urlParams_.Set("orderBy", orderBy)
 	return c
@@ -8358,8 +8414,8 @@ func (c *EventsWatchCall) PrivateExtendedProperty(privateExtendedProperty ...str
 }
 
 // Q sets the optional parameter "q": Free text search terms to find
-// events that match these terms in any field, except for extended
-// properties.
+// events that match these terms in the following fields: summary,
+// description, location, attendee's displayName, attendee's email.
 func (c *EventsWatchCall) Q(q string) *EventsWatchCall {
 	c.urlParams_.Set("q", q)
 	return c
@@ -8425,7 +8481,8 @@ func (c *EventsWatchCall) SingleEvents(singleEvents bool) *EventsWatchCall {
 // 410 GONE response code and the client should clear its storage and
 // perform a full synchronization without any syncToken.
 // Learn more about incremental synchronization.
-//  The default is to return all entries.
+//
+//	The default is to return all entries.
 func (c *EventsWatchCall) SyncToken(syncToken string) *EventsWatchCall {
 	c.urlParams_.Set("syncToken", syncToken)
 	return c
@@ -8497,7 +8554,7 @@ func (c *EventsWatchCall) Header() http.Header {
 
 func (c *EventsWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8537,17 +8594,17 @@ func (c *EventsWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -8580,7 +8637,7 @@ func (c *EventsWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	//       "type": "string"
 	//     },
 	//     "iCalUID": {
-	//       "description": "Specifies event ID in the iCalendar format to be included in the response. Optional.",
+	//       "description": "Specifies an event ID in the iCalendar format to be provided in the response. Optional. Use this if you want to search for an event by its iCalendar ID.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -8624,7 +8681,7 @@ func (c *EventsWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	//       "type": "string"
 	//     },
 	//     "q": {
-	//       "description": "Free text search terms to find events that match these terms in any field, except for extended properties. Optional.",
+	//       "description": "Free text search terms to find events that match these terms in the following fields: summary, description, location, attendee's displayName, attendee's email. Optional.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -8741,7 +8798,7 @@ func (c *FreebusyQueryCall) Header() http.Header {
 
 func (c *FreebusyQueryCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8778,17 +8835,17 @@ func (c *FreebusyQueryCall) Do(opts ...googleapi.CallOption) (*FreeBusyResponse,
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &FreeBusyResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -8877,7 +8934,7 @@ func (c *SettingsGetCall) Header() http.Header {
 
 func (c *SettingsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8915,17 +8972,17 @@ func (c *SettingsGetCall) Do(opts ...googleapi.CallOption) (*Setting, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Setting{
 		ServerResponse: googleapi.ServerResponse{
@@ -9005,7 +9062,8 @@ func (c *SettingsListCall) PageToken(pageToken string) *SettingsListCall {
 // response code and the client should clear its storage and perform a
 // full synchronization without any syncToken.
 // Learn more about incremental synchronization.
-//  The default is to return all entries.
+//
+//	The default is to return all entries.
 func (c *SettingsListCall) SyncToken(syncToken string) *SettingsListCall {
 	c.urlParams_.Set("syncToken", syncToken)
 	return c
@@ -9048,7 +9106,7 @@ func (c *SettingsListCall) Header() http.Header {
 
 func (c *SettingsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -9083,17 +9141,17 @@ func (c *SettingsListCall) Do(opts ...googleapi.CallOption) (*Settings, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Settings{
 		ServerResponse: googleapi.ServerResponse{
@@ -9204,7 +9262,8 @@ func (c *SettingsWatchCall) PageToken(pageToken string) *SettingsWatchCall {
 // response code and the client should clear its storage and perform a
 // full synchronization without any syncToken.
 // Learn more about incremental synchronization.
-//  The default is to return all entries.
+//
+//	The default is to return all entries.
 func (c *SettingsWatchCall) SyncToken(syncToken string) *SettingsWatchCall {
 	c.urlParams_.Set("syncToken", syncToken)
 	return c
@@ -9237,7 +9296,7 @@ func (c *SettingsWatchCall) Header() http.Header {
 
 func (c *SettingsWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -9274,17 +9333,17 @@ func (c *SettingsWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{

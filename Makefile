@@ -14,7 +14,7 @@
 
 SHELL=/bin/bash -o pipefail
 
-GO_PKG   := go.appscode.dev
+GO_PKG   := go.bytebuilders.dev
 REPO     := $(notdir $(shell pwd))
 BIN      := offline-license-server
 COMPRESS ?= no

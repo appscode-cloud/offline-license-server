@@ -20,7 +20,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/appscodelabs/offline-license-server/pkg/server"
+	"go.bytebuilders.dev/offline-license-server/pkg/server"
+
 	"github.com/spf13/cobra"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"gomodules.xyz/mailer"

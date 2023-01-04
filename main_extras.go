@@ -23,7 +23,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/appscodelabs/offline-license-server/pkg/server"
+	"go.bytebuilders.dev/offline-license-server/pkg/server"
+
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"

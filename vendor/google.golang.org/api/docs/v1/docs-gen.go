@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC.
+// Copyright 2022 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,35 +8,35 @@
 //
 // For product documentation, see: https://developers.google.com/docs/
 //
-// Creating a client
+// # Creating a client
 //
 // Usage example:
 //
-//   import "google.golang.org/api/docs/v1"
-//   ...
-//   ctx := context.Background()
-//   docsService, err := docs.NewService(ctx)
+//	import "google.golang.org/api/docs/v1"
+//	...
+//	ctx := context.Background()
+//	docsService, err := docs.NewService(ctx)
 //
 // In this example, Google Application Default Credentials are used for authentication.
 //
 // For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
-// Other authentication options
+// # Other authentication options
 //
 // By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
 //
-//   docsService, err := docs.NewService(ctx, option.WithScopes(docs.DriveReadonlyScope))
+//	docsService, err := docs.NewService(ctx, option.WithScopes(docs.DriveReadonlyScope))
 //
 // To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
 //
-//   docsService, err := docs.NewService(ctx, option.WithAPIKey("AIza..."))
+//	docsService, err := docs.NewService(ctx, option.WithAPIKey("AIza..."))
 //
 // To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
 //
-//   config := &oauth2.Config{...}
-//   // ...
-//   token, err := config.Exchange(ctx, ...)
-//   docsService, err := docs.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
+//	config := &oauth2.Config{...}
+//	// ...
+//	token, err := config.Exchange(ctx, ...)
+//	docsService, err := docs.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
 // See https://godoc.org/google.golang.org/api/option/ for details on options.
 package docs // import "google.golang.org/api/docs/v1"
@@ -54,6 +54,7 @@ import (
 	"strings"
 
 	googleapi "google.golang.org/api/googleapi"
+	internal "google.golang.org/api/internal"
 	gensupport "google.golang.org/api/internal/gensupport"
 	option "google.golang.org/api/option"
 	internaloption "google.golang.org/api/option/internaloption"
@@ -102,7 +103,7 @@ const (
 
 // NewService creates a new Service.
 func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, error) {
-	scopesOption := option.WithScopes(
+	scopesOption := internaloption.WithDefaultScopes(
 		"https://www.googleapis.com/auth/documents",
 		"https://www.googleapis.com/auth/documents.readonly",
 		"https://www.googleapis.com/auth/drive",
@@ -165,7 +166,7 @@ type DocumentsService struct {
 	s *Service
 }
 
-// AutoText: A ParagraphElement representing a spot in the text that is
+// AutoText: A ParagraphElement representing a spot in the text that's
 // dynamically replaced with content that can change over time, like a
 // page number.
 type AutoText struct {
@@ -174,7 +175,7 @@ type AutoText struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. An AutoText may
-	// have multiple insertion IDs if it is a nested suggested change. If
+	// have multiple insertion IDs if it's a nested suggested change. If
 	// empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -354,7 +355,7 @@ func (s *BatchUpdateDocumentResponse) MarshalJSON() ([]byte, error) {
 }
 
 // Body: The document body. The body typically contains the full
-// document contents except for headers, footers and footnotes.
+// document contents except for headers, footers, and footnotes.
 type Body struct {
 	// Content: The contents of the body. The indexes for the body's content
 	// begin at zero.
@@ -391,7 +392,7 @@ type Bullet struct {
 	// NestingLevel: The nesting level of this paragraph in the list.
 	NestingLevel int64 `json:"nestingLevel,omitempty"`
 
-	// TextStyle: The paragraph specific text style applied to this bullet.
+	// TextStyle: The paragraph-specific text style applied to this bullet.
 	TextStyle *TextStyle `json:"textStyle,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "ListId") to
@@ -419,7 +420,7 @@ func (s *Bullet) MarshalJSON() ([]byte, error) {
 
 // BulletSuggestionState: A mask that indicates which of the fields on
 // the base Bullet have been changed in this suggestion. For any field
-// set to true, there is a new suggested value.
+// set to true, there's a new suggested value.
 type BulletSuggestionState struct {
 	// ListIdSuggested: Indicates if there was a suggested change to the
 	// list_id.
@@ -493,7 +494,7 @@ type ColumnBreak struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. A ColumnBreak may
-	// have multiple insertion IDs if it is a nested suggested change. If
+	// have multiple insertion IDs if it's a nested suggested change. If
 	// empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -504,7 +505,7 @@ type ColumnBreak struct {
 	// TextStyle: The text style of this ColumnBreak. Similar to text
 	// content, like text runs and footnote references, the text style of a
 	// column break can affect content layout as well as the styling of text
-	// inserted adjacent to it.
+	// inserted next to it.
 	TextStyle *TextStyle `json:"textStyle,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
@@ -533,7 +534,7 @@ func (s *ColumnBreak) MarshalJSON() ([]byte, error) {
 }
 
 // CreateFooterRequest: Creates a Footer. The new footer is applied to
-// the SectionStyle at the location of the SectionBreak if specificed,
+// the SectionStyle at the location of the SectionBreak if specified,
 // otherwise it is applied to the DocumentStyle. If a footer of the
 // specified type already exists, a 400 bad request error is returned.
 type CreateFooterRequest struct {
@@ -677,7 +678,7 @@ func (s *CreateFootnoteResponse) MarshalJSON() ([]byte, error) {
 }
 
 // CreateHeaderRequest: Creates a Header. The new header is applied to
-// the SectionStyle at the location of the SectionBreak if specificed,
+// the SectionStyle at the location of the SectionBreak if specified,
 // otherwise it is applied to the DocumentStyle. If a header of the
 // specified type already exists, a 400 bad request error is returned.
 type CreateHeaderRequest struct {
@@ -899,13 +900,13 @@ func (s *CreateParagraphBulletsRequest) MarshalJSON() ([]byte, error) {
 }
 
 // CropProperties: The crop properties of an image. The crop rectangle
-// is represented using fractional offsets from the original content's
-// four edges. - If the offset is in the interval (0, 1), the
-// corresponding edge of crop rectangle is positioned inside of the
-// image's original bounding rectangle. - If the offset is negative or
-// greater than 1, the corresponding edge of crop rectangle is
-// positioned outside of the image's original bounding rectangle. - If
-// all offsets and rotation angle are 0, the image is not cropped.
+// is represented using fractional offsets from the original content's 4
+// edges. - If the offset is in the interval (0, 1), the corresponding
+// edge of crop rectangle is positioned inside of the image's original
+// bounding rectangle. - If the offset is negative or greater than 1,
+// the corresponding edge of crop rectangle is positioned outside of the
+// image's original bounding rectangle. - If all offsets and rotation
+// angle are 0, the image is not cropped.
 type CropProperties struct {
 	// Angle: The clockwise rotation angle of the crop rectangle around its
 	// center, in radians. Rotation is applied after the offsets.
@@ -978,8 +979,7 @@ func (s *CropProperties) UnmarshalJSON(data []byte) error {
 
 // CropPropertiesSuggestionState: A mask that indicates which of the
 // fields on the base CropProperties have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type CropPropertiesSuggestionState struct {
 	// AngleSuggested: Indicates if there was a suggested change to angle.
 	AngleSuggested bool `json:"angleSuggested,omitempty"`
@@ -1382,14 +1382,14 @@ type Document struct {
 	// in update requests to specify which revision of a document to apply
 	// updates to and how the request should behave if the document has been
 	// edited since that revision. Only populated if the user has edit
-	// access to the document. The format of the revision ID may change over
-	// time, so it should be treated opaquely. A returned revision ID is
-	// only guaranteed to be valid for 24 hours after it has been returned
-	// and cannot be shared across users. If the revision ID is unchanged
-	// between calls, then the document has not changed. Conversely, a
-	// changed ID (for the same document and user) usually means the
-	// document has been updated; however, a changed ID can also be due to
-	// internal factors such as ID format changes.
+	// access to the document. The revision ID is not a sequential number
+	// but an opaque string. The format of the revision ID might change over
+	// time. A returned revision ID is only guaranteed to be valid for 24
+	// hours after it has been returned and cannot be shared across users.
+	// If the revision ID is unchanged between calls, then the document has
+	// not changed. Conversely, a changed ID (for the same document and
+	// user) usually means the document has been updated. However, a changed
+	// ID can also be due to internal factors such as ID format changes.
 	RevisionId string `json:"revisionId,omitempty"`
 
 	// SuggestedDocumentStyleChanges: Output only. The suggested changes to
@@ -1460,40 +1460,38 @@ type DocumentStyle struct {
 	// transparent background color.
 	Background *Background `json:"background,omitempty"`
 
-	// DefaultFooterId: The ID of the default footer. If not set, there is
-	// no default footer. This property is read-only.
+	// DefaultFooterId: The ID of the default footer. If not set, there's no
+	// default footer. This property is read-only.
 	DefaultFooterId string `json:"defaultFooterId,omitempty"`
 
-	// DefaultHeaderId: The ID of the default header. If not set, there is
-	// no default header. This property is read-only.
+	// DefaultHeaderId: The ID of the default header. If not set, there's no
+	// default header. This property is read-only.
 	DefaultHeaderId string `json:"defaultHeaderId,omitempty"`
 
 	// EvenPageFooterId: The ID of the footer used only for even pages. The
 	// value of use_even_page_header_footer determines whether to use the
 	// default_footer_id or this value for the footer on even pages. If not
-	// set, there is no even page footer. This property is read-only.
+	// set, there's no even page footer. This property is read-only.
 	EvenPageFooterId string `json:"evenPageFooterId,omitempty"`
 
 	// EvenPageHeaderId: The ID of the header used only for even pages. The
 	// value of use_even_page_header_footer determines whether to use the
 	// default_header_id or this value for the header on even pages. If not
-	// set, there is no even page header. This property is read-only.
+	// set, there's no even page header. This property is read-only.
 	EvenPageHeaderId string `json:"evenPageHeaderId,omitempty"`
 
 	// FirstPageFooterId: The ID of the footer used only for the first page.
 	// If not set then a unique footer for the first page does not exist.
 	// The value of use_first_page_header_footer determines whether to use
 	// the default_footer_id or this value for the footer on the first page.
-	// If not set, there is no first page footer. This property is
-	// read-only.
+	// If not set, there's no first page footer. This property is read-only.
 	FirstPageFooterId string `json:"firstPageFooterId,omitempty"`
 
 	// FirstPageHeaderId: The ID of the header used only for the first page.
 	// If not set then a unique header for the first page does not exist.
 	// The value of use_first_page_header_footer determines whether to use
 	// the default_header_id or this value for the header on the first page.
-	// If not set, there is no first page header. This property is
-	// read-only.
+	// If not set, there's no first page header. This property is read-only.
 	FirstPageHeaderId string `json:"firstPageHeaderId,omitempty"`
 
 	// MarginBottom: The bottom page margin. Updating the bottom page margin
@@ -1570,8 +1568,7 @@ func (s *DocumentStyle) MarshalJSON() ([]byte, error) {
 
 // DocumentStyleSuggestionState: A mask that indicates which of the
 // fields on the base DocumentStyle have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type DocumentStyleSuggestionState struct {
 	// BackgroundSuggestionState: A mask that indicates which of the fields
 	// in background have been changed in this suggestion.
@@ -1670,13 +1667,16 @@ func (s *DocumentStyleSuggestionState) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// EmbeddedDrawingProperties: The properties of an embedded drawing.
+// EmbeddedDrawingProperties: The properties of an embedded drawing and
+// used to differentiate the object type. An embedded drawing is one
+// that's created and edited within a document. Note that extensive
+// details are not supported.
 type EmbeddedDrawingProperties struct {
 }
 
 // EmbeddedDrawingPropertiesSuggestionState: A mask that indicates which
 // of the fields on the base EmbeddedDrawingProperties have been changed
-// in this suggestion. For any field set to true, there is a new
+// in this suggestion. For any field set to true, there's a new
 // suggested value.
 type EmbeddedDrawingPropertiesSuggestionState struct {
 }
@@ -1697,9 +1697,9 @@ type EmbeddedObject struct {
 	ImageProperties *ImageProperties `json:"imageProperties,omitempty"`
 
 	// LinkedContentReference: A reference to the external linked source
-	// content. For example, it contains a reference to the source Sheets
-	// chart when the embedded object is a linked chart. If unset, then the
-	// embedded object is not linked.
+	// content. For example, it contains a reference to the source Google
+	// Sheets chart when the embedded object is a linked chart. If unset,
+	// then the embedded object is not linked.
 	LinkedContentReference *LinkedContentReference `json:"linkedContentReference,omitempty"`
 
 	// MarginBottom: The bottom margin of the embedded object.
@@ -1800,8 +1800,7 @@ func (s *EmbeddedObjectBorder) MarshalJSON() ([]byte, error) {
 
 // EmbeddedObjectBorderSuggestionState: A mask that indicates which of
 // the fields on the base EmbeddedObjectBorder have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type EmbeddedObjectBorderSuggestionState struct {
 	// ColorSuggested: Indicates if there was a suggested change to color.
 	ColorSuggested bool `json:"colorSuggested,omitempty"`
@@ -1843,8 +1842,7 @@ func (s *EmbeddedObjectBorderSuggestionState) MarshalJSON() ([]byte, error) {
 
 // EmbeddedObjectSuggestionState: A mask that indicates which of the
 // fields on the base EmbeddedObject have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type EmbeddedObjectSuggestionState struct {
 	// DescriptionSuggested: Indicates if there was a suggested change to
 	// description.
@@ -1954,8 +1952,8 @@ type Equation struct {
 	// there are no suggested deletions of this content.
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
-	// SuggestedInsertionIds: The suggested insertion IDs. A Equation may
-	// have multiple insertion IDs if it is a nested suggested change. If
+	// SuggestedInsertionIds: The suggested insertion IDs. An Equation may
+	// have multiple insertion IDs if it's a nested suggested change. If
 	// empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -2064,7 +2062,7 @@ type FootnoteReference struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. A
-	// FootnoteReference may have multiple insertion IDs if it is a nested
+	// FootnoteReference may have multiple insertion IDs if it's a nested
 	// suggested change. If empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -2148,7 +2146,7 @@ type HorizontalRule struct {
 	// TextStyle: The text style of this HorizontalRule. Similar to text
 	// content, like text runs and footnote references, the text style of a
 	// horizontal rule can affect content layout as well as the styling of
-	// text inserted adjacent to it.
+	// text inserted next to it.
 	TextStyle *TextStyle `json:"textStyle,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
@@ -2204,7 +2202,7 @@ type ImageProperties struct {
 
 	// Transparency: The transparency effect of the image. The value should
 	// be in the interval [0.0, 1.0], where 0 means no effect and 1 means
-	// completely transparent.
+	// transparent.
 	Transparency float64 `json:"transparency,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Angle") to
@@ -2252,8 +2250,7 @@ func (s *ImageProperties) UnmarshalJSON(data []byte) error {
 
 // ImagePropertiesSuggestionState: A mask that indicates which of the
 // fields on the base ImageProperties have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type ImagePropertiesSuggestionState struct {
 	// AngleSuggested: Indicates if there was a suggested change to angle.
 	AngleSuggested bool `json:"angleSuggested,omitempty"`
@@ -2312,7 +2309,8 @@ type InlineObject struct {
 	// InlineObjectProperties: The properties of this inline object.
 	InlineObjectProperties *InlineObjectProperties `json:"inlineObjectProperties,omitempty"`
 
-	// ObjectId: The ID of this inline object.
+	// ObjectId: The ID of this inline object. Can be used to update an
+	// object’s properties.
 	ObjectId string `json:"objectId,omitempty"`
 
 	// SuggestedDeletionIds: The suggested deletion IDs. If empty, then
@@ -2363,7 +2361,7 @@ type InlineObjectElement struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. An
-	// InlineObjectElement may have multiple insertion IDs if it is a nested
+	// InlineObjectElement may have multiple insertion IDs if it's a nested
 	// suggested change. If empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -2374,7 +2372,7 @@ type InlineObjectElement struct {
 	// TextStyle: The text style of this InlineObjectElement. Similar to
 	// text content, like text runs and footnote references, the text style
 	// of an inline object element can affect content layout as well as the
-	// styling of text inserted adjacent to it.
+	// styling of text inserted next to it.
 	TextStyle *TextStyle `json:"textStyle,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "InlineObjectId") to
@@ -2432,7 +2430,7 @@ func (s *InlineObjectProperties) MarshalJSON() ([]byte, error) {
 
 // InlineObjectPropertiesSuggestionState: A mask that indicates which of
 // the fields on the base InlineObjectProperties have been changed in
-// this suggestion. For any field set to true, there is a new suggested
+// this suggestion. For any field set to true, there's a new suggested
 // value.
 type InlineObjectPropertiesSuggestionState struct {
 	// EmbeddedObjectSuggestionState: A mask that indicates which of the
@@ -2915,7 +2913,7 @@ func (s *LinkedContentReference) MarshalJSON() ([]byte, error) {
 
 // LinkedContentReferenceSuggestionState: A mask that indicates which of
 // the fields on the base LinkedContentReference have been changed in
-// this suggestion. For any field set to true, there is a new suggested
+// this suggestion. For any field set to true, there's a new suggested
 // value.
 type LinkedContentReferenceSuggestionState struct {
 	// SheetsChartReferenceSuggestionState: A mask that indicates which of
@@ -2949,7 +2947,7 @@ func (s *LinkedContentReferenceSuggestionState) MarshalJSON() ([]byte, error) {
 }
 
 // List: A List represents the list attributes for a group of paragraphs
-// that all belong to the same list. A paragraph that is part of a list
+// that all belong to the same list. A paragraph that's part of a list
 // has a reference to the list's ID in its bullet.
 type List struct {
 	// ListProperties: The properties of the list.
@@ -2991,13 +2989,13 @@ func (s *List) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ListProperties: The properties of a list which describe the look and
+// ListProperties: The properties of a list that describe the look and
 // feel of bullets belonging to paragraphs associated with a list.
 type ListProperties struct {
 	// NestingLevels: Describes the properties of the bullets at the
-	// associated level. A list has at most nine levels of nesting with
-	// nesting level 0 corresponding to the top-most level and nesting level
-	// 8 corresponding to the most nested level. The nesting levels are
+	// associated level. A list has at most 9 levels of nesting with nesting
+	// level 0 corresponding to the top-most level and nesting level 8
+	// corresponding to the most nested level. The nesting levels are
 	// returned in ascending order with the least nested returned first.
 	NestingLevels []*NestingLevel `json:"nestingLevels,omitempty"`
 
@@ -3026,8 +3024,7 @@ func (s *ListProperties) MarshalJSON() ([]byte, error) {
 
 // ListPropertiesSuggestionState: A mask that indicates which of the
 // fields on the base ListProperties have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type ListPropertiesSuggestionState struct {
 	// NestingLevelsSuggestionStates: A mask that indicates which of the
 	// fields on the corresponding NestingLevel in nesting_levels have been
@@ -3132,14 +3129,14 @@ func (s *MergeTableCellsRequest) MarshalJSON() ([]byte, error) {
 // NamedRange: A collection of Ranges with the same named range ID.
 // Named ranges allow developers to associate parts of a document with
 // an arbitrary user-defined label so their contents can be
-// programmatically read or edited at a later time. A document can
-// contain multiple named ranges with the same name, but every named
-// range has a unique ID. A named range is created with a single Range,
-// and content inserted inside a named range generally expands that
-// range. However, certain document changes can cause the range to be
-// split into multiple ranges. Named ranges are not private. All
-// applications and collaborators that have access to the document can
-// see its named ranges.
+// programmatically read or edited later. A document can contain
+// multiple named ranges with the same name, but every named range has a
+// unique ID. A named range is created with a single Range, and content
+// inserted inside a named range generally expands that range. However,
+// certain document changes can cause the range to be split into
+// multiple ranges. Named ranges are not private. All applications and
+// collaborators that have access to the document can see its named
+// ranges.
 type NamedRange struct {
 	// Name: The name of the named range.
 	Name string `json:"name,omitempty"`
@@ -3311,7 +3308,7 @@ func (s *NamedStyleSuggestionState) MarshalJSON() ([]byte, error) {
 // NamedStyles: The named styles. Paragraphs in the document can inherit
 // their TextStyle and ParagraphStyle from these named styles.
 type NamedStyles struct {
-	// Styles: The named styles. There is an entry for each of the possible
+	// Styles: The named styles. There's an entry for each of the possible
 	// named style types.
 	Styles []*NamedStyle `json:"styles,omitempty"`
 
@@ -3343,7 +3340,7 @@ func (s *NamedStyles) MarshalJSON() ([]byte, error) {
 type NamedStylesSuggestionState struct {
 	// StylesSuggestionStates: A mask that indicates which of the fields on
 	// the corresponding NamedStyle in styles have been changed in this
-	// suggestion. The order of these named style suggestion states match
+	// suggestion. The order of these named style suggestion states matches
 	// the order of the corresponding named style within the named styles
 	// suggestion.
 	StylesSuggestionStates []*NamedStyleSuggestionState `json:"stylesSuggestionStates,omitempty"`
@@ -3394,7 +3391,7 @@ type NestingLevel struct {
 
 	// GlyphFormat: The format string used by bullets at this level of
 	// nesting. The glyph format contains one or more placeholders, and
-	// these placeholder are replaced with the appropriate values depending
+	// these placeholders are replaced with the appropriate values depending
 	// on the glyph_type or glyph_symbol. The placeholders follow the
 	// pattern `%[nesting_level]`. Furthermore, placeholders can have
 	// prefixes and suffixes. Thus, the glyph format follows the pattern
@@ -3457,10 +3454,10 @@ type NestingLevel struct {
 	IndentStart *Dimension `json:"indentStart,omitempty"`
 
 	// StartNumber: The number of the first list item at this nesting level.
-	// A value of 0 is treated as a value of 1 for lettered lists and roman
-	// numeraled lists, i.e. for values of both 0 and 1, lettered and roman
-	// numeraled lists will begin at `a` and `i` respectively. This value is
-	// ignored for nesting levels with unordered glyphs.
+	// A value of 0 is treated as a value of 1 for lettered lists and Roman
+	// numeral lists. For values of both 0 and 1, lettered and Roman numeral
+	// lists will begin at `a` and `i` respectively. This value is ignored
+	// for nesting levels with unordered glyphs.
 	StartNumber int64 `json:"startNumber,omitempty"`
 
 	// TextStyle: The text style of bullets at this level of nesting.
@@ -3492,7 +3489,7 @@ func (s *NestingLevel) MarshalJSON() ([]byte, error) {
 
 // NestingLevelSuggestionState: A mask that indicates which of the
 // fields on the base NestingLevel have been changed in this suggestion.
-// For any field set to true, there is a new suggested value.
+// For any field set to true, there's a new suggested value.
 type NestingLevelSuggestionState struct {
 	// BulletAlignmentSuggested: Indicates if there was a suggested change
 	// to bullet_alignment.
@@ -3617,7 +3614,7 @@ type PageBreak struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. A PageBreak may
-	// have multiple insertion IDs if it is a nested suggested change. If
+	// have multiple insertion IDs if it's a nested suggested change. If
 	// empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -3628,7 +3625,7 @@ type PageBreak struct {
 	// TextStyle: The text style of this PageBreak. Similar to text content,
 	// like text runs and footnote references, the text style of a page
 	// break can affect content layout as well as the styling of text
-	// inserted adjacent to it.
+	// inserted next to it.
 	TextStyle *TextStyle `json:"textStyle,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
@@ -3657,14 +3654,14 @@ func (s *PageBreak) MarshalJSON() ([]byte, error) {
 }
 
 // Paragraph: A StructuralElement representing a paragraph. A paragraph
-// is a range of content that is terminated with a newline character.
+// is a range of content that's terminated with a newline character.
 type Paragraph struct {
 	// Bullet: The bullet for this paragraph. If not present, the paragraph
 	// does not belong to a list.
 	Bullet *Bullet `json:"bullet,omitempty"`
 
-	// Elements: The content of the paragraph broken down into its component
-	// parts.
+	// Elements: The content of the paragraph, broken down into its
+	// component parts.
 	Elements []*ParagraphElement `json:"elements,omitempty"`
 
 	// ParagraphStyle: The style of this paragraph.
@@ -3682,9 +3679,8 @@ type Paragraph struct {
 	// to this paragraph, keyed by suggestion ID.
 	SuggestedParagraphStyleChanges map[string]SuggestedParagraphStyle `json:"suggestedParagraphStyleChanges,omitempty"`
 
-	// SuggestedPositionedObjectIds: The IDs of the positioned objects that
-	// are suggested to be attached to this paragraph, keyed by suggestion
-	// ID.
+	// SuggestedPositionedObjectIds: The IDs of the positioned objects
+	// suggested to be attached to this paragraph, keyed by suggestion ID.
 	SuggestedPositionedObjectIds map[string]ObjectReferences `json:"suggestedPositionedObjectIds,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Bullet") to
@@ -3788,7 +3784,7 @@ type ParagraphElement struct {
 	Person *Person `json:"person,omitempty"`
 
 	// RichLink: A paragraph element that links to a Google resource (such
-	// as a file in Drive, a Youtube video, a Calendar event, etc.)
+	// as a file in Google Drive, a YouTube video, or a Calendar event.)
 	RichLink *RichLink `json:"richLink,omitempty"`
 
 	// StartIndex: The zero-based start index of this paragraph element, in
@@ -3829,7 +3825,7 @@ func (s *ParagraphElement) MarshalJSON() ([]byte, error) {
 // named style inherits from the normal text named style. * The
 // ParagraphStyle of the normal text named style inherits from the
 // default paragraph style in the Docs editor. * The ParagraphStyle on a
-// Paragraph element that is contained in a table may inherit its
+// Paragraph element that's contained in a table may inherit its
 // paragraph style from the table style. If the paragraph style does not
 // inherit from a parent, unsetting fields will revert the style to a
 // value matching the defaults in the Docs editor.
@@ -3855,34 +3851,34 @@ type ParagraphStyle struct {
 	// previous paragraphs. If unset, the value is inherited from the
 	// parent. The between border is rendered when the adjacent paragraph
 	// has the same border and indent properties. Paragraph borders cannot
-	// be partially updated. When making changes to a paragraph border the
-	// new border must be specified in its entirety.
+	// be partially updated. When changing a paragraph border, the new
+	// border must be specified in its entirety.
 	BorderBetween *ParagraphBorder `json:"borderBetween,omitempty"`
 
 	// BorderBottom: The border at the bottom of this paragraph. If unset,
 	// the value is inherited from the parent. The bottom border is rendered
 	// when the paragraph below has different border and indent properties.
-	// Paragraph borders cannot be partially updated. When making changes to
-	// a paragraph border the new border must be specified in its entirety.
+	// Paragraph borders cannot be partially updated. When changing a
+	// paragraph border, the new border must be specified in its entirety.
 	BorderBottom *ParagraphBorder `json:"borderBottom,omitempty"`
 
 	// BorderLeft: The border to the left of this paragraph. If unset, the
 	// value is inherited from the parent. Paragraph borders cannot be
-	// partially updated. When making changes to a paragraph border the new
-	// border must be specified in its entirety.
+	// partially updated. When changing a paragraph border, the new border
+	// must be specified in its entirety.
 	BorderLeft *ParagraphBorder `json:"borderLeft,omitempty"`
 
 	// BorderRight: The border to the right of this paragraph. If unset, the
 	// value is inherited from the parent. Paragraph borders cannot be
-	// partially updated. When making changes to a paragraph border the new
-	// border must be specified in its entirety.
+	// partially updated. When changing a paragraph border, the new border
+	// must be specified in its entirety.
 	BorderRight *ParagraphBorder `json:"borderRight,omitempty"`
 
 	// BorderTop: The border at the top of this paragraph. If unset, the
 	// value is inherited from the parent. The top border is rendered when
 	// the paragraph above has different border and indent properties.
-	// Paragraph borders cannot be partially updated. When making changes to
-	// a paragraph border the new border must be specified in its entirety.
+	// Paragraph borders cannot be partially updated. When changing a
+	// paragraph border, the new border must be specified in its entirety.
 	BorderTop *ParagraphBorder `json:"borderTop,omitempty"`
 
 	// Direction: The text direction of this paragraph. If unset, the value
@@ -3949,6 +3945,14 @@ type ParagraphStyle struct {
 	//   "HEADING_6" - Heading 6.
 	NamedStyleType string `json:"namedStyleType,omitempty"`
 
+	// PageBreakBefore: Whether the current paragraph should always start at
+	// the beginning of a page. If unset, the value is inherited from the
+	// parent. Attempting to update page_break_before for paragraphs in
+	// unsupported regions, including Table, Header, Footer and Footnote,
+	// can result in an invalid document state that returns a 400 bad
+	// request error.
+	PageBreakBefore bool `json:"pageBreakBefore,omitempty"`
+
 	// Shading: The shading of the paragraph. If unset, the value is
 	// inherited from the parent.
 	Shading *Shading `json:"shading,omitempty"`
@@ -4014,8 +4018,7 @@ func (s *ParagraphStyle) UnmarshalJSON(data []byte) error {
 
 // ParagraphStyleSuggestionState: A mask that indicates which of the
 // fields on the base ParagraphStyle have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type ParagraphStyleSuggestionState struct {
 	// AlignmentSuggested: Indicates if there was a suggested change to
 	// alignment.
@@ -4081,6 +4084,10 @@ type ParagraphStyleSuggestionState struct {
 	// named_style_type.
 	NamedStyleTypeSuggested bool `json:"namedStyleTypeSuggested,omitempty"`
 
+	// PageBreakBeforeSuggested: Indicates if there was a suggested change
+	// to page_break_before.
+	PageBreakBeforeSuggested bool `json:"pageBreakBeforeSuggested,omitempty"`
+
 	// ShadingSuggestionState: A mask that indicates which of the fields in
 	// shading have been changed in this suggestion.
 	ShadingSuggestionState *ShadingSuggestionState `json:"shadingSuggestionState,omitempty"`
@@ -4134,15 +4141,15 @@ type Person struct {
 
 	// SuggestedDeletionIds: IDs for suggestions that remove this person
 	// link from the document. A Person might have multiple deletion IDs if,
-	// for example, multiple users suggest to delete it. If empty, then this
+	// for example, multiple users suggest deleting it. If empty, then this
 	// person link isn't suggested for deletion.
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: IDs for suggestions that insert this person
 	// link into the document. A Person might have multiple insertion IDs if
-	// it is a nested suggested change (a suggestion within a suggestion
-	// made by a different user, for example). If empty, then this person
-	// link isn't a suggested insertion.
+	// it's a nested suggested change (a suggestion within a suggestion made
+	// by a different user, for example). If empty, then this person link
+	// isn't a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
 	// SuggestedTextStyleChanges: The suggested text style changes to this
@@ -4181,7 +4188,7 @@ type PersonProperties struct {
 	// field is always present.
 	Email string `json:"email,omitempty"`
 
-	// Name: Output only. The name of the person if it is displayed in the
+	// Name: Output only. The name of the person if it's displayed in the
 	// link text instead of the person's email address.
 	Name string `json:"name,omitempty"`
 
@@ -4208,7 +4215,43 @@ func (s *PersonProperties) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// PositionedObject: An object that is tethered to a Paragraph and
+// PinTableHeaderRowsRequest: Updates the number of pinned table header
+// rows in a table.
+type PinTableHeaderRowsRequest struct {
+	// PinnedHeaderRowsCount: The number of table rows to pin, where 0
+	// implies that all rows are unpinned.
+	PinnedHeaderRowsCount int64 `json:"pinnedHeaderRowsCount,omitempty"`
+
+	// TableStartLocation: The location where the table starts in the
+	// document.
+	TableStartLocation *Location `json:"tableStartLocation,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "PinnedHeaderRowsCount") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PinnedHeaderRowsCount") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PinTableHeaderRowsRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod PinTableHeaderRowsRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PositionedObject: An object that's tethered to a Paragraph and
 // positioned relative to the beginning of the paragraph. A
 // PositionedObject contains an EmbeddedObject such as an image.
 type PositionedObject struct {
@@ -4255,7 +4298,7 @@ func (s *PositionedObject) MarshalJSON() ([]byte, error) {
 
 // PositionedObjectPositioning: The positioning of a PositionedObject.
 // The positioned object is positioned relative to the beginning of the
-// Paragraph it is tethered to.
+// Paragraph it's tethered to.
 type PositionedObjectPositioning struct {
 	// Layout: The layout of this positioned object.
 	//
@@ -4266,20 +4309,20 @@ type PositionedObjectPositioning struct {
 	// the left and text is on the right.
 	//   "BREAK_RIGHT" - Breaks text such that the positioned object is on
 	// the right and text is on the left.
-	//   "BREAK_LEFT_RIGHT" - Breaks text such that there is no text on the
+	//   "BREAK_LEFT_RIGHT" - Breaks text such that there's no text on the
 	// left or right of the positioned object.
 	//   "IN_FRONT_OF_TEXT" - The positioned object is in front of the text.
 	//   "BEHIND_TEXT" - The positioned object is behind the text.
 	Layout string `json:"layout,omitempty"`
 
 	// LeftOffset: The offset of the left edge of the positioned object
-	// relative to the beginning of the Paragraph it is tethered to. The
+	// relative to the beginning of the Paragraph it's tethered to. The
 	// exact positioning of the object can depend on other content in the
 	// document and the document's styling.
 	LeftOffset *Dimension `json:"leftOffset,omitempty"`
 
 	// TopOffset: The offset of the top edge of the positioned object
-	// relative to the beginning of the Paragraph it is tethered to. The
+	// relative to the beginning of the Paragraph it's tethered to. The
 	// exact positioning of the object can depend on other content in the
 	// document and the document's styling.
 	TopOffset *Dimension `json:"topOffset,omitempty"`
@@ -4309,7 +4352,7 @@ func (s *PositionedObjectPositioning) MarshalJSON() ([]byte, error) {
 
 // PositionedObjectPositioningSuggestionState: A mask that indicates
 // which of the fields on the base PositionedObjectPositioning have been
-// changed in this suggestion. For any field set to true, there is a new
+// changed in this suggestion. For any field set to true, there's a new
 // suggested value.
 type PositionedObjectPositioningSuggestionState struct {
 	// LayoutSuggested: Indicates if there was a suggested change to layout.
@@ -4382,7 +4425,7 @@ func (s *PositionedObjectProperties) MarshalJSON() ([]byte, error) {
 
 // PositionedObjectPropertiesSuggestionState: A mask that indicates
 // which of the fields on the base PositionedObjectProperties have been
-// changed in this suggestion. For any field set to true, there is a new
+// changed in this suggestion. For any field set to true, there's a new
 // suggested value.
 type PositionedObjectPropertiesSuggestionState struct {
 	// EmbeddedObjectSuggestionState: A mask that indicates which of the
@@ -4426,7 +4469,7 @@ type Range struct {
 	// use cases with open-ended ranges.
 	EndIndex int64 `json:"endIndex,omitempty"`
 
-	// SegmentId: The ID of the header, footer or footnote that this range
+	// SegmentId: The ID of the header, footer, or footnote that this range
 	// is contained in. An empty segment ID signifies the document's body.
 	SegmentId string `json:"segmentId,omitempty"`
 
@@ -4526,6 +4569,7 @@ func (s *ReplaceAllTextResponse) MarshalJSON() ([]byte, error) {
 // in order to mirror the behavior of the Docs editor.
 type ReplaceImageRequest struct {
 	// ImageObjectId: The ID of the existing image that will be replaced.
+	// The ID can be retrieved from the response of a get request.
 	ImageObjectId string `json:"imageObjectId,omitempty"`
 
 	// ImageReplaceMethod: The replacement method.
@@ -4536,15 +4580,15 @@ type ReplaceImageRequest struct {
 	//   "CENTER_CROP" - Scales and centers the image to fill the bounds of
 	// the original image. The image may be cropped in order to fill the
 	// original image's bounds. The rendered size of the image will be the
-	// same as that of the original image.
+	// same as the original image.
 	ImageReplaceMethod string `json:"imageReplaceMethod,omitempty"`
 
 	// Uri: The URI of the new image. The image is fetched once at insertion
 	// time and a copy is stored for display inside the document. Images
-	// must be less than 50MB in size, cannot exceed 25 megapixels, and must
-	// be in one of PNG, JPEG, or GIF format. The provided URI can be at
-	// most 2 kB in length. The URI itself is saved with the image, and
-	// exposed via the ImageProperties.source_uri field.
+	// must be less than 50MB, cannot exceed 25 megapixels, and must be in
+	// PNG, JPEG, or GIF format. The provided URI can't surpass 2 KB in
+	// length. The URI is saved with the image, and exposed through the
+	// ImageProperties.source_uri field.
 	Uri string `json:"uri,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "ImageObjectId") to
@@ -4683,6 +4727,10 @@ type Request struct {
 
 	// MergeTableCells: Merges cells in a table.
 	MergeTableCells *MergeTableCellsRequest `json:"mergeTableCells,omitempty"`
+
+	// PinTableHeaderRows: Updates the number of pinned header rows in a
+	// table.
+	PinTableHeaderRows *PinTableHeaderRowsRequest `json:"pinTableHeaderRows,omitempty"`
 
 	// ReplaceAllText: Replaces all instances of the specified text.
 	ReplaceAllText *ReplaceAllTextRequest `json:"replaceAllText,omitempty"`
@@ -4841,8 +4889,8 @@ func (s *RgbColor) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// RichLink: A link to a Google resource (e.g., a file in Drive, a
-// YouTube video, a Calendar event, etc.).
+// RichLink: A link to a Google resource (such as a file in Drive, a
+// YouTube video, or a Calendar event).
 type RichLink struct {
 	// RichLinkId: Output only. The ID of this link.
 	RichLinkId string `json:"richLinkId,omitempty"`
@@ -4853,12 +4901,12 @@ type RichLink struct {
 
 	// SuggestedDeletionIds: IDs for suggestions that remove this link from
 	// the document. A RichLink might have multiple deletion IDs if, for
-	// example, multiple users suggest to delete it. If empty, then this
+	// example, multiple users suggest deleting it. If empty, then this
 	// person link isn't suggested for deletion.
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: IDs for suggestions that insert this link into
-	// the document. A RichLink might have multiple insertion IDs if it is a
+	// the document. A RichLink might have multiple insertion IDs if it's a
 	// nested suggested change (a suggestion within a suggestion made by a
 	// different user, for example). If empty, then this person link isn't a
 	// suggested insertion.
@@ -4898,7 +4946,7 @@ func (s *RichLink) MarshalJSON() ([]byte, error) {
 type RichLinkProperties struct {
 	// MimeType: Output only. The MIME type
 	// (https://developers.google.com/drive/api/v3/mime-types) of the
-	// RichLink, if there is one (i.e., when it is a file in Drive).
+	// RichLink, if there's one (for example, when it's a file in Drive).
 	MimeType string `json:"mimeType,omitempty"`
 
 	// Title: Output only. The title of the RichLink as displayed in the
@@ -4934,7 +4982,7 @@ func (s *RichLinkProperties) MarshalJSON() ([]byte, error) {
 }
 
 // SectionBreak: A StructuralElement representing a section break. A
-// section is a range of content which has the same SectionStyle. A
+// section is a range of content that has the same SectionStyle. A
 // section break represents the start of a new section, and the section
 // style applies to the section after the section break. The document
 // body always begins with a section break.
@@ -4947,8 +4995,8 @@ type SectionBreak struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. A SectionBreak
-	// may have multiple insertion IDs if it is a nested suggested change.
-	// If empty, then this is not a suggested insertion.
+	// may have multiple insertion IDs if it's a nested suggested change. If
+	// empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "SectionStyle") to
@@ -5009,13 +5057,13 @@ func (s *SectionColumnProperties) MarshalJSON() ([]byte, error) {
 type SectionStyle struct {
 	// ColumnProperties: The section's columns properties. If empty, the
 	// section contains one column with the default properties in the Docs
-	// editor. A section can be updated to have no more than three columns.
-	// When updating this property, setting a concrete value is required.
+	// editor. A section can be updated to have no more than 3 columns. When
+	// updating this property, setting a concrete value is required.
 	// Unsetting this property will result in a 400 bad request error.
 	ColumnProperties []*SectionColumnProperties `json:"columnProperties,omitempty"`
 
 	// ColumnSeparatorStyle: The style of column separators. This style can
-	// be set even when there is one column in the section. When updating
+	// be set even when there's one column in the section. When updating
 	// this property, setting a concrete value is required. Unsetting this
 	// property results in a 400 bad request error.
 	//
@@ -5054,7 +5102,7 @@ type SectionStyle struct {
 	// EvenPageFooterId: The ID of the footer used only for even pages. If
 	// the value of DocumentStyle's use_even_page_header_footer is true,
 	// this value is used for the footers on even pages in the section. If
-	// it is false, the footers on even pages uses the default_footer_id. If
+	// it is false, the footers on even pages use the default_footer_id. If
 	// unset, the value inherits from the previous SectionBreak's
 	// SectionStyle. If the value is unset in the first SectionBreak, it
 	// inherits from DocumentStyle's even_page_footer_id. This property is
@@ -5064,7 +5112,7 @@ type SectionStyle struct {
 	// EvenPageHeaderId: The ID of the header used only for even pages. If
 	// the value of DocumentStyle's use_even_page_header_footer is true,
 	// this value is used for the headers on even pages in the section. If
-	// it is false, the headers on even pages uses the default_header_id. If
+	// it is false, the headers on even pages use the default_header_id. If
 	// unset, the value inherits from the previous SectionBreak's
 	// SectionStyle. If the value is unset in the first SectionBreak, it
 	// inherits from DocumentStyle's even_page_header_id. This property is
@@ -5073,7 +5121,7 @@ type SectionStyle struct {
 
 	// FirstPageFooterId: The ID of the footer used only for the first page
 	// of the section. If use_first_page_header_footer is true, this value
-	// is used for the footer on the first page of the section. If it is
+	// is used for the footer on the first page of the section. If it's
 	// false, the footer on the first page of the section uses the
 	// default_footer_id. If unset, the value inherits from the previous
 	// SectionBreak's SectionStyle. If the value is unset in the first
@@ -5083,7 +5131,7 @@ type SectionStyle struct {
 
 	// FirstPageHeaderId: The ID of the header used only for the first page
 	// of the section. If use_first_page_header_footer is true, this value
-	// is used for the header on the first page of the section. If it is
+	// is used for the header on the first page of the section. If it's
 	// false, the header on the first page of the section uses the
 	// default_header_id. If unset, the value inherits from the previous
 	// SectionBreak's SectionStyle. If the value is unset in the first
@@ -5091,14 +5139,14 @@ type SectionStyle struct {
 	// This property is read-only.
 	FirstPageHeaderId string `json:"firstPageHeaderId,omitempty"`
 
-	// MarginBottom: The bottom page margin of the section. If unset, uses
-	// margin_bottom from DocumentStyle. When updating this property,
-	// setting a concrete value is required. Unsetting this property results
-	// in a 400 bad request error.
+	// MarginBottom: The bottom page margin of the section. If unset, the
+	// value defaults to margin_bottom from DocumentStyle. When updating
+	// this property, setting a concrete value is required. Unsetting this
+	// property results in a 400 bad request error.
 	MarginBottom *Dimension `json:"marginBottom,omitempty"`
 
-	// MarginFooter: The footer margin of the section. If unset, uses
-	// margin_footer from DocumentStyle. If updated,
+	// MarginFooter: The footer margin of the section. If unset, the value
+	// defaults to margin_footer from DocumentStyle. If updated,
 	// use_custom_header_footer_margins is set to true on DocumentStyle. The
 	// value of use_custom_header_footer_margins on DocumentStyle indicates
 	// if a footer margin is being respected for this section When updating
@@ -5106,8 +5154,8 @@ type SectionStyle struct {
 	// property results in a 400 bad request error.
 	MarginFooter *Dimension `json:"marginFooter,omitempty"`
 
-	// MarginHeader: The header margin of the section. If unset, uses
-	// margin_header from DocumentStyle. If updated,
+	// MarginHeader: The header margin of the section. If unset, the value
+	// defaults to margin_header from DocumentStyle. If updated,
 	// use_custom_header_footer_margins is set to true on DocumentStyle. The
 	// value of use_custom_header_footer_margins on DocumentStyle indicates
 	// if a header margin is being respected for this section. When updating
@@ -5115,26 +5163,26 @@ type SectionStyle struct {
 	// property results in a 400 bad request error.
 	MarginHeader *Dimension `json:"marginHeader,omitempty"`
 
-	// MarginLeft: The left page margin of the section. If unset, uses
-	// margin_left from DocumentStyle. Updating left margin causes columns
-	// in this section to resize. Since the margin affects column width, it
-	// is applied before column properties. When updating this property,
-	// setting a concrete value is required. Unsetting this property results
-	// in a 400 bad request error.
+	// MarginLeft: The left page margin of the section. If unset, the value
+	// defaults to margin_left from DocumentStyle. Updating the left margin
+	// causes columns in this section to resize. Since the margin affects
+	// column width, it's applied before column properties. When updating
+	// this property, setting a concrete value is required. Unsetting this
+	// property results in a 400 bad request error.
 	MarginLeft *Dimension `json:"marginLeft,omitempty"`
 
-	// MarginRight: The right page margin of the section. If unset, uses
-	// margin_right from DocumentStyle. Updating right margin causes columns
-	// in this section to resize. Since the margin affects column width, it
-	// is applied before column properties. When updating this property,
-	// setting a concrete value is required. Unsetting this property results
-	// in a 400 bad request error.
+	// MarginRight: The right page margin of the section. If unset, the
+	// value defaults to margin_right from DocumentStyle. Updating the right
+	// margin causes columns in this section to resize. Since the margin
+	// affects column width, it's applied before column properties. When
+	// updating this property, setting a concrete value is required.
+	// Unsetting this property results in a 400 bad request error.
 	MarginRight *Dimension `json:"marginRight,omitempty"`
 
-	// MarginTop: The top page margin of the section. If unset, uses
-	// margin_top from DocumentStyle. When updating this property, setting a
-	// concrete value is required. Unsetting this property results in a 400
-	// bad request error.
+	// MarginTop: The top page margin of the section. If unset, the value
+	// defaults to margin_top from DocumentStyle. When updating this
+	// property, setting a concrete value is required. Unsetting this
+	// property results in a 400 bad request error.
 	MarginTop *Dimension `json:"marginTop,omitempty"`
 
 	// PageNumberStart: The page number from which to start counting the
@@ -5218,7 +5266,7 @@ func (s *Shading) MarshalJSON() ([]byte, error) {
 
 // ShadingSuggestionState: A mask that indicates which of the fields on
 // the base Shading have been changed in this suggested change. For any
-// field set to true, there is a new suggested value.
+// field set to true, there's a new suggested value.
 type ShadingSuggestionState struct {
 	// BackgroundColorSuggested: Indicates if there was a suggested change
 	// to the Shading.
@@ -5253,7 +5301,7 @@ func (s *ShadingSuggestionState) MarshalJSON() ([]byte, error) {
 // Google Sheets.
 type SheetsChartReference struct {
 	// ChartId: The ID of the specific chart in the Google Sheets
-	// spreadsheet that is embedded.
+	// spreadsheet that's embedded.
 	ChartId int64 `json:"chartId,omitempty"`
 
 	// SpreadsheetId: The ID of the Google Sheets spreadsheet that contains
@@ -5285,8 +5333,7 @@ func (s *SheetsChartReference) MarshalJSON() ([]byte, error) {
 
 // SheetsChartReferenceSuggestionState: A mask that indicates which of
 // the fields on the base SheetsChartReference have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type SheetsChartReferenceSuggestionState struct {
 	// ChartIdSuggested: Indicates if there was a suggested change to
 	// chart_id.
@@ -5650,8 +5697,8 @@ func (s *SuggestedNamedStyles) MarshalJSON() ([]byte, error) {
 type SuggestedParagraphStyle struct {
 	// ParagraphStyle: A ParagraphStyle that only includes the changes made
 	// in this suggestion. This can be used along with the
-	// paragraph_suggestion_state to see which fields have changed and their
-	// new values.
+	// paragraph_style_suggestion_state to see which fields have changed and
+	// their new values.
 	ParagraphStyle *ParagraphStyle `json:"paragraphStyle,omitempty"`
 
 	// ParagraphStyleSuggestionState: A mask that indicates which of the
@@ -5872,8 +5919,8 @@ func (s *TabStop) MarshalJSON() ([]byte, error) {
 
 // Table: A StructuralElement representing a table.
 type Table struct {
-	// Columns: Number of columns in the table. It is possible for a table
-	// to be non-rectangular, so some rows may have a different number of
+	// Columns: Number of columns in the table. It's possible for a table to
+	// be non-rectangular, so some rows may have a different number of
 	// cells.
 	Columns int64 `json:"columns,omitempty"`
 
@@ -5885,7 +5932,7 @@ type Table struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. A Table may have
-	// multiple insertion IDs if it is a nested suggested change. If empty,
+	// multiple insertion IDs if it's a nested suggested change. If empty,
 	// then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -5936,7 +5983,7 @@ type TableCell struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. A TableCell may
-	// have multiple insertion IDs if it is a nested suggested change. If
+	// have multiple insertion IDs if it's a nested suggested change. If
 	// empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -6131,8 +6178,7 @@ func (s *TableCellStyle) MarshalJSON() ([]byte, error) {
 
 // TableCellStyleSuggestionState: A mask that indicates which of the
 // fields on the base TableCellStyle have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type TableCellStyleSuggestionState struct {
 	// BackgroundColorSuggested: Indicates if there was a suggested change
 	// to background_color.
@@ -6218,7 +6264,7 @@ type TableColumnProperties struct {
 	// Possible values:
 	//   "WIDTH_TYPE_UNSPECIFIED" - The column width type is unspecified.
 	//   "EVENLY_DISTRIBUTED" - The column width is evenly distributed among
-	// the other evenly distrubted columns. The width of the column is
+	// the other evenly distributed columns. The width of the column is
 	// automatically determined and will have an equal portion of the width
 	// remaining for the table after accounting for all columns with
 	// specified widths.
@@ -6342,7 +6388,7 @@ type TableRow struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. A TableRow may
-	// have multiple insertion IDs if it is a nested suggested change. If
+	// have multiple insertion IDs if it's a nested suggested change. If
 	// empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -6350,7 +6396,7 @@ type TableRow struct {
 	// row, keyed by suggestion ID.
 	SuggestedTableRowStyleChanges map[string]SuggestedTableRowStyle `json:"suggestedTableRowStyleChanges,omitempty"`
 
-	// TableCells: The contents and style of each cell in this row. It is
+	// TableCells: The contents and style of each cell in this row. It's
 	// possible for a table to be non-rectangular, so some rows may have a
 	// different number of cells than other rows in the same table.
 	TableCells []*TableCell `json:"tableCells,omitempty"`
@@ -6388,6 +6434,13 @@ type TableRowStyle struct {
 	// order to show all the content in the row's cells.
 	MinRowHeight *Dimension `json:"minRowHeight,omitempty"`
 
+	// PreventOverflow: Whether the row cannot overflow across page or
+	// column boundaries.
+	PreventOverflow bool `json:"preventOverflow,omitempty"`
+
+	// TableHeader: Whether the row is a table header.
+	TableHeader bool `json:"tableHeader,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g. "MinRowHeight") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
@@ -6413,8 +6466,7 @@ func (s *TableRowStyle) MarshalJSON() ([]byte, error) {
 
 // TableRowStyleSuggestionState: A mask that indicates which of the
 // fields on the base TableRowStyle have been changed in this
-// suggestion. For any field set to true, there is a new suggested
-// value.
+// suggestion. For any field set to true, there's a new suggested value.
 type TableRowStyleSuggestionState struct {
 	// MinRowHeightSuggested: Indicates if there was a suggested change to
 	// min_row_height.
@@ -6489,7 +6541,7 @@ type TextRun struct {
 	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
 
 	// SuggestedInsertionIds: The suggested insertion IDs. A TextRun may
-	// have multiple insertion IDs if it is a nested suggested change. If
+	// have multiple insertion IDs if it's a nested suggested change. If
 	// empty, then this is not a suggested insertion.
 	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
 
@@ -6531,10 +6583,10 @@ func (s *TextRun) MarshalJSON() ([]byte, error) {
 // named style inherits from the normal text named style. * The
 // TextStyle of the normal text named style inherits from the default
 // text style in the Docs editor. * The TextStyle on a Paragraph element
-// that is contained in a table may inherit its text style from the
-// table style. If the text style does not inherit from a parent,
-// unsetting fields will revert the style to a value matching the
-// defaults in the Docs editor.
+// that's contained in a table may inherit its text style from the table
+// style. If the text style does not inherit from a parent, unsetting
+// fields will revert the style to a value matching the defaults in the
+// Docs editor.
 type TextStyle struct {
 	// BackgroundColor: The background color of the text. If set, the color
 	// is either an RGB color or transparent, depending on the `color`
@@ -6544,8 +6596,8 @@ type TextStyle struct {
 	// BaselineOffset: The text's vertical offset from its normal position.
 	// Text with `SUPERSCRIPT` or `SUBSCRIPT` baseline offsets is
 	// automatically rendered in a smaller font size, computed based on the
-	// `font_size` field. The `font_size` itself is not affected by changes
-	// in this field.
+	// `font_size` field. Changes in this field don't affect the
+	// `font_size`.
 	//
 	// Possible values:
 	//   "BASELINE_OFFSET_UNSPECIFIED" - The text's baseline offset is
@@ -6570,7 +6622,7 @@ type TextStyle struct {
 	// Italic: Whether or not the text is italicized.
 	Italic bool `json:"italic,omitempty"`
 
-	// Link: The hyperlink destination of the text. If unset, there is no
+	// Link: The hyperlink destination of the text. If unset, there's no
 	// link. Links are not inherited from parent text. Changing the link in
 	// an update request causes some other changes to the text style of the
 	// range: * When setting a link, the text foreground color will be
@@ -6633,7 +6685,7 @@ func (s *TextStyle) MarshalJSON() ([]byte, error) {
 
 // TextStyleSuggestionState: A mask that indicates which of the fields
 // on the base TextStyle have been changed in this suggestion. For any
-// field set to true, there is a new suggested value.
+// field set to true, there's a new suggested value.
 type TextStyleSuggestionState struct {
 	// BackgroundColorSuggested: Indicates if there was a suggested change
 	// to background_color.
@@ -6779,7 +6831,8 @@ func (s *UpdateDocumentStyleRequest) MarshalJSON() ([]byte, error) {
 type UpdateParagraphStyleRequest struct {
 	// Fields: The fields that should be updated. At least one field must be
 	// specified. The root `paragraph_style` is implied and should not be
-	// specified. For example, to update the paragraph style's alignment
+	// specified. A single "*" can be used as short-hand for listing every
+	// field. For example, to update the paragraph style's alignment
 	// property, set `fields` to "alignment". To reset a property to its
 	// default value, include its field name in the field mask but leave the
 	// field itself unset.
@@ -7060,22 +7113,21 @@ type WeightedFontFamily struct {
 	// text is rendered in `Arial`.
 	FontFamily string `json:"fontFamily,omitempty"`
 
-	// Weight: The weight of the font. This field can have any value that is
+	// Weight: The weight of the font. This field can have any value that's
 	// a multiple of `100` between `100` and `900`, inclusive. This range
 	// corresponds to the numerical values described in the CSS 2.1
 	// Specification, section 15.6
 	// (https://www.w3.org/TR/CSS21/fonts.html#font-boldness), with
 	// non-numerical values disallowed. The default value is `400`
 	// ("normal"). The font weight makes up just one component of the
-	// rendered font weight. The rendered weight is determined by a
-	// combination of the `weight` and the text style's resolved `bold`
-	// value, after accounting for inheritance: * If the text is bold and
-	// the weight is less than `400`, the rendered weight is 400. * If the
-	// text is bold and the weight is greater than or equal to `400` but is
-	// less than `700`, the rendered weight is `700`. * If the weight is
-	// greater than or equal to `700`, the rendered weight is equal to the
-	// weight. * If the text is not bold, the rendered weight is equal to
-	// the weight.
+	// rendered font weight. A combination of the `weight` and the text
+	// style's resolved `bold` value determine the rendered weight, after
+	// accounting for inheritance: * If the text is bold and the weight is
+	// less than `400`, the rendered weight is 400. * If the text is bold
+	// and the weight is greater than or equal to `400` but is less than
+	// `700`, the rendered weight is `700`. * If the weight is greater than
+	// or equal to `700`, the rendered weight is equal to the weight. * If
+	// the text is not bold, the rendered weight is equal to the weight.
 	Weight int64 `json:"weight,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "FontFamily") to
@@ -7103,31 +7155,29 @@ func (s *WeightedFontFamily) MarshalJSON() ([]byte, error) {
 
 // WriteControl: Provides control over how write requests are executed.
 type WriteControl struct {
-	// RequiredRevisionId: The revision ID of the document that the write
-	// request will be applied to. If this is not the latest revision of the
-	// document, the request will not be processed and will return a 400 bad
+	// RequiredRevisionId: The optional revision ID of the document the
+	// write request is applied to. If this is not the latest revision of
+	// the document, the request is not processed and returns a 400 bad
 	// request error. When a required revision ID is returned in a response,
 	// it indicates the revision ID of the document after the request was
 	// applied.
 	RequiredRevisionId string `json:"requiredRevisionId,omitempty"`
 
-	// TargetRevisionId: The target revision ID of the document that the
-	// write request will be applied to. If collaborator changes have
-	// occurred after the document was read using the API, the changes
-	// produced by this write request will be transformed against the
-	// collaborator changes. This results in a new revision of the document
-	// which incorporates both the changes in the request and the
-	// collaborator changes, and the Docs server will resolve conflicting
-	// changes. When using `target_revision_id`, the API client can be
-	// thought of as another collaborator of the document. The target
-	// revision ID may only be used to write to recent versions of a
-	// document. If the target revision is too far behind the latest
-	// revision, the request will not be processed and will return a 400 bad
-	// request error and the request should be retried after reading the
-	// latest version of the document. In most cases a `revision_id` will
-	// remain valid for use as a target revision for several minutes after
-	// it is read, but for frequently-edited documents this window may be
-	// shorter.
+	// TargetRevisionId: The optional target revision ID of the document the
+	// write request is applied to. If collaborator changes have occurred
+	// after the document was read using the API, the changes produced by
+	// this write request are applied against the collaborator changes. This
+	// results in a new revision of the document that incorporates both the
+	// collaborator changes and the changes in the request, with the Docs
+	// server resolving conflicting changes. When using target revision ID,
+	// the API client can be thought of as another collaborator of the
+	// document. The target revision ID can only be used to write to recent
+	// versions of a document. If the target revision is too far behind the
+	// latest revision, the request is not processed and returns a 400 bad
+	// request error. The request should be tried again after retrieving the
+	// latest version of the document. Usually a revision ID remains valid
+	// for use as a target revision for several minutes after it's read, but
+	// for frequently edited documents this window might be shorter.
 	TargetRevisionId string `json:"targetRevisionId,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "RequiredRevisionId")
@@ -7216,7 +7266,7 @@ func (c *DocumentsBatchUpdateCall) Header() http.Header {
 
 func (c *DocumentsBatchUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7256,17 +7306,17 @@ func (c *DocumentsBatchUpdateCall) Do(opts ...googleapi.CallOption) (*BatchUpdat
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &BatchUpdateDocumentResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -7357,7 +7407,7 @@ func (c *DocumentsCreateCall) Header() http.Header {
 
 func (c *DocumentsCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7394,17 +7444,17 @@ func (c *DocumentsCreateCall) Do(opts ...googleapi.CallOption) (*Document, error
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Document{
 		ServerResponse: googleapi.ServerResponse{
@@ -7467,21 +7517,29 @@ func (r *DocumentsService) Get(documentId string) *DocumentsGetCall {
 // DEFAULT_FOR_CURRENT_ACCESS is used.
 //
 // Possible values:
-//   "DEFAULT_FOR_CURRENT_ACCESS" - The SuggestionsViewMode applied to
+//
+//	"DEFAULT_FOR_CURRENT_ACCESS" - The SuggestionsViewMode applied to
+//
 // the returned document depends on the user's current access level. If
 // the user only has view access, PREVIEW_WITHOUT_SUGGESTIONS is
 // applied. Otherwise, SUGGESTIONS_INLINE is applied. This is the
 // default suggestions view mode.
-//   "SUGGESTIONS_INLINE" - The returned document has suggestions
+//
+//	"SUGGESTIONS_INLINE" - The returned document has suggestions
+//
 // inline. Suggested changes will be differentiated from base content
 // within the document. Requests to retrieve a document using this mode
 // will return a 403 error if the user does not have permission to view
 // suggested changes.
-//   "PREVIEW_SUGGESTIONS_ACCEPTED" - The returned document is a preview
+//
+//	"PREVIEW_SUGGESTIONS_ACCEPTED" - The returned document is a preview
+//
 // with all suggested changes accepted. Requests to retrieve a document
 // using this mode will return a 403 error if the user does not have
 // permission to view suggested changes.
-//   "PREVIEW_WITHOUT_SUGGESTIONS" - The returned document is a preview
+//
+//	"PREVIEW_WITHOUT_SUGGESTIONS" - The returned document is a preview
+//
 // with all suggested changes rejected if there are any suggestions in
 // the document.
 func (c *DocumentsGetCall) SuggestionsViewMode(suggestionsViewMode string) *DocumentsGetCall {
@@ -7526,7 +7584,7 @@ func (c *DocumentsGetCall) Header() http.Header {
 
 func (c *DocumentsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20211027")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7564,17 +7622,17 @@ func (c *DocumentsGetCall) Do(opts ...googleapi.CallOption) (*Document, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Document{
 		ServerResponse: googleapi.ServerResponse{

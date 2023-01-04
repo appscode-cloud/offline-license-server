@@ -17,7 +17,8 @@ limitations under the License.
 package cmds
 
 import (
-	"github.com/appscodelabs/offline-license-server/pkg/server"
+	"go.bytebuilders.dev/offline-license-server/pkg/server"
+
 	"github.com/spf13/cobra"
 )
 
