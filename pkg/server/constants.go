@@ -167,7 +167,7 @@ var SupportedProducts = map[string]PlanInfo{
 	"platform-enterprise": {
 		ProductLine:  "platform",
 		TierName:     "enterprise",
-		Features:     []string{"panopticon-enterprise", "platform-backend", "scanner"},
+		Features:     []string{"panopticon-enterprise", "b3", "scanner"},
 		MailingLists: []string{MailingList_Platform, MailingList_Panopticon},
 	},
 }
