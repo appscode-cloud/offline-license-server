@@ -31,7 +31,6 @@ import (
 
 	"github.com/avct/uasurfer"
 	"github.com/go-macaron/auth"
-	"github.com/go-macaron/bindata"
 	"github.com/go-macaron/binding"
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/cors"
@@ -39,6 +38,7 @@ import (
 	"github.com/oschwald/geoip2-golang"
 	"github.com/pkg/errors"
 	"github.com/zoom-lib-golang/zoom-lib-golang"
+	mcfs "go.wandrs.dev/macaron-embed"
 	"golang.org/x/crypto/acme/autocert"
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert/certstore"
@@ -204,12 +204,9 @@ func (s *Server) Run() error {
 		AllowCredentials: false,
 	}))
 	m.Use(macaron.Renderer(macaron.RenderOptions{
-		TemplateFileSystem: bindata.Templates(bindata.Options{
-			Asset:      templates.Asset,
-			AssetDir:   templates.AssetDir,
-			AssetNames: templates.AssetNames,
-			Prefix:     "",
-		}),
+		TemplateFileSystem: mcfs.EmbeddedFileSystem{
+			FS: templates.FS,
+		},
 	}))
 	// m.Use(macaron.Static("public"))
 	m.Get("/", func(ctx *macaron.Context) {
