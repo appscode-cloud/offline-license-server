@@ -51,9 +51,6 @@ github.com/davegardnerisme/phonegeocode
 # github.com/dustin/go-humanize v1.0.1-0.20220316001817-d5090ed65664
 ## explicit; go 1.16
 github.com/dustin/go-humanize
-# github.com/elazarl/go-bindata-assetfs v1.0.1
-## explicit
-github.com/elazarl/go-bindata-assetfs
 # github.com/fatih/structs v1.1.0
 ## explicit
 github.com/fatih/structs
@@ -71,9 +68,6 @@ github.com/go-logr/logr
 # github.com/go-macaron/auth v0.0.0-20161228062157-884c0e6c9b92
 ## explicit
 github.com/go-macaron/auth
-# github.com/go-macaron/bindata v0.0.0-20200308113348-9fced76aaa6e
-## explicit
-github.com/go-macaron/bindata
 # github.com/go-macaron/binding v1.2.0 => github.com/wandrs/macaron-binding v0.0.0-20230103140222-6e6306e07bec
 ## explicit; go 1.12
 github.com/go-macaron/binding
@@ -268,6 +262,9 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
+# go.wandrs.dev/macaron-embed v0.0.1
+## explicit; go 1.18
+go.wandrs.dev/macaron-embed
 # gocloud.dev v0.26.0
 ## explicit; go 1.12
 gocloud.dev/blob
