@@ -29,8 +29,8 @@ func (e EmbeddedFileSystem) ListFiles() []macaron.TemplateFile {
 		if err != nil {
 			return err
 		}
-		ext := filepath.Ext(d.Name())
-		key := d.Name()
+		ext := filepath.Ext(path)
+		key := path
 		name := key[0 : len(key)-len(ext)]
 		files = append(files, macaron.NewTplFile(name, data, ext))
 		return nil
@@ -48,8 +48,8 @@ func (e EmbeddedFileSystem) Get(s string) (io.Reader, error) {
 			return nil
 		}
 
-		ext := filepath.Ext(d.Name())
-		key := d.Name()
+		ext := filepath.Ext(path)
+		key := path
 		if key[0:len(key)-len(ext)] == s {
 			filename = path
 			return errors.New("found")
