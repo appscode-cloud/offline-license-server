@@ -23,7 +23,7 @@ require (
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/yuin/goldmark v1.4.13
 	github.com/zoom-lib-golang/zoom-lib-golang v1.0.2
-	go.wandrs.dev/macaron-embed v0.0.1
+	go.wandrs.dev/macaron-embed v0.0.2
 	gocloud.dev v0.26.0
 	golang.org/x/crypto v0.4.1-0.20221221171930-bc7d1d1eb54b
 	golang.org/x/net v0.4.1-0.20221223171606-2aa82152a53e
