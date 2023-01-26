@@ -32,7 +32,7 @@ import (
 
 const (
 	offerLetterSpreadsheetId = "1fZ3KEebljFOPUW01Yf-I-_idsWz6OZ1RPlZzudgL1GE"
-	offerLetterFolderId      = "1tZ73MVkP9SOWPGtgzHVz8xaRx2PHNs1X" // 2022
+	offerLetterFolderId      = "1z57_CH8apkV3QryVBWE4YZKs-nrDf3rP" // 2023
 	MailHR                   = "hr.bd@appscode.com"
 )
 
