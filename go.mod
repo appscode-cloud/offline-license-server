@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
 	github.com/davegardnerisme/phonegeocode v0.0.0-20160120101024-a49b977f8889
+	github.com/dustin/go-humanize v1.0.1
 	github.com/go-macaron/auth v0.0.0-20161228062157-884c0e6c9b92
 	github.com/go-macaron/binding v1.2.0
 	github.com/go-macaron/cache v0.0.0-20200329073519-53bb48172687
@@ -64,7 +65,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.17.6 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.19 // indirect
 	github.com/aws/smithy-go v1.13.3 // indirect
-	github.com/dustin/go-humanize v1.0.1-0.20220316001817-d5090ed65664 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.1 // indirect

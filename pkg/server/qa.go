@@ -24,6 +24,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/go-macaron/binding"
 	"github.com/go-macaron/cache"
 	"github.com/gocarina/gocsv"
@@ -295,7 +296,7 @@ func (s *Server) RegisterQAAPI(m *macaron.Macaron) {
 			ctx.Data["Err"] = "Time passed for this test"
 			log.Println(err)
 		} else {
-			ctx.Data["TimeLeft"] = time.Until(cfg.EndDate.Time).Round(time.Minute)
+			ctx.Data["TimeLeft"] = humanize.RelTime(cfg.EndDate.Time, time.Now(), "", "")
 			ctx.Data["Duration"] = int(cfg.Duration.Minutes())
 		}
 		if cfg != nil {
