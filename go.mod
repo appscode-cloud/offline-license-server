@@ -25,9 +25,9 @@ require (
 	github.com/zoom-lib-golang/zoom-lib-golang v1.0.2
 	go.wandrs.dev/macaron-embed v0.0.2
 	gocloud.dev v0.26.0
-	golang.org/x/crypto v0.4.1-0.20221221171930-bc7d1d1eb54b
-	golang.org/x/net v0.4.1-0.20221223171606-2aa82152a53e
-	golang.org/x/text v0.5.1-0.20221206182405-ec5565b1b747
+	golang.org/x/crypto v0.6.0
+	golang.org/x/net v0.7.0
+	golang.org/x/text v0.7.0
 	gomodules.xyz/blobfs v0.1.12-0.20220924052729-1b66a62602d2
 	gomodules.xyz/cert v1.5.1-0.20220924053658-29a73f2ab65e
 	gomodules.xyz/email-providers v0.1.4
@@ -102,7 +102,7 @@ require (
 	github.com/unknwon/com v1.0.2-0.20200817130700-b41c64acd94b // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/oauth2 v0.3.0 // indirect
-	golang.org/x/sys v0.3.1-0.20230101012411-b751db56c781 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
 	gomodules.xyz/email v0.1.0 // indirect
