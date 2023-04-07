@@ -82,7 +82,7 @@ These instructions are useful if you are trying to deploy your own license serve
 - Download pre-built binary into a server
 
 ```bash
-curl -fsSL -O https://github.com/bytebuilders/offline-license-server/releases/download/v0.0.44/offline-license-server-linux-amd64
+curl -fsSL -O https://github.com/bytebuilders/offline-license-server/releases/download/v0.0.45/offline-license-server-linux-amd64
 chmod +x offline-license-server-linux-amd64
 mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
 sudo systemctl restart offline-license-server
@@ -91,7 +91,7 @@ sudo systemctl restart offline-license-server
 - Install systemd service
 
 ```bash
-curl -fsSL -O https://github.com/bytebuilders/offline-license-server/raw/v0.0.44/hack/systemd/offline-license-server.service
+curl -fsSL -O https://github.com/bytebuilders/offline-license-server/raw/v0.0.45/hack/systemd/offline-license-server.service
 chmod +x offline-license-server.service
 
 # 1. Copy Google cloud service account json key to /root/app/gcloud.json
