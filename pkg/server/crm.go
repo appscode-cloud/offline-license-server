@@ -25,15 +25,12 @@ import (
 )
 
 func (s *Server) ensureCRMEntity(contact *freshsalesclient.Contact) (freshsalesclient.EntityType, int64, error) {
-	result, err := s.freshsales.LookupByEmail(contact.Email, freshsalesclient.EntityContact, freshsalesclient.EntityContact)
+	result, err := s.freshsales.LookupByEmail(contact.Email, freshsalesclient.EntityContact)
 	if err != nil {
 		return "", 0, err
 	}
 
 	if len(result.Contacts.Contacts) > 0 {
-		// contact found
-		return freshsalesclient.EntityContact, result.Contacts.Contacts[0].ID, nil
-	} else if len(result.Contacts.Contacts) > 0 {
 		// contact found
 		return freshsalesclient.EntityContact, result.Contacts.Contacts[0].ID, nil
 	}
@@ -104,7 +101,7 @@ func (s *Server) noteEventLicenseIssued(info LogEntry, event LicenseEventType) e
 }
 
 func (s *Server) noteEventQuotation(form ProductQuotation, e EventQuotationGenerated) error {
-	result, err := s.freshsales.LookupByEmail(form.Email, freshsalesclient.EntityContact, freshsalesclient.EntityContact)
+	result, err := s.freshsales.LookupByEmail(form.Email, freshsalesclient.EntityContact)
 	if err != nil {
 		return err
 	}
@@ -134,32 +131,6 @@ func (s *Server) noteEventQuotation(form ProductQuotation, e EventQuotationGener
 		//	contact.Company.Name = form.Company
 		//	changed = true
 		//}
-
-		if changed {
-			_, err = s.freshsales.UpdateContact(&contact)
-			if err != nil {
-				return err
-			}
-		}
-	} else if len(result.Contacts.Contacts) > 0 {
-		// contact found
-		et = freshsalesclient.EntityContact
-		contact := result.Contacts.Contacts[0]
-		id = contact.ID
-
-		var changed bool
-		if contact.DisplayName != form.Name {
-			contact.DisplayName = form.Name
-			changed = true
-		}
-		if contact.JobTitle != form.Title {
-			contact.JobTitle = form.Title
-			changed = true
-		}
-		if contact.WorkNumber != form.Telephone {
-			contact.WorkNumber = form.Telephone
-			changed = true
-		}
 
 		if changed {
 			_, err = s.freshsales.UpdateContact(&contact)
@@ -223,7 +194,7 @@ func (s *Server) noteEventMailgun(email string, e EventMailgun) error {
 }
 
 func (s *Server) noteEventWebinarRegistration(form WebinarRegistrationForm, e EventWebinarRegistration) error {
-	result, err := s.freshsales.LookupByEmail(form.WorkEmail, freshsalesclient.EntityContact, freshsalesclient.EntityContact)
+	result, err := s.freshsales.LookupByEmail(form.WorkEmail, freshsalesclient.EntityContact)
 	if err != nil {
 		return err
 	}
@@ -254,33 +225,6 @@ func (s *Server) noteEventWebinarRegistration(form WebinarRegistrationForm, e Ev
 		//	contact.Company.Name = form.Company
 		//	changed = true
 		//}
-
-		if changed {
-			_, err = s.freshsales.UpdateContact(&contact)
-			if err != nil {
-				return err
-			}
-		}
-	} else if len(result.Contacts.Contacts) > 0 {
-		// contact found
-		et = freshsalesclient.EntityContact
-		contact := result.Contacts.Contacts[0]
-		id = contact.ID
-
-		var changed bool
-		name := form.FirstName + " " + form.LastName
-		if contact.DisplayName != name {
-			contact.DisplayName = name
-			changed = true
-		}
-		if contact.JobTitle != form.JobTitle {
-			contact.JobTitle = form.JobTitle
-			changed = true
-		}
-		if contact.WorkNumber != form.Phone {
-			contact.WorkNumber = form.Phone
-			changed = true
-		}
 
 		if changed {
 			_, err = s.freshsales.UpdateContact(&contact)
