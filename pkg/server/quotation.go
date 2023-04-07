@@ -170,7 +170,7 @@ type QuotationGeneratorOptions struct {
 	// ReplacementInput     map[string]string
 	LicenseSpreadsheetId string
 
-	Lead QuotationForm
+	Contact QuotationForm
 }
 
 func (opts QuotationGeneratorOptions) Validate() error {
@@ -206,8 +206,8 @@ type QuotationGeneratorConfig struct {
 }
 
 type QuotationGenerator struct {
-	cfg  QuotationGeneratorConfig
-	Lead ProductQuotation
+	cfg     QuotationGeneratorConfig
+	Contact ProductQuotation
 
 	Location GeoLocation
 	UA       *uasurfer.UserAgent
@@ -249,8 +249,8 @@ func NewQuotationGenerator(client *http.Client, cfg QuotationGeneratorConfig) *Q
 }
 
 func (gen *QuotationGenerator) Generate() (string, string, error) {
-	if gen.Lead.Telephone != "" && gen.Location.Country == "" {
-		tel := SanitizeTelNumber(gen.Lead.Telephone)
+	if gen.Contact.Telephone != "" && gen.Location.Country == "" {
+		tel := SanitizeTelNumber(gen.Contact.Telephone)
 		if !strings.HasPrefix(tel, "+") && len(tel) == 10 {
 			tel = "+1" + tel
 		}
@@ -259,7 +259,7 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 		}
 	}
 
-	replacements := gen.Lead.Replacements()
+	replacements := gen.Contact.Replacements()
 	var clientOS, clientDevice string
 	if gen.UA != nil {
 		clientOS = gen.UA.OS.Name.StringTrimPrefix()
@@ -285,11 +285,11 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 		"Client Device",
 	}, []string{
 		"AC_DETECT_QUOTE",
-		gen.Lead.Name,
-		gen.Lead.Title,
-		gen.Lead.Email,
-		gen.Lead.Telephone,
-		gen.Lead.Company,
+		gen.Contact.Name,
+		gen.Contact.Title,
+		gen.Contact.Email,
+		gen.Contact.Telephone,
+		gen.Contact.Company,
 		replacements["{{website}}"],
 		gen.cfg.TemplateDoc,
 		replacements["{{prep-date}}"],
@@ -310,7 +310,7 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 	var domainFolderId string
 
 	// https://developers.google.com/drive/api/v3/search-files
-	q := fmt.Sprintf("name = '%s' and mimeType = 'application/vnd.google-apps.folder' and '%s' in parents", FolderName(gen.Lead.Email), gen.cfg.AccountsFolderId)
+	q := fmt.Sprintf("name = '%s' and mimeType = 'application/vnd.google-apps.folder' and '%s' in parents", FolderName(gen.Contact.Email), gen.cfg.AccountsFolderId)
 	files, err := gen.DriveService.Files.List().Q(q).Spaces("drive").Do()
 	if err != nil {
 		return "", "", err
@@ -320,7 +320,7 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 	} else {
 		// https://developers.google.com/drive/api/v3/folder#java
 		folderMetadata := &drive.File{
-			Name:     FolderName(gen.Lead.Email),
+			Name:     FolderName(gen.Contact.Email),
 			MimeType: "application/vnd.google-apps.folder",
 			Parents:  []string{gen.cfg.AccountsFolderId},
 		}
@@ -369,77 +369,77 @@ func (gen *QuotationGenerator) Generate() (string, string, error) {
 }
 
 func (gen *QuotationGenerator) DocName(quote string) string {
-	return fmt.Sprintf("%s QUOTE #%s", FolderName(gen.Lead.Email), quote)
+	return fmt.Sprintf("%s QUOTE #%s", FolderName(gen.Contact.Email), quote)
 }
 
 func (gen *QuotationGenerator) GetMailer() mailer.Mailer {
 	switch strings.ToLower(gen.cfg.TemplateDoc) {
 	case "kubedb-payg":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "KubeDB",
 			FullPlan:         "Pay-As-You-Go (PAYG)",
 			Plan:             "PAYG",
 		})
 	case "kubedb-enterprise":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "KubeDB",
 			FullPlan:         "Enterprise",
 			Plan:             "Enterprise",
 		})
 	case "stash-payg":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "Stash",
 			FullPlan:         "Pay-As-You-Go (PAYG)",
 			Plan:             "PAYG",
 		})
 	case "stash-enterprise":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "Stash",
 			FullPlan:         "Enterprise",
 			Plan:             "Enterprise",
 		})
 	case "kubeform-payg":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "Kubeform",
 			FullPlan:         "Pay-As-You-Go (PAYG)",
 			Plan:             "PAYG",
 		})
 	case "kubeform-enterprise":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "Kubeform",
 			FullPlan:         "Enterprise",
 			Plan:             "Enterprise",
 		})
 	case "kubevault-payg":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "KubeVault",
 			FullPlan:         "Pay-As-You-Go (PAYG)",
 			Plan:             "PAYG",
 		})
 	case "kubevault-enterprise":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "KubeVault",
 			FullPlan:         "Enterprise",
 			Plan:             "Enterprise",
 		})
 	case "voyager-payg":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "Voyager",
 			FullPlan:         "Pay-As-You-Go (PAYG)",
 			Plan:             "PAYG",
 		})
 	case "voyager-enterprise":
 		return NewQuotationMailer(QuotationEmailData{
-			ProductQuotation: gen.Lead,
+			ProductQuotation: gen.Contact,
 			Offer:            "Voyager",
 			FullPlan:         "Enterprise",
 			Plan:             "Enterprise",
@@ -509,10 +509,10 @@ func FolderName(email string) string {
 	return parts[len(parts)-1]
 }
 
-func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) error {
+func (s *Server) HandleEmailQuotation(ctx *macaron.Context, contact QuotationForm) error {
 	folderChan := make(chan string)
 
-	for idx, product := range lead.Product {
+	for idx, product := range contact.Product {
 		cfg := QuotationGeneratorConfig{
 			AccountsFolderId:     AccountFolderId,
 			TemplateDocId:        templateIds[product].TemplateDocId,
@@ -521,14 +521,14 @@ func (s *Server) HandleEmailQuotation(ctx *macaron.Context, lead QuotationForm) 
 		}
 
 		gen := NewQuotationGenerator(s.driveClient, cfg)
-		gen.Lead = ProductQuotation{
-			Name:      lead.Name,
-			Email:     lead.Email,
-			CC:        lead.CC,
-			Title:     lead.Title,
-			Telephone: lead.Telephone,
+		gen.Contact = ProductQuotation{
+			Name:      contact.Name,
+			Email:     contact.Email,
+			CC:        contact.CC,
+			Title:     contact.Title,
+			Telephone: contact.Telephone,
 			Product:   product,
-			Company:   lead.Company,
+			Company:   contact.Company,
 		}
 		gen.UA = uasurfer.Parse(ctx.Req.UserAgent())
 		location := GeoLocation{
@@ -581,23 +581,23 @@ func (s *Server) processQuotationRequest(gen *QuotationGenerator, sendEmail bool
 	}
 
 	if sendEmail {
-		fmt.Println("sending email to", gen.Lead.Email)
-		err = mailer.SendMail(s.mg, gen.Lead.Email, gen.Lead.CC, srvDrive)
+		fmt.Println("sending email to", gen.Contact.Email)
+		err = mailer.SendMail(s.mg, gen.Contact.Email, gen.Contact.CC, srvDrive)
 		if err != nil {
 			return err
 		}
 	}
 
 	err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
-		Email:        gen.Lead.Email,
-		Name:         gen.Lead.Name,
-		MailingLists: templateIds[gen.Lead.Product].MailingLists,
+		Email:        gen.Contact.Email,
+		Name:         gen.Contact.Name,
+		MailingLists: templateIds[gen.Contact.Product].MailingLists,
 	})
 	if err != nil {
 		return err
 	}
 
-	return s.noteEventQuotation(gen.Lead, EventQuotationGenerated{
+	return s.noteEventQuotation(gen.Contact, EventQuotationGenerated{
 		BaseNoteDescription: freshsalesclient.BaseNoteDescription{
 			Event: "quotation_generated",
 			Client: freshsalesclient.ClientInfo{

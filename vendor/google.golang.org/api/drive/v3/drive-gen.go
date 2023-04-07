@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2023 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -1416,8 +1416,9 @@ type File struct {
 	// application/vnd.google-apps.shortcut.
 	ShortcutDetails *FileShortcutDetails `json:"shortcutDetails,omitempty"`
 
-	// Size: The size of the file's content in bytes. This is applicable to
-	// binary files in Google Drive and Google Docs files.
+	// Size: The size of the file's content in bytes. This field is
+	// populated for files with binary content stored in Google Drive and
+	// for Docs Editors files; it is not populated for shortcuts or folders.
 	Size int64 `json:"size,omitempty,string"`
 
 	// Spaces: The list of spaces which contain the file. The currently
@@ -3814,8 +3815,8 @@ func (c *ChangesListCall) RestrictToMyDrive(restrictToMyDrive bool) *ChangesList
 }
 
 // Spaces sets the optional parameter "spaces": A comma-separated list
-// of spaces to query within the user corpus. Supported values are
-// 'drive', 'appDataFolder' and 'photos'.
+// of spaces to query within the corpora. Supported values are 'drive'
+// and 'appDataFolder'.
 func (c *ChangesListCall) Spaces(spaces string) *ChangesListCall {
 	c.urlParams_.Set("spaces", spaces)
 	return c
@@ -4008,7 +4009,7 @@ func (c *ChangesListCall) Do(opts ...googleapi.CallOption) (*ChangeList, error) 
 	//     },
 	//     "spaces": {
 	//       "default": "drive",
-	//       "description": "A comma-separated list of spaces to query within the user corpus. Supported values are 'drive', 'appDataFolder' and 'photos'.",
+	//       "description": "A comma-separated list of spaces to query within the corpora. Supported values are 'drive' and 'appDataFolder'.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -4149,8 +4150,8 @@ func (c *ChangesWatchCall) RestrictToMyDrive(restrictToMyDrive bool) *ChangesWat
 }
 
 // Spaces sets the optional parameter "spaces": A comma-separated list
-// of spaces to query within the user corpus. Supported values are
-// 'drive', 'appDataFolder' and 'photos'.
+// of spaces to query within the corpora. Supported values are 'drive'
+// and 'appDataFolder'.
 func (c *ChangesWatchCall) Spaces(spaces string) *ChangesWatchCall {
 	c.urlParams_.Set("spaces", spaces)
 	return c
@@ -4335,7 +4336,7 @@ func (c *ChangesWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	//     },
 	//     "spaces": {
 	//       "default": "drive",
-	//       "description": "A comma-separated list of spaces to query within the user corpus. Supported values are 'drive', 'appDataFolder' and 'photos'.",
+	//       "description": "A comma-separated list of spaces to query within the corpora. Supported values are 'drive' and 'appDataFolder'.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -4491,7 +4492,7 @@ type CommentsCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a new comment on a file.
+// Create: Creates a comment on a file.
 //
 // - fileId: The ID of the file.
 func (r *CommentsService) Create(fileId string, comment *Comment) *CommentsCreateCall {
@@ -4592,7 +4593,7 @@ func (c *CommentsCreateCall) Do(opts ...googleapi.CallOption) (*Comment, error) 
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new comment on a file.",
+	//   "description": "Creates a comment on a file.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.comments.create",
 	//   "parameterOrder": [
@@ -5291,7 +5292,7 @@ type DrivesCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a new shared drive.
+// Create: Creates a shared drive.
 //
 //   - requestId: An ID, such as a random UUID, which uniquely identifies
 //     this user's request for idempotent creation of a shared drive. A
@@ -5394,7 +5395,7 @@ func (c *DrivesCreateCall) Do(opts ...googleapi.CallOption) (*Drive, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new shared drive.",
+	//   "description": "Creates a shared drive.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.drives.create",
 	//   "parameterOrder": [
@@ -6603,7 +6604,7 @@ type FilesCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a new file.
+// Create: Creates a file.
 func (r *FilesService) Create(file *File) *FilesCreateCall {
 	c := &FilesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.file = file
@@ -6841,7 +6842,7 @@ func (c *FilesCreateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new file.",
+	//   "description": "Creates a file.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.files.create",
 	//   "mediaUpload": {
@@ -7863,7 +7864,7 @@ func (c *FilesListCall) Q(q string) *FilesListCall {
 }
 
 // Spaces sets the optional parameter "spaces": A comma-separated list
-// of spaces to query within the corpus. Supported values are 'drive'
+// of spaces to query within the corpora. Supported values are 'drive'
 // and 'appDataFolder'.
 func (c *FilesListCall) Spaces(spaces string) *FilesListCall {
 	c.urlParams_.Set("spaces", spaces)
@@ -8063,7 +8064,7 @@ func (c *FilesListCall) Do(opts ...googleapi.CallOption) (*FileList, error) {
 	//     },
 	//     "spaces": {
 	//       "default": "drive",
-	//       "description": "A comma-separated list of spaces to query within the corpus. Supported values are 'drive' and 'appDataFolder'.",
+	//       "description": "A comma-separated list of spaces to query within the corpora. Supported values are 'drive' and 'appDataFolder'.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -10186,7 +10187,7 @@ type RepliesCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a new reply to a comment.
+// Create: Creates a reply to a comment.
 //
 // - commentId: The ID of the comment.
 // - fileId: The ID of the file.
@@ -10290,7 +10291,7 @@ func (c *RepliesCreateCall) Do(opts ...googleapi.CallOption) (*Reply, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new reply to a comment.",
+	//   "description": "Creates a reply to a comment.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.replies.create",
 	//   "parameterOrder": [

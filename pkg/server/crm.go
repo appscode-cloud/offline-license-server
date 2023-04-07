@@ -24,8 +24,8 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func (s *Server) ensureCRMEntity(lead *freshsalesclient.Lead) (freshsalesclient.EntityType, int64, error) {
-	result, err := s.freshsales.LookupByEmail(lead.Email, freshsalesclient.EntityLead, freshsalesclient.EntityContact)
+func (s *Server) ensureCRMEntity(contact *freshsalesclient.Contact) (freshsalesclient.EntityType, int64, error) {
+	result, err := s.freshsales.LookupByEmail(contact.Email, freshsalesclient.EntityContact, freshsalesclient.EntityContact)
 	if err != nil {
 		return "", 0, err
 	}
@@ -33,27 +33,27 @@ func (s *Server) ensureCRMEntity(lead *freshsalesclient.Lead) (freshsalesclient.
 	if len(result.Contacts.Contacts) > 0 {
 		// contact found
 		return freshsalesclient.EntityContact, result.Contacts.Contacts[0].ID, nil
-	} else if len(result.Leads.Leads) > 0 {
-		// lead found
-		return freshsalesclient.EntityLead, result.Leads.Leads[0].ID, nil
+	} else if len(result.Contacts.Contacts) > 0 {
+		// contact found
+		return freshsalesclient.EntityContact, result.Contacts.Contacts[0].ID, nil
 	}
 
-	// create lead
-	lead, err = s.freshsales.CreateLead(lead)
+	// create contact
+	contact, err = s.freshsales.CreateContact(contact)
 	if err != nil {
 		return "", 0, err
 	}
-	return freshsalesclient.EntityLead, lead.ID, nil
+	return freshsalesclient.EntityContact, contact.ID, nil
 }
 
-func (s *Server) createLead(email string, name string) *freshsalesclient.Lead {
+func (s *Server) createContact(email string, name string) *freshsalesclient.Contact {
 	fields := strings.Fields(name)
 	var firstname, lastname string
 	if len(fields) > 0 {
 		firstname = strings.Join(fields[0:len(fields)-1], " ")
 		lastname = fields[len(fields)-1]
 	}
-	return &freshsalesclient.Lead{
+	return &freshsalesclient.Contact{
 		Email:       email,
 		DisplayName: name,
 		FirstName:   firstname,
@@ -69,7 +69,7 @@ const (
 )
 
 func (s *Server) noteEventLicenseIssued(info LogEntry, event LicenseEventType) error {
-	et, id, err := s.ensureCRMEntity(s.createLead(info.Email, info.Name))
+	et, id, err := s.ensureCRMEntity(s.createContact(info.Email, info.Name))
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (s *Server) noteEventLicenseIssued(info LogEntry, event LicenseEventType) e
 }
 
 func (s *Server) noteEventQuotation(form ProductQuotation, e EventQuotationGenerated) error {
-	result, err := s.freshsales.LookupByEmail(form.Email, freshsalesclient.EntityLead, freshsalesclient.EntityContact)
+	result, err := s.freshsales.LookupByEmail(form.Email, freshsalesclient.EntityContact, freshsalesclient.EntityContact)
 	if err != nil {
 		return err
 	}
@@ -141,56 +141,49 @@ func (s *Server) noteEventQuotation(form ProductQuotation, e EventQuotationGener
 				return err
 			}
 		}
-	} else if len(result.Leads.Leads) > 0 {
-		// lead found
-		et = freshsalesclient.EntityLead
-		lead := result.Leads.Leads[0]
-		id = lead.ID
+	} else if len(result.Contacts.Contacts) > 0 {
+		// contact found
+		et = freshsalesclient.EntityContact
+		contact := result.Contacts.Contacts[0]
+		id = contact.ID
 
 		var changed bool
-		if lead.DisplayName != form.Name {
-			lead.DisplayName = form.Name
+		if contact.DisplayName != form.Name {
+			contact.DisplayName = form.Name
 			changed = true
 		}
-		if lead.JobTitle != form.Title {
-			lead.JobTitle = form.Title
+		if contact.JobTitle != form.Title {
+			contact.JobTitle = form.Title
 			changed = true
 		}
-		if lead.WorkNumber != form.Telephone {
-			lead.WorkNumber = form.Telephone
-			changed = true
-		}
-		if lead.Company.Name != form.Company {
-			lead.Company.Name = form.Company
+		if contact.WorkNumber != form.Telephone {
+			contact.WorkNumber = form.Telephone
 			changed = true
 		}
 
 		if changed {
-			_, err = s.freshsales.UpdateLead(&lead)
+			_, err = s.freshsales.UpdateContact(&contact)
 			if err != nil {
 				return err
 			}
 		}
 	} else {
-		// create lead
+		// create contact
 		fields := strings.Fields(form.Name)
-		lead := &freshsalesclient.Lead{
+		contact := &freshsalesclient.Contact{
 			Email:       form.Email,
 			DisplayName: form.Name,
 			FirstName:   strings.Join(fields[0:len(fields)-1], " "),
 			LastName:    fields[len(fields)-1],
 			JobTitle:    form.Title,
 			WorkNumber:  form.Telephone,
-			Company: freshsalesclient.Company{
-				Name: form.Company,
-			},
 		}
-		lead, err := s.freshsales.CreateLead(lead)
+		contact, err := s.freshsales.CreateContact(contact)
 		if err != nil {
 			return err
 		}
-		et = freshsalesclient.EntityLead
-		id = lead.ID
+		et = freshsalesclient.EntityContact
+		id = contact.ID
 	}
 
 	// add note
@@ -215,7 +208,7 @@ func (s *Server) noteEventMailgun(email string, e EventMailgun) error {
 	name = strings.ReplaceAll(name, "-", " ")
 	name = flect.Titleize(name)
 
-	et, id, err := s.ensureCRMEntity(s.createLead(email, name))
+	et, id, err := s.ensureCRMEntity(s.createContact(email, name))
 	if err != nil {
 		return err
 	}
@@ -230,7 +223,7 @@ func (s *Server) noteEventMailgun(email string, e EventMailgun) error {
 }
 
 func (s *Server) noteEventWebinarRegistration(form WebinarRegistrationForm, e EventWebinarRegistration) error {
-	result, err := s.freshsales.LookupByEmail(form.WorkEmail, freshsalesclient.EntityLead, freshsalesclient.EntityContact)
+	result, err := s.freshsales.LookupByEmail(form.WorkEmail, freshsalesclient.EntityContact, freshsalesclient.EntityContact)
 	if err != nil {
 		return err
 	}
@@ -268,56 +261,49 @@ func (s *Server) noteEventWebinarRegistration(form WebinarRegistrationForm, e Ev
 				return err
 			}
 		}
-	} else if len(result.Leads.Leads) > 0 {
-		// lead found
-		et = freshsalesclient.EntityLead
-		lead := result.Leads.Leads[0]
-		id = lead.ID
+	} else if len(result.Contacts.Contacts) > 0 {
+		// contact found
+		et = freshsalesclient.EntityContact
+		contact := result.Contacts.Contacts[0]
+		id = contact.ID
 
 		var changed bool
 		name := form.FirstName + " " + form.LastName
-		if lead.DisplayName != name {
-			lead.DisplayName = name
+		if contact.DisplayName != name {
+			contact.DisplayName = name
 			changed = true
 		}
-		if lead.JobTitle != form.JobTitle {
-			lead.JobTitle = form.JobTitle
+		if contact.JobTitle != form.JobTitle {
+			contact.JobTitle = form.JobTitle
 			changed = true
 		}
-		if lead.WorkNumber != form.Phone {
-			lead.WorkNumber = form.Phone
-			changed = true
-		}
-		if lead.Company.Name != form.Company {
-			lead.Company.Name = form.Company
+		if contact.WorkNumber != form.Phone {
+			contact.WorkNumber = form.Phone
 			changed = true
 		}
 
 		if changed {
-			_, err = s.freshsales.UpdateLead(&lead)
+			_, err = s.freshsales.UpdateContact(&contact)
 			if err != nil {
 				return err
 			}
 		}
 	} else {
-		// create lead
-		lead := &freshsalesclient.Lead{
+		// create contact
+		contact := &freshsalesclient.Contact{
 			Email:       form.WorkEmail,
 			DisplayName: form.FirstName + " " + form.LastName,
 			FirstName:   form.FirstName,
 			LastName:    form.LastName,
 			JobTitle:    form.JobTitle,
 			WorkNumber:  form.Phone,
-			Company: freshsalesclient.Company{
-				Name: form.Company,
-			},
 		}
-		lead, err := s.freshsales.CreateLead(lead)
+		contact, err := s.freshsales.CreateContact(contact)
 		if err != nil {
 			return err
 		}
-		et = freshsalesclient.EntityLead
-		id = lead.ID
+		et = freshsalesclient.EntityContact
+		id = contact.ID
 	}
 
 	// add note
