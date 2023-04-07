@@ -156,7 +156,7 @@ func New(opts *Options) (*Server, error) {
 		fs:               fs,
 		mg:               mg,
 		sheet:            sheet,
-		freshsales:       freshsalesclient.New(opts.freshsalesHost, opts.freshsalesAPIToken),
+		freshsales:       freshsalesclient.DefaultFromEnv(),
 		listmonk:         listmonkclient.New(opts.listmonkHost, opts.listmonkUsername, opts.listmonkPassword),
 		geodb:            geodb,
 		sch:              sch,

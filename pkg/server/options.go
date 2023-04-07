@@ -43,9 +43,6 @@ type Options struct {
 	SMTPUsername string
 	SMTPPassword string
 
-	freshsalesHost     string
-	freshsalesAPIToken string
-
 	listmonkHost     string
 	listmonkUsername string
 	listmonkPassword string
@@ -73,8 +70,6 @@ func NewOptions() *Options {
 		SMTPAddress:          os.Getenv("SMTP_ADDRESS"),
 		SMTPUsername:         os.Getenv("SMTP_USERNAME"),
 		SMTPPassword:         os.Getenv("SMTP_PASSWORD"),
-		freshsalesHost:       "https://" + os.Getenv("CRM_BUNDLE_ALIAS"),
-		freshsalesAPIToken:   os.Getenv("CRM_API_TOKEN"),
 		listmonkHost:         listmonkclient.ListmonkProd,
 		listmonkUsername:     os.Getenv("LISTMONK_USERNAME"),
 		listmonkPassword:     os.Getenv("LISTMONK_PASSWORD"),
@@ -102,9 +97,6 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.SMTPAddress, "smtp.address", s.SMTPAddress, "SMTP server host:port")
 	fs.StringVar(&s.SMTPUsername, "smtp.username", s.SMTPUsername, "SMTP username")
 	fs.StringVar(&s.SMTPPassword, "smtp.password", s.SMTPPassword, "SMTP password")
-
-	fs.StringVar(&s.freshsalesHost, "freshsales.host", s.freshsalesHost, "Freshsales host url")
-	fs.StringVar(&s.freshsalesAPIToken, "freshsales.token", s.freshsalesAPIToken, "Freshsales api token")
 
 	fs.StringVar(&s.listmonkHost, "listmonk.host", s.listmonkHost, "Listmonk host url")
 	fs.StringVar(&s.listmonkUsername, "listmonk.username", s.listmonkUsername, "Listmonk username")
