@@ -250,14 +250,14 @@ func (s *Server) Run() error {
 		ctx.Data["Product"] = product
 		ctx.HTML(200, "pricing") // 200 is the response code.
 	})
-	m.Post("/_/pricing/", binding.Bind(QuotationForm{}), func(ctx *macaron.Context, lead QuotationForm) {
-		if err := lead.Validate(); err != nil {
+	m.Post("/_/pricing/", binding.Bind(QuotationForm{}), func(ctx *macaron.Context, contact QuotationForm) {
+		if err := contact.Validate(); err != nil {
 			ctx.WriteHeader(http.StatusBadRequest)
 			respond(ctx, []byte(err.Error()))
 			return
 		}
 
-		err := s.HandleEmailQuotation(ctx, lead)
+		err := s.HandleEmailQuotation(ctx, contact)
 		if err != nil {
 			ctx.WriteHeader(http.StatusInternalServerError)
 			respond(ctx, []byte(err.Error()))

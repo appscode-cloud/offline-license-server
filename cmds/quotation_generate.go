@@ -52,23 +52,23 @@ func NewCmdGenerateQuotation() *cobra.Command {
 				return err
 			}
 
-			for _, product := range opts.Lead.Product {
+			for _, product := range opts.Contact.Product {
 				gen := server.NewQuotationGenerator(client, opts.Complete())
-				gen.Lead = server.ProductQuotation{
-					Name:      opts.Lead.Name,
-					Email:     opts.Lead.Email,
-					CC:        opts.Lead.CC,
-					Title:     opts.Lead.Title,
-					Telephone: opts.Lead.Telephone,
+				gen.Contact = server.ProductQuotation{
+					Name:      opts.Contact.Name,
+					Email:     opts.Contact.Email,
+					CC:        opts.Contact.CC,
+					Title:     opts.Contact.Title,
+					Telephone: opts.Contact.Telephone,
 					Product:   product,
-					Company:   opts.Lead.Company,
+					Company:   opts.Contact.Company,
 				}
 				quote, docId, err := gen.Generate()
 				if err != nil {
 					return err
 				}
 
-				filename := filepath.Join(outDir, server.FolderName(opts.Lead.Email), gen.DocName(quote)+".pdf")
+				filename := filepath.Join(outDir, server.FolderName(opts.Contact.Email), gen.DocName(quote)+".pdf")
 				err = mailer.ExportPDF(gen.DriveService, docId, filename)
 				if err != nil {
 					return err
@@ -83,12 +83,12 @@ func NewCmdGenerateQuotation() *cobra.Command {
 	cmd.Flags().StringVar(&outDir, "out-dir", outDir, "Path to directory where output files are stored")
 	cmd.Flags().StringVar(&opts.LicenseSpreadsheetId, "spreadsheet-id", opts.LicenseSpreadsheetId, "Google Spreadsheet Id used to store quotation log")
 
-	cmd.Flags().StringVar(&opts.Lead.Name, "lead.name", opts.Lead.Name, "Name of lead")
-	cmd.Flags().StringVar(&opts.Lead.Email, "lead.email", opts.Lead.Email, "Email of lead")
-	cmd.Flags().StringVar(&opts.Lead.Title, "lead.title", opts.Lead.Title, "Job title of lead")
-	cmd.Flags().StringVar(&opts.Lead.Telephone, "lead.telephone", opts.Lead.Telephone, "Telephone number of lead")
-	cmd.Flags().StringSliceVar(&opts.Lead.Product, "lead.product", opts.Lead.Product, "Name of product for which quotation is requested")
-	cmd.Flags().StringVar(&opts.Lead.Company, "lead.company", opts.Lead.Company, "Name of company of the lead")
+	cmd.Flags().StringVar(&opts.Contact.Name, "contact.name", opts.Contact.Name, "Name of contact")
+	cmd.Flags().StringVar(&opts.Contact.Email, "contact.email", opts.Contact.Email, "Email of contact")
+	cmd.Flags().StringVar(&opts.Contact.Title, "contact.title", opts.Contact.Title, "Job title of contact")
+	cmd.Flags().StringVar(&opts.Contact.Telephone, "contact.telephone", opts.Contact.Telephone, "Telephone number of contact")
+	cmd.Flags().StringSliceVar(&opts.Contact.Product, "contact.product", opts.Contact.Product, "Name of product for which quotation is requested")
+	cmd.Flags().StringVar(&opts.Contact.Company, "contact.company", opts.Contact.Company, "Name of company of the contact")
 
 	return cmd
 }

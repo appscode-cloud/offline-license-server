@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2023 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -20025,7 +20025,7 @@ func (c *PlaylistsListCall) ChannelId(channelId string) *PlaylistsListCall {
 	return c
 }
 
-// Hl sets the optional parameter "hl": Returen content in specified
+// Hl sets the optional parameter "hl": Return content in specified
 // language
 func (c *PlaylistsListCall) Hl(hl string) *PlaylistsListCall {
 	c.urlParams_.Set("hl", hl)
@@ -20214,7 +20214,7 @@ func (c *PlaylistsListCall) Do(opts ...googleapi.CallOption) (*PlaylistListRespo
 	//       "type": "string"
 	//     },
 	//     "hl": {
-	//       "description": "Returen content in specified language",
+	//       "description": "Return content in specified language",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
