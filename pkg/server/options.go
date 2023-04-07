@@ -73,7 +73,7 @@ func NewOptions() *Options {
 		SMTPAddress:          os.Getenv("SMTP_ADDRESS"),
 		SMTPUsername:         os.Getenv("SMTP_USERNAME"),
 		SMTPPassword:         os.Getenv("SMTP_PASSWORD"),
-		freshsalesHost:       "https://appscode.freshsales.io",
+		freshsalesHost:       "https://" + os.Getenv("CRM_BUNDLE_ALIAS"),
 		freshsalesAPIToken:   os.Getenv("CRM_API_TOKEN"),
 		listmonkHost:         listmonkclient.ListmonkProd,
 		listmonkUsername:     os.Getenv("LISTMONK_USERNAME"),

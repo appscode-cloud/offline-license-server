@@ -130,11 +130,11 @@ offline-license-server issue-full-license \
 
 ```bash
 offline-license-server quotation generate \
-  --lead.email='****' \
-  --lead.name='***' \
-  --lead.title='***' \
-  --lead.company='***' \
-  --lead.telephone='***' \
+  --contact.email='****' \
+  --contact.name='***' \
+  --contact.title='***' \
+  --contact.company='***' \
+  --contact.telephone='***' \
   --template-doc-id=***
 ```
 
