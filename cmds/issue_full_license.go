@@ -64,6 +64,14 @@ func NewCmdIssueFullLicense() *cobra.Command {
 				s.Close()
 			}()
 
+			if len(featureFlags) == 0 {
+				// ask for confirmation
+				fmt.Println("Do you want to disable analytics? [Y/N]")
+				if askForConfirmation() {
+					featureFlags = map[string]string{}
+					featureFlags["DisableAnalytics"] = "true"
+				}
+			}
 			ff := server.FeatureFlags(featureFlags)
 			if err := ff.IsValid(); err != nil {
 				panic(err)
