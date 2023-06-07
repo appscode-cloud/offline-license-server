@@ -121,6 +121,7 @@ offline-license-server issue-full-license \
   --name= \
   --product= \
   --cluster= \
+  --expiry-date=YYYY-MM-DD \
   --duration=(P30D | P1M | P1Y)
 
 # --duration flag used https://pkg.go.dev/github.com/rickb777/date/period for parsing duration.

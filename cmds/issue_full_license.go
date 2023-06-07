@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"go.bytebuilders.dev/offline-license-server/pkg/server"
 
@@ -39,6 +40,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 	var clusters []string
 	var ccList []string
 	d, _ := period.NewOf(server.DefaultTTLForEnterpriseProduct)
+	var expiryDate string
 	var featureFlags map[string]string
 	cmd := &cobra.Command{
 		Use:               "issue-full-license",
@@ -46,8 +48,18 @@ func NewCmdIssueFullLicense() *cobra.Command {
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			info.CC = strings.Join(ccList, ",")
-			fmt.Println(d.Duration())
-			d2, _ := d.Duration()
+
+			var d2 time.Duration
+			if expiryDate != "" {
+				t, err := time.Parse("2006-01-02", expiryDate)
+				if err != nil {
+					return fmt.Errorf("failed to parse expiry date %s, err: %v", expiryDate, err)
+				}
+				d2 = t.Sub(time.Now()) + 24*time.Hour
+			} else {
+				d2, _ = d.Duration()
+			}
+			fmt.Println(d2)
 			if d2 > server.DefaultTTLForEnterpriseProduct {
 				// ask for confirmation
 				fmt.Printf("Do you want to issue license for %v? [Y/N]", d)
@@ -94,6 +106,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 	cmd.Flags().StringVar(&info.Product, "product", info.Product, "Product for which license will be issued")
 	cmd.Flags().StringSliceVar(&clusters, "cluster", clusters, "Cluster IDs for which license will be issued")
 	cmd.Flags().Var(&d, "duration", "Duration for the new license")
+	cmd.Flags().StringVar(&expiryDate, "expiry-date", expiryDate, "Expiry date in YYYY-MM-DD format")
 	cmd.Flags().StringToStringVar(&featureFlags, "feature-flag", featureFlags, "List of feature flags")
 
 	_ = cmd.MarkFlagRequired("email")
