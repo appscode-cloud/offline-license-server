@@ -55,7 +55,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 				if err != nil {
 					return fmt.Errorf("failed to parse expiry date %s, err: %v", expiryDate, err)
 				}
-				d2 = t.Sub(time.Now()) + 24*time.Hour
+				d2 = time.Until(t) + 24*time.Hour
 			} else {
 				d2, _ = d.Duration()
 			}
