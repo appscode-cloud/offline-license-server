@@ -25,6 +25,7 @@ import (
 
 	"github.com/go-macaron/cache"
 	"github.com/gocarina/gocsv"
+	"github.com/pkg/errors"
 	csvtypes "gomodules.xyz/encoding/csv/types"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"gomodules.xyz/sets"
@@ -48,7 +49,7 @@ func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
 			if p == "" {
 				p = "AppsCode"
 			}
-			news, err := s.NextNewsSnippet(p)
+			news, err := s.TimelyNextNewsSnippet(p)
 			if err != nil {
 				ctx.Error(http.StatusInternalServerError, err.Error())
 				return
@@ -60,6 +61,26 @@ func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
 		}
 		ctx.JSON(http.StatusOK, out)
 	})
+}
+
+func (s *Server) TimelyNextNewsSnippet(p string) (*NewsSnippet, error) {
+	type result struct {
+		news *NewsSnippet
+		err  error
+	}
+
+	r := make(chan result, 1)
+	go func() {
+		var out result
+		out.news, out.err = s.NextNewsSnippet(p)
+		r <- out
+	}()
+	select {
+	case <-time.After(2 * time.Second):
+		return nil, errors.New("timed out")
+	case result := <-r:
+		return result.news, result.err
+	}
 }
 
 func (s *Server) NextNewsSnippet(p string) (*NewsSnippet, error) {
