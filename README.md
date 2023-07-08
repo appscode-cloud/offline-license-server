@@ -74,6 +74,7 @@ curl -X POST -H "Content-Type: application/json" \
  - voyager-enterprise
  - voyager-community
  - platform-enterprise
+ - config-syncer-enterprise
 
 ## Installation
 
