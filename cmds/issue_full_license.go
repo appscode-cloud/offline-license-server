@@ -24,6 +24,7 @@ import (
 
 	"go.bytebuilders.dev/offline-license-server/pkg/server"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/rickb777/date/period"
 	"github.com/spf13/cobra"
@@ -91,6 +92,9 @@ func NewCmdIssueFullLicense() *cobra.Command {
 
 			for _, cluster := range clusters {
 				fmt.Println("cluster:", cluster)
+				if _, err := uuid.Parse(cluster); err != nil {
+					return errors.Wrapf(err, "invalid cluster id %s", cluster)
+				}
 				info.Cluster = cluster
 				if err := s.IssueEnterpriseLicense(info, d2, ff); err != nil {
 					return errors.Wrapf(err, "failed to issue license for cluster %s", cluster)
