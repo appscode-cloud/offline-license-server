@@ -37,7 +37,7 @@ require (
 	gomodules.xyz/gdrive-utils v0.0.8
 	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/listmonk-client-go v0.0.3
-	gomodules.xyz/logs v0.0.6
+	gomodules.xyz/logs v0.0.7
 	gomodules.xyz/mailer v0.0.18
 	gomodules.xyz/password-generator v0.2.9
 	gomodules.xyz/pointer v0.1.0

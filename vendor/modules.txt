@@ -361,7 +361,7 @@ gomodules.xyz/jsonpath/third_party/forked/golang/template
 # gomodules.xyz/listmonk-client-go v0.0.3
 ## explicit; go 1.16
 gomodules.xyz/listmonk-client-go
-# gomodules.xyz/logs v0.0.6
+# gomodules.xyz/logs v0.0.7
 ## explicit; go 1.16
 gomodules.xyz/logs
 # gomodules.xyz/mailer v0.0.18
