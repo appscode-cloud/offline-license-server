@@ -196,6 +196,8 @@ github.com/rickb777/date/period
 # github.com/rickb777/plural v1.4.1
 ## explicit; go 1.17
 github.com/rickb777/plural
+# github.com/rogpeppe/go-internal v1.9.0
+## explicit; go 1.17
 # github.com/rs/xid v1.4.0
 ## explicit; go 1.12
 github.com/rs/xid
