@@ -37,7 +37,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/oschwald/geoip2-golang"
 	"github.com/pkg/errors"
-	"github.com/zoom-lib-golang/zoom-lib-golang"
 	mcfs "go.wandrs.dev/macaron-embed"
 	"golang.org/x/crypto/acme/autocert"
 	"gomodules.xyz/blobfs"
@@ -48,6 +47,7 @@ import (
 	listmonkclient "gomodules.xyz/listmonk-client-go"
 	"gomodules.xyz/mailer"
 	"gomodules.xyz/sets"
+	"gomodules.xyz/zoom-lib-golang"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v3"
@@ -166,7 +166,7 @@ func New(opts *Options) (*Server, error) {
 		srvSheets:        sheetsService,
 		srvCalendar:      srvCalendar,
 		srvYT:            srvYT,
-		zc:               zoom.NewClient(os.Getenv("ZOOM_API_KEY"), os.Getenv("ZOOM_API_SECRET")),
+		zc:               zoom.NewClient(),
 		zoomAccountEmail: os.Getenv("ZOOM_ACCOUNT_EMAIL"),
 		blockedDomains:   sets.NewString(opts.BlockedDomains...),
 		blockedEmails:    sets.NewString(opts.BlockedEmails...),

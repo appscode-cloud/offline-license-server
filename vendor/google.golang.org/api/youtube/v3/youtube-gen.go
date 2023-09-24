@@ -75,6 +75,7 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "youtube:v3"
 const apiName = "youtube"
@@ -5171,14 +5172,6 @@ type LiveBroadcastStatistics struct {
 	// So, this property would not identify the number of viewers watching
 	// an archived video of a live broadcast that already ended.
 	ConcurrentViewers uint64 `json:"concurrentViewers,omitempty,string"`
-
-	// TotalChatCount: The total number of live chat messages currently on
-	// the broadcast. The property and its value will be present if the
-	// broadcast is public, has the live chat feature enabled, and has at
-	// least one message. Note that this field will not be filled after the
-	// broadcast ends. So this property would not identify the number of
-	// chat messages for an archived video of a completed live broadcast.
-	TotalChatCount uint64 `json:"totalChatCount,omitempty,string"`
 
 	// ForceSendFields is a list of field names (e.g. "ConcurrentViewers")
 	// to unconditionally include in API requests. By default, fields with
@@ -12675,6 +12668,7 @@ func (c *ChannelSectionsListCall) Do(opts ...googleapi.CallOption) (*ChannelSect
 	//       "type": "string"
 	//     },
 	//     "hl": {
+	//       "deprecated": true,
 	//       "description": "Return content in specified language",
 	//       "location": "query",
 	//       "type": "string"
@@ -14474,8 +14468,8 @@ type CommentsSetModerationStatusCall struct {
 //   - moderationStatus: Specifies the requested moderation status. Note,
 //     comments can be in statuses, which are not available through this
 //     call. For example, this call does not allow to mark a comment as
-//     'likely spam'. Valid values: MODERATION_STATUS_PUBLISHED,
-//     MODERATION_STATUS_HELD_FOR_REVIEW, MODERATION_STATUS_REJECTED.
+//     'likely spam'. Valid values: 'heldForReview', 'published' or
+//     'rejected'.
 func (r *CommentsService) SetModerationStatus(id []string, moderationStatus string) *CommentsSetModerationStatusCall {
 	c := &CommentsSetModerationStatusCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.urlParams_.SetMulti("id", append([]string{}, id...))
@@ -14573,7 +14567,7 @@ func (c *CommentsSetModerationStatusCall) Do(opts ...googleapi.CallOption) error
 	//       "type": "string"
 	//     },
 	//     "moderationStatus": {
-	//       "description": "Specifies the requested moderation status. Note, comments can be in statuses, which are not available through this call. For example, this call does not allow to mark a comment as 'likely spam'. Valid values: MODERATION_STATUS_PUBLISHED, MODERATION_STATUS_HELD_FOR_REVIEW, MODERATION_STATUS_REJECTED.",
+	//       "description": "Specifies the requested moderation status. Note, comments can be in statuses, which are not available through this call. For example, this call does not allow to mark a comment as 'likely spam'. Valid values: 'heldForReview', 'published' or 'rejected'.",
 	//       "enum": [
 	//         "published",
 	//         "heldForReview",
@@ -24334,6 +24328,7 @@ func (c *VideosListCall) Do(opts ...googleapi.CallOption) (*VideoListResponse, e
 	//       "type": "string"
 	//     },
 	//     "locale": {
+	//       "deprecated": true,
 	//       "location": "query",
 	//       "type": "string"
 	//     },
