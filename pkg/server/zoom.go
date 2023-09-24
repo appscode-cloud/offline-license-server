@@ -22,10 +22,10 @@ import (
 	"time"
 
 	"github.com/k3a/html2text"
-	"github.com/zoom-lib-golang/zoom-lib-golang"
 	passgen "gomodules.xyz/password-generator"
 	"gomodules.xyz/pointer"
 	"gomodules.xyz/sets"
+	"gomodules.xyz/zoom-lib-golang"
 	"google.golang.org/api/calendar/v3"
 )
 

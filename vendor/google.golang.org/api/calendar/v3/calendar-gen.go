@@ -75,6 +75,7 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "calendar:v3"
 const apiName = "calendar"
@@ -1360,6 +1361,7 @@ type Event struct {
 	// - "default" - A regular event or not further specified.
 	// - "outOfOffice" - An out-of-office event.
 	// - "focusTime" - A focus-time event.
+	// - "workingLocation" - A working location event. Developer Preview.
 	EventType string `json:"eventType,omitempty"`
 
 	// ExtendedProperties: Extended properties of the event.
@@ -1545,6 +1547,10 @@ type Event struct {
 	// - "confidential" - The event is private. This value is provided for
 	// compatibility reasons.
 	Visibility string `json:"visibility,omitempty"`
+
+	// WorkingLocationProperties: Developer Preview: Working Location event
+	// data. Read-only.
+	WorkingLocationProperties *EventWorkingLocationProperties `json:"workingLocationProperties,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -2011,6 +2017,113 @@ type EventReminder struct {
 
 func (s *EventReminder) MarshalJSON() ([]byte, error) {
 	type NoMethod EventReminder
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type EventWorkingLocationProperties struct {
+	// CustomLocation: If present, specifies that the user is working from a
+	// custom location.
+	CustomLocation *EventWorkingLocationPropertiesCustomLocation `json:"customLocation,omitempty"`
+
+	// HomeOffice: If present, specifies that the user is working at home.
+	HomeOffice interface{} `json:"homeOffice,omitempty"`
+
+	// OfficeLocation: If present, specifies that the user is working from
+	// an office.
+	OfficeLocation *EventWorkingLocationPropertiesOfficeLocation `json:"officeLocation,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CustomLocation") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CustomLocation") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *EventWorkingLocationProperties) MarshalJSON() ([]byte, error) {
+	type NoMethod EventWorkingLocationProperties
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// EventWorkingLocationPropertiesCustomLocation: If present, specifies
+// that the user is working from a custom location.
+type EventWorkingLocationPropertiesCustomLocation struct {
+	// Label: An optional extra label for additional information.
+	Label string `json:"label,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Label") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Label") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *EventWorkingLocationPropertiesCustomLocation) MarshalJSON() ([]byte, error) {
+	type NoMethod EventWorkingLocationPropertiesCustomLocation
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// EventWorkingLocationPropertiesOfficeLocation: If present, specifies
+// that the user is working from an office.
+type EventWorkingLocationPropertiesOfficeLocation struct {
+	// BuildingId: An optional building identifier. This should reference a
+	// building ID in the organization's Resources database.
+	BuildingId string `json:"buildingId,omitempty"`
+
+	// DeskId: An optional arbitrary desk identifier.
+	DeskId string `json:"deskId,omitempty"`
+
+	// FloorId: An optional arbitrary floor identifier.
+	FloorId string `json:"floorId,omitempty"`
+
+	// FloorSectionId: An optional arbitrary floor section identifier.
+	FloorSectionId string `json:"floorSectionId,omitempty"`
+
+	// Label: An optional extra label for additional information.
+	Label string `json:"label,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BuildingId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BuildingId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *EventWorkingLocationPropertiesOfficeLocation) MarshalJSON() ([]byte, error) {
+	type NoMethod EventWorkingLocationPropertiesOfficeLocation
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -6953,6 +7066,27 @@ func (c *EventsListCall) AlwaysIncludeEmail(alwaysIncludeEmail bool) *EventsList
 	return c
 }
 
+// EventTypes sets the optional parameter "eventTypes": Event types to
+// return.  Possible values are:
+// - "default"
+// - "focusTime"
+// - "outOfOffice"This parameter can be repeated multiple times to
+// return events of different types. Currently, this is the only allowed
+// value for this field:
+// - ["default", "focusTime", "outOfOffice"] This value will be the
+// default.
+//
+// If you're enrolled in the Working Location developer preview program,
+// in addition to the default value above you can also set the
+// "workingLocation" event type:
+// - ["default", "focusTime", "outOfOffice", "workingLocation"]
+// - ["workingLocation"] Additional combinations of these 4 event types
+// will be made available in later releases. Developer Preview.
+func (c *EventsListCall) EventTypes(eventTypes ...string) *EventsListCall {
+	c.urlParams_.SetMulti("eventTypes", append([]string{}, eventTypes...))
+	return c
+}
+
 // ICalUID sets the optional parameter "iCalUID": Specifies an event ID
 // in the iCalendar format to be provided in the response.  Use this if
 // you want to search for an event by its iCalendar ID.
@@ -7245,6 +7379,12 @@ func (c *EventsListCall) Do(opts ...googleapi.CallOption) (*Events, error) {
 	//       "description": "Calendar identifier. To retrieve calendar IDs call the calendarList.list method. If you want to access the primary calendar of the currently logged in user, use the \"primary\" keyword.",
 	//       "location": "path",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "eventTypes": {
+	//       "description": "Event types to return. Optional. Possible values are: \n- \"default\" \n- \"focusTime\" \n- \"outOfOffice\"This parameter can be repeated multiple times to return events of different types. Currently, this is the only allowed value for this field: \n- [\"default\", \"focusTime\", \"outOfOffice\"] This value will be the default.\n\nIf you're enrolled in the Working Location developer preview program, in addition to the default value above you can also set the \"workingLocation\" event type: \n- [\"default\", \"focusTime\", \"outOfOffice\", \"workingLocation\"] \n- [\"workingLocation\"] Additional combinations of these 4 event types will be made available in later releases. Developer Preview.",
+	//       "location": "query",
+	//       "repeated": true,
 	//       "type": "string"
 	//     },
 	//     "iCalUID": {
@@ -8350,6 +8490,27 @@ func (c *EventsWatchCall) AlwaysIncludeEmail(alwaysIncludeEmail bool) *EventsWat
 	return c
 }
 
+// EventTypes sets the optional parameter "eventTypes": Event types to
+// return.  Possible values are:
+// - "default"
+// - "focusTime"
+// - "outOfOffice"This parameter can be repeated multiple times to
+// return events of different types. Currently, this is the only allowed
+// value for this field:
+// - ["default", "focusTime", "outOfOffice"] This value will be the
+// default.
+//
+// If you're enrolled in the Working Location developer preview program,
+// in addition to the default value above you can also set the
+// "workingLocation" event type:
+// - ["default", "focusTime", "outOfOffice", "workingLocation"]
+// - ["workingLocation"] Additional combinations of these 4 event types
+// will be made available in later releases. Developer Preview.
+func (c *EventsWatchCall) EventTypes(eventTypes ...string) *EventsWatchCall {
+	c.urlParams_.SetMulti("eventTypes", append([]string{}, eventTypes...))
+	return c
+}
+
 // ICalUID sets the optional parameter "iCalUID": Specifies an event ID
 // in the iCalendar format to be provided in the response.  Use this if
 // you want to search for an event by its iCalendar ID.
@@ -8634,6 +8795,12 @@ func (c *EventsWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	//       "description": "Calendar identifier. To retrieve calendar IDs call the calendarList.list method. If you want to access the primary calendar of the currently logged in user, use the \"primary\" keyword.",
 	//       "location": "path",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "eventTypes": {
+	//       "description": "Event types to return. Optional. Possible values are: \n- \"default\" \n- \"focusTime\" \n- \"outOfOffice\"This parameter can be repeated multiple times to return events of different types. Currently, this is the only allowed value for this field: \n- [\"default\", \"focusTime\", \"outOfOffice\"] This value will be the default.\n\nIf you're enrolled in the Working Location developer preview program, in addition to the default value above you can also set the \"workingLocation\" event type: \n- [\"default\", \"focusTime\", \"outOfOffice\", \"workingLocation\"] \n- [\"workingLocation\"] Additional combinations of these 4 event types will be made available in later releases. Developer Preview.",
+	//       "location": "query",
+	//       "repeated": true,
 	//       "type": "string"
 	//     },
 	//     "iCalUID": {

@@ -1087,6 +1087,12 @@
               "required": true,
               "type": "string"
             },
+            "eventTypes": {
+              "description": "Event types to return. Optional. Possible values are: \n- \"default\" \n- \"focusTime\" \n- \"outOfOffice\"This parameter can be repeated multiple times to return events of different types. Currently, this is the only allowed value for this field: \n- [\"default\", \"focusTime\", \"outOfOffice\"] This value will be the default.\n\nIf you're enrolled in the Working Location developer preview program, in addition to the default value above you can also set the \"workingLocation\" event type: \n- [\"default\", \"focusTime\", \"outOfOffice\", \"workingLocation\"] \n- [\"workingLocation\"] Additional combinations of these 4 event types will be made available in later releases. Developer Preview.",
+              "location": "query",
+              "repeated": true,
+              "type": "string"
+            },
             "iCalUID": {
               "description": "Specifies an event ID in the iCalendar format to be provided in the response. Optional. Use this if you want to search for an event by its iCalendar ID.",
               "location": "query",
@@ -1484,6 +1490,12 @@
               "required": true,
               "type": "string"
             },
+            "eventTypes": {
+              "description": "Event types to return. Optional. Possible values are: \n- \"default\" \n- \"focusTime\" \n- \"outOfOffice\"This parameter can be repeated multiple times to return events of different types. Currently, this is the only allowed value for this field: \n- [\"default\", \"focusTime\", \"outOfOffice\"] This value will be the default.\n\nIf you're enrolled in the Working Location developer preview program, in addition to the default value above you can also set the \"workingLocation\" event type: \n- [\"default\", \"focusTime\", \"outOfOffice\", \"workingLocation\"] \n- [\"workingLocation\"] Additional combinations of these 4 event types will be made available in later releases. Developer Preview.",
+              "location": "query",
+              "repeated": true,
+              "type": "string"
+            },
             "iCalUID": {
               "description": "Specifies an event ID in the iCalendar format to be provided in the response. Optional. Use this if you want to search for an event by its iCalendar ID.",
               "location": "query",
@@ -1723,7 +1735,7 @@
       }
     }
   },
-  "revision": "20220722",
+  "revision": "20230406",
   "rootUrl": "https://www.googleapis.com/",
   "schemas": {
     "Acl": {
@@ -2380,7 +2392,7 @@
         },
         "eventType": {
           "default": "default",
-          "description": "Specific type of the event. Read-only. Possible values are:  \n- \"default\" - A regular event or not further specified. \n- \"outOfOffice\" - An out-of-office event. \n- \"focusTime\" - A focus-time event.",
+          "description": "Specific type of the event. Read-only. Possible values are:  \n- \"default\" - A regular event or not further specified. \n- \"outOfOffice\" - An out-of-office event. \n- \"focusTime\" - A focus-time event. \n- \"workingLocation\" - A working location event. Developer Preview.",
           "type": "string"
         },
         "extendedProperties": {
@@ -2611,6 +2623,10 @@
           "default": "default",
           "description": "Visibility of the event. Optional. Possible values are:  \n- \"default\" - Uses the default visibility for events on the calendar. This is the default value. \n- \"public\" - The event is public and event details are visible to all readers of the calendar. \n- \"private\" - The event is private and only event attendees may view event details. \n- \"confidential\" - The event is private. This value is provided for compatibility reasons.",
           "type": "string"
+        },
+        "workingLocationProperties": {
+          "$ref": "EventWorkingLocationProperties",
+          "description": "Developer Preview: Working Location event data. Read-only."
         }
       },
       "type": "object"
@@ -2723,6 +2739,52 @@
           "description": "Number of minutes before the start of the event when the reminder should trigger. Valid values are between 0 and 40320 (4 weeks in minutes).\nRequired when adding a reminder.",
           "format": "int32",
           "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "EventWorkingLocationProperties": {
+      "id": "EventWorkingLocationProperties",
+      "properties": {
+        "customLocation": {
+          "description": "If present, specifies that the user is working from a custom location.",
+          "properties": {
+            "label": {
+              "description": "An optional extra label for additional information.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "homeOffice": {
+          "description": "If present, specifies that the user is working at home.",
+          "type": "any"
+        },
+        "officeLocation": {
+          "description": "If present, specifies that the user is working from an office.",
+          "properties": {
+            "buildingId": {
+              "description": "An optional building identifier. This should reference a building ID in the organization's Resources database.",
+              "type": "string"
+            },
+            "deskId": {
+              "description": "An optional arbitrary desk identifier.",
+              "type": "string"
+            },
+            "floorId": {
+              "description": "An optional arbitrary floor identifier.",
+              "type": "string"
+            },
+            "floorSectionId": {
+              "description": "An optional arbitrary floor section identifier.",
+              "type": "string"
+            },
+            "label": {
+              "description": "An optional extra label for additional information.",
+              "type": "string"
+            }
+          },
+          "type": "object"
         }
       },
       "type": "object"
