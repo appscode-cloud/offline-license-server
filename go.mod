@@ -24,8 +24,8 @@ require (
 	github.com/yuin/goldmark v1.4.13
 	go.wandrs.dev/macaron-embed v0.0.2
 	gocloud.dev v0.26.0
-	golang.org/x/crypto v0.13.0
-	golang.org/x/net v0.15.0
+	golang.org/x/crypto v0.14.0
+	golang.org/x/net v0.17.0
 	golang.org/x/text v0.13.0
 	gomodules.xyz/blobfs v0.1.12
 	gomodules.xyz/cert v1.5.0
@@ -95,7 +95,7 @@ require (
 	github.com/unknwon/com v1.0.2-0.20200817130700-b41c64acd94b // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/oauth2 v0.12.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
 	gomodules.xyz/email v0.1.0 // indirect
