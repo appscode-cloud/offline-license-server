@@ -101,6 +101,14 @@ var templateIds = map[string]QuoteInfo{
 		TemplateDocId: "1NuOO2cpH89GKFNBNxvayLXcXOcbfcH6eIMJF2t-JCeo",
 		MailingLists:  []string{listmonkclient.MailingList_Voyager},
 	},
+	"guard-enterprise": {
+		TemplateDocId: "12a3NFvdgbfVbmmNEMt0IFbotiUfGsDX8_-NIEsbKS5w",
+		MailingLists:  []string{listmonkclient.MailingList_Console},
+	},
+	"config-syncer-enterprise": {
+		TemplateDocId: "1091KacS4i6fO8m11i8rrL825uFJpKZwHeP8uXQfukbM",
+		MailingLists:  []string{listmonkclient.MailingList_Console},
+	},
 }
 
 type QuotationForm struct {

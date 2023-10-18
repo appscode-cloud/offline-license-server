@@ -81,19 +81,13 @@
                 <div class="control">
                   <div class="select is-multiple">
                     <select id="product" name="product" multiple size="10">
-                      <option value="kubedb-enterprise" {{ if eq .Product "kubedb-enterprise" }}selected{{ end }}>KubeDB Enterprise (Annual)</option>
-                      <option value="kubedb-payg" {{ if eq .Product "kubedb-payg" }}selected{{ end }}>KubeDB Pay-As-You-Go (PAYG)</option>
-                      <!-- <option value="kubedb-reseller" {{ if eq .Product "kubedb-reseller" }}selected{{ end }}>KubeDB Reseller</option> -->
-                      <!-- <option value="kubedb-unlimited" {{ if eq .Product "kubedb-unlimited" }}selected{{ end }}>KubeDB Unlimited (Annual)</option> -->
-                      <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>Stash Enterprise (Annual)</option>
-                      <option value="stash-payg" {{ if eq .Product "stash-payg" }}selected{{ end }}>Stash Pay-As-You-Go (PAYG)</option>
-                      <!-- <option value="stash-unlimited" {{ if eq .Product "stash-unlimited" }}selected{{ end }}>Stash Unlimited (Annual)</option> -->
-                      <option value="kubeform-enterprise" {{ if eq .Product "kubeform-enterprise" }}selected{{ end }}>Kubeform Enterprise (Annual)</option>
-                      <option value="kubeform-payg" {{ if eq .Product "kubeform-payg" }}selected{{ end }}>Kubeform Pay-As-You-Go (PAYG)</option>
-                      <option value="kubevault-enterprise" {{ if eq .Product "kubevault-enterprise" }}selected{{ end }}>KubeVault Enterprise (Annual)</option>
-                      <option value="kubevault-payg" {{ if eq .Product "kubevault-payg" }}selected{{ end }}>KubeVault Pay-As-You-Go (PAYG)</option>
-                      <option value="voyager-enterprise" {{ if eq .Product "voyager-enterprise" }}selected{{ end }}>Voyager Enterprise (Annual)</option>
-                      <option value="voyager-payg" {{ if eq .Product "voyager-payg" }}selected{{ end }}>Voyager Pay-As-You-Go (PAYG)</option>
+                      <option value="kubedb-enterprise" {{ if eq .Product "kubedb-enterprise" }}selected{{ end }}>KubeDB Enterprise</option>
+                      <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>Stash Enterprise</option>
+                      <option value="kubeform-enterprise" {{ if eq .Product "kubeform-enterprise" }}selected{{ end }}>Kubeform Enterprise</option>
+                      <option value="kubevault-enterprise" {{ if eq .Product "kubevault-enterprise" }}selected{{ end }}>KubeVault Enterprise</option>
+                      <option value="voyager-enterprise" {{ if eq .Product "voyager-enterprise" }}selected{{ end }}>Voyager Enterprise</option>
+                      <option value="guard-enterprise" {{ if eq .Product "guard-enterprise" }}selected{{ end }}>Guard Enterprise</option>
+                      <option value="config-syncer-enterprise" {{ if eq .Product "config-syncer-enterprise" }}selected{{ end }}>Config Syncer Enterprise</option>
                     </select>
                   </div>
                 </div>
@@ -113,9 +107,6 @@
               <div class="field is-grouped">
                 <div class="control">
                   <button class="button is-link" value="generate" onclick='this.form.action="/_/pricing"'>Generate Quotation</button>
-                </div>
-                <div class="control">
-                  <button class="button is-danger" value="email" onclick='this.form.action="/_/pricing?send_email=true"'>Email Quotation</button>
                 </div>
               </div>
             </form>
