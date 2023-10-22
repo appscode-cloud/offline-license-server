@@ -213,6 +213,10 @@ func (s *Server) Run() error {
 		ctx.Data["Product"] = ctx.Query("p")
 		ctx.HTML(200, "index") // 200 is the response code.
 	})
+	m.Get("/issue-license", func(ctx *macaron.Context) {
+		ctx.Data["Product"] = ctx.Query("p")
+		ctx.HTML(200, "index") // 200 is the response code.
+	})
 
 	m.Post("/register", binding.Bind(RegisterRequest{}), func(ctx *macaron.Context, info RegisterRequest) {
 		// verify required fields are present
