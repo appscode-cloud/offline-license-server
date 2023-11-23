@@ -1,23 +1,23 @@
-# cloud.google.com/go v0.110.2
+# cloud.google.com/go v0.110.4
 ## explicit; go 1.19
 cloud.google.com/go/internal
 cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
-# cloud.google.com/go/compute v1.20.1
+# cloud.google.com/go/compute v1.21.0
 ## explicit; go 1.19
 cloud.google.com/go/compute/internal
 # cloud.google.com/go/compute/metadata v0.2.3
 ## explicit; go 1.19
 cloud.google.com/go/compute/metadata
-# cloud.google.com/go/iam v0.13.0
+# cloud.google.com/go/iam v1.1.1
 ## explicit; go 1.19
 cloud.google.com/go/iam
 cloud.google.com/go/iam/apiv1/iampb
 cloud.google.com/go/iam/credentials/apiv1
 cloud.google.com/go/iam/credentials/apiv1/credentialspb
 cloud.google.com/go/iam/internal
-# cloud.google.com/go/storage v1.29.0
+# cloud.google.com/go/storage v1.30.1
 ## explicit; go 1.19
 cloud.google.com/go/storage
 cloud.google.com/go/storage/internal
@@ -320,6 +320,9 @@ golang.org/x/oauth2/google/internal/stsexchange
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
+# golang.org/x/sync v0.3.0
+## explicit; go 1.17
+golang.org/x/sync/semaphore
 # golang.org/x/sys v0.13.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
@@ -455,24 +458,23 @@ google.golang.org/appengine/internal/socket
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/socket
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc
+# google.golang.org/genproto v0.0.0-20230711160842-782d3b101e98
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/iam/credentials/v1
-google.golang.org/genproto/googleapis/iam/v1
 google.golang.org/genproto/googleapis/type/date
 google.golang.org/genproto/googleapis/type/expr
 google.golang.org/genproto/internal
-# google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
+# google.golang.org/genproto/googleapis/api v0.0.0-20230711160842-782d3b101e98
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.55.0
-## explicit; go 1.17
+# google.golang.org/grpc v1.58.3
+## explicit; go 1.19
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -514,6 +516,7 @@ google.golang.org/grpc/internal/grpclog
 google.golang.org/grpc/internal/grpcrand
 google.golang.org/grpc/internal/grpcsync
 google.golang.org/grpc/internal/grpcutil
+google.golang.org/grpc/internal/idle
 google.golang.org/grpc/internal/metadata
 google.golang.org/grpc/internal/pretty
 google.golang.org/grpc/internal/resolver
