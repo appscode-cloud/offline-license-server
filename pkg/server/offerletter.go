@@ -52,11 +52,17 @@ type CandidateInfo struct {
 	AddressLine2 string `form:"address-line-2" binding:"Required" csv:"address-line-2"`
 	AddressLine3 string `form:"address-line-3" binding:"Required" csv:"address-line-3"`
 	Title        string `form:"title" binding:"Required" csv:"title"`
-	Salary       int    `form:"salary" binding:"Required" csv:"salary"`
 
+	Salary int `form:"salary" binding:"Required" csv:"salary"`
 	// https://bulma-calendar.onrender.com/#content
 	// format: MM/DD/YYYY 01/02/2006
-	StartDate      OfferDate `form:"start-date" binding:"Required" csv:"start-date"`
+	StartDate OfferDate `form:"start-date" binding:"Required" csv:"start-date"`
+
+	PermanentSalary int `form:"perm-salary" binding:"Required" csv:"perm-salary"`
+	// https://bulma-calendar.onrender.com/#content
+	// format: MM/DD/YYYY 01/02/2006
+	PermanentDate OfferDate `form:"perm-date" binding:"Required" csv:"perm-date"`
+
 	OfferStartDate OfferDate `form:"-" csv:"offer-start-date"`
 	OfferEndDate   OfferDate `form:"-" csv:"offer-end-date"`
 }
