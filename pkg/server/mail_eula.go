@@ -26,7 +26,7 @@ import (
 func NewEULAMailer(info *EULAInfo) mailer.Mailer {
 	data, err := yaml.Marshal(info)
 	if err != nil {
-		data = []byte("Error: " + err.Error())
+		data = []byte("Error: " + err.Error()) // nolint:goconst
 	}
 
 	src := fmt.Sprintf(`Hi,

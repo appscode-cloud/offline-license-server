@@ -26,7 +26,7 @@ import (
 func NewTestStartedMailer(name string, ans *TestAnswer) mailer.Mailer {
 	data, err := yaml.Marshal(ans)
 	if err != nil {
-		data = []byte("Error: " + err.Error())
+		data = []byte("Error: " + err.Error()) // nolint:goconst
 	}
 
 	src := fmt.Sprintf(`Hi,
