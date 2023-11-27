@@ -78,6 +78,8 @@ func (form CandidateInfo) Data() map[string]string {
 		"{{title}}":            form.Title,
 		"{{salary}}":           numfmt.Sprintf("%d", form.Salary),
 		"{{start-date}}":       string(form.StartDate),
+		"{{pem-salary}}":       numfmt.Sprintf("%d", form.PermanentSalary),
+		"{{pem-date}}":         string(form.PermanentDate),
 		"{{offer-start-date}}": string(form.OfferStartDate),
 		"{{offer-end-date}}":   string(form.OfferEndDate),
 	}
