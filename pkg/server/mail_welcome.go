@@ -29,8 +29,8 @@ func NewWelcomeMailer(info LicenseForm) mailer.Mailer {
 		IsEnterpriseProduct bool
 	}{
 		LicenseForm:         info,
-		ProductDisplayName:  SupportedProducts[info.Product].DisplayName,
-		IsEnterpriseProduct: IsEnterpriseProduct(info.Product),
+		ProductDisplayName:  SupportedProducts[info.Product()].DisplayName,
+		IsEnterpriseProduct: IsEnterpriseProduct(info.Product()),
 	}
 
 	src := fmt.Sprintf(`Hi {{.Name}},
@@ -53,7 +53,7 @@ Team AppsCode
 		Sender:          MailLicenseSender,
 		BCC:             MailLicenseTracker,
 		ReplyTo:         MailSupport,
-		Subject:         fmt.Sprintf("Welcome to %s", SupportedProducts[info.Product].DisplayName),
+		Subject:         fmt.Sprintf("Welcome to %s", SupportedProducts[info.Product()].DisplayName),
 		Body:            src,
 		Params:          params,
 		AttachmentBytes: nil,

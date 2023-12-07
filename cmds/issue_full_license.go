@@ -33,10 +33,10 @@ import (
 func NewCmdIssueFullLicense() *cobra.Command {
 	opts := server.NewOptions()
 	info := server.LicenseForm{
-		Name:    "",
-		Email:   "",
-		Product: "",
-		Cluster: "",
+		Name:         "",
+		Email:        "",
+		ProductAlias: "",
+		Cluster:      "",
 	}
 	var clusters []string
 	var ccList []string
@@ -107,7 +107,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 	cmd.Flags().StringVar(&info.Name, "name", info.Name, "Name of the user receiving the license")
 	cmd.Flags().StringVar(&info.Email, "email", info.Email, "Email of the user receiving the license")
 	cmd.Flags().StringSliceVar(&ccList, "cc", ccList, "CC the license to these emails")
-	cmd.Flags().StringVar(&info.Product, "product", info.Product, "Product for which license will be issued")
+	cmd.Flags().StringVar(&info.ProductAlias, "product", info.ProductAlias, "Product for which license will be issued")
 	cmd.Flags().StringSliceVar(&clusters, "cluster", clusters, "Cluster IDs for which license will be issued")
 	cmd.Flags().Var(&d, "duration", "Duration for the new license")
 	cmd.Flags().StringVar(&expiryDate, "expiry-date", expiryDate, "Expiry date in YYYY-MM-DD format")

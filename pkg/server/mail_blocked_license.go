@@ -34,7 +34,7 @@ License server
 		Sender:          MailLicenseSender,
 		BCC:             MailLicenseTracker,
 		ReplyTo:         MailSales,
-		Subject:         fmt.Sprintf("[LICENSE_BLOCKED] plan:%s email:%s cluster:%s", info.Product, info.Email, info.Cluster),
+		Subject:         fmt.Sprintf("[LICENSE_BLOCKED] plan:%s email:%s cluster:%s", info.Product(), info.Email, info.Cluster),
 		Body:            src,
 		Params:          info,
 		AttachmentBytes: nil,

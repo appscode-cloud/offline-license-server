@@ -80,10 +80,10 @@ func main_sheets() {
 	}
 	info := server.LogEntry{
 		LicenseForm: server.LicenseForm{
-			Name:    "Fahim Abrar",
-			Email:   "fahimabrar@appscode.com",
-			Product: "Kubeform Community",
-			Cluster: "bad94a42-0210-4c81-b07a-99bae529ec14",
+			Name:         "Fahim Abrar",
+			Email:        "fahimabrar@appscode.com",
+			ProductAlias: "kubeform-community",
+			Cluster:      "bad94a42-0210-4c81-b07a-99bae529ec14",
 		},
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}

@@ -215,7 +215,7 @@ func (s *Server) Run() error {
 		ctx.Redirect("https://appscode.com/issue-license/", http.StatusPermanentRedirect)
 	})
 	m.Get("/issue-license", func(ctx *macaron.Context) {
-		ctx.Data["Product"] = ctx.Query("p")
+		ctx.Data["Product"] = productAliases[ctx.Query("p")]
 		ctx.HTML(200, "index") // 200 is the response code.
 	})
 
@@ -451,7 +451,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		}
 	}
 
-	license, err := s.GetDomainLicense(domain, info.Product)
+	license, err := s.GetDomainLicense(domain, info.Product())
 	if err != nil {
 		return err
 	}
@@ -484,11 +484,11 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 			params := SignupCampaignData{
 				Name:                info.Name,
 				Cluster:             info.Cluster,
-				Product:             info.Product,
-				ProductDisplayName:  SupportedProducts[info.Product].DisplayName,
-				IsEnterpriseProduct: IsEnterpriseProduct(info.Product),
-				TwitterHandle:       SupportedProducts[info.Product].TwitterHandle,
-				QuickstartLink:      SupportedProducts[info.Product].QuickstartLink,
+				Product:             info.Product(),
+				ProductDisplayName:  SupportedProducts[info.Product()].DisplayName,
+				IsEnterpriseProduct: IsEnterpriseProduct(info.Product()),
+				TwitterHandle:       SupportedProducts[info.Product()].TwitterHandle,
+				QuickstartLink:      SupportedProducts[info.Product()].QuickstartLink,
 			}
 
 			var dc *mailer.DripCampaign
@@ -537,7 +537,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 				License:     string(crtLicense),
 			})
 			mailer.AttachmentBytes = map[string][]byte{
-				fmt.Sprintf("%s-license-%s.txt", info.Product, info.Cluster): crtLicense,
+				fmt.Sprintf("%s-license-%s.txt", info.Product(), info.Cluster): crtLicense,
 			}
 			err = mailer.SendMail(s.mg, info.Email, info.CC, nil)
 			if err != nil {
@@ -583,12 +583,12 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
-	err = s.fs.WriteFile(context.TODO(), ProductAccessLogPath(domain, info.Product, info.Cluster, timestamp), data)
+	err = s.fs.WriteFile(context.TODO(), ProductAccessLogPath(domain, info.Product(), info.Cluster, timestamp), data)
 	if err != nil {
 		return err
 	}
 
-	err = s.fs.WriteFile(context.TODO(), EmailAccessLogPath(domain, info.Email, info.Product, timestamp), data)
+	err = s.fs.WriteFile(context.TODO(), EmailAccessLogPath(domain, info.Email, info.Product(), timestamp), data)
 	if err != nil {
 		return err
 	}
@@ -598,11 +598,11 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
-	if len(SupportedProducts[info.Product].MailingLists) > 0 {
+	if len(SupportedProducts[info.Product()].MailingLists) > 0 {
 		err = s.listmonk.SubscribeToList(listmonkclient.SubscribeRequest{
 			Email:        info.Email,
 			Name:         info.Name,
-			MailingLists: SupportedProducts[info.Product].MailingLists,
+			MailingLists: SupportedProducts[info.Product()].MailingLists,
 		})
 		if err != nil {
 			return err

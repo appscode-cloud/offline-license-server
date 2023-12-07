@@ -72,17 +72,33 @@ type PlanInfo struct {
 	MailingLists   []string
 }
 
+var productAliases = map[string]string{
+	"kubedb":                   "kubedb-enterprise",
+	"kubedb-community":         "kubedb-enterprise",
+	"kubedb-enterprise":        "kubedb-enterprise",
+	"stash":                    "stash-enterprise",
+	"kubestash":                "stash-enterprise",
+	"stash-community":          "stash-enterprise",
+	"stash-enterprise":         "stash-enterprise",
+	"kubevault":                "kubevault-enterprise",
+	"kubevault-community":      "kubevault-enterprise",
+	"kubevault-enterprise":     "kubevault-enterprise",
+	"kubeform":                 "kubedb-enterprise",
+	"kubeform-community":       "kubedb-enterprise",
+	"kubeform-enterprise":      "kubedb-enterprise",
+	"voyager":                  "voyager-enterprise",
+	"voyager-community":        "voyager-enterprise",
+	"voyager-enterprise":       "voyager-enterprise",
+	"console-enterprise":       "platform-enterprise",
+	"panopticon-enterprise":    "platform-enterprise",
+	"platform":                 "platform-enterprise",
+	"platform-enterprise":      "platform-enterprise",
+	"config-syncer":            "config-syncer-enterprise",
+	"config-syncer-enterprise": "config-syncer-enterprise",
+}
+
 // plan name => features
 var SupportedProducts = map[string]PlanInfo{
-	"kubedb-community": {
-		DisplayName:    "KubeDB",
-		ProductLine:    "kubedb",
-		TierName:       "community",
-		TwitterHandle:  "KubeDB",
-		QuickstartLink: "https://kubedb.com/docs/latest/",
-		Features:       []string{"kubedb-community", "panopticon-community", "kubedb-monitoring-agent"},
-		MailingLists:   []string{MailingList_KubeDB, MailingList_Stash, MailingList_Panopticon},
-	},
 	"kubedb-enterprise": {
 		DisplayName:    "KubeDB",
 		ProductLine:    "kubedb",
@@ -91,15 +107,6 @@ var SupportedProducts = map[string]PlanInfo{
 		QuickstartLink: "https://kubedb.com/docs/latest/",
 		Features:       []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash", "panopticon-enterprise", "kubedb-monitoring-agent"},
 		MailingLists:   []string{MailingList_KubeDB, MailingList_Stash, MailingList_Panopticon},
-	},
-	"stash-community": {
-		DisplayName:    "Stash",
-		ProductLine:    "stash",
-		TierName:       "community",
-		TwitterHandle:  "KubeStash",
-		QuickstartLink: "https://stash.run/docs/latest/",
-		Features:       []string{"stash-community", "panopticon-community"},
-		MailingLists:   []string{MailingList_Stash, MailingList_Panopticon},
 	},
 	"stash-enterprise": {
 		DisplayName:    "Stash",
@@ -110,15 +117,6 @@ var SupportedProducts = map[string]PlanInfo{
 		Features:       []string{"stash-enterprise", "stash-community", "kubedb-ext-stash", "panopticon-enterprise"},
 		MailingLists:   []string{MailingList_Stash, MailingList_Panopticon},
 	},
-	"kubevault-community": {
-		DisplayName:    "KubeVault",
-		ProductLine:    "kubevault",
-		TierName:       "community",
-		TwitterHandle:  "KubeVault",
-		QuickstartLink: "https://kubevault.com/docs/latest/",
-		Features:       []string{"kubevault-community", "panopticon-community"},
-		MailingLists:   []string{MailingList_KubeVault, MailingList_Panopticon},
-	},
 	"kubevault-enterprise": {
 		DisplayName:    "KubeVault",
 		ProductLine:    "kubevault",
@@ -127,33 +125,6 @@ var SupportedProducts = map[string]PlanInfo{
 		QuickstartLink: "https://kubevault.com/docs/latest/",
 		Features:       []string{"kubevault-enterprise", "kubevault-community", "panopticon-enterprise"},
 		MailingLists:   []string{MailingList_KubeVault, MailingList_Panopticon},
-	},
-	"kubeform-community": {
-		DisplayName:    "Kubeform",
-		ProductLine:    "kubeform",
-		TierName:       "community",
-		TwitterHandle:  "Kubeform",
-		QuickstartLink: "https://kubeform.com/docs/latest/",
-		Features:       []string{"kubeform-community", "panopticon-community"},
-		MailingLists:   []string{MailingList_Kubeform, MailingList_Panopticon},
-	},
-	"kubeform-enterprise": {
-		DisplayName:    "Kubeform",
-		ProductLine:    "kubeform",
-		TierName:       "enterprise",
-		TwitterHandle:  "Kubeform",
-		QuickstartLink: "https://kubeform.com/docs/latest/",
-		Features:       []string{"kubeform-enterprise", "kubeform-community", "panopticon-enterprise"},
-		MailingLists:   []string{MailingList_Kubeform, MailingList_Panopticon},
-	},
-	"voyager-community": {
-		DisplayName:    "Voyager",
-		ProductLine:    "voyager",
-		TierName:       "community",
-		TwitterHandle:  "voyagermesh",
-		QuickstartLink: "https://voyagermesh.com/docs/latest/",
-		Features:       []string{"voyager-community", "panopticon-community"},
-		MailingLists:   []string{MailingList_Voyager, MailingList_Panopticon},
 	},
 	"voyager-enterprise": {
 		DisplayName:    "Voyager",
