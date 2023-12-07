@@ -42,20 +42,20 @@ Now every time you need a new license, use the token from the previous step to m
 # pass request body as application/x-www-form-urlencoded
 
 curl -X POST \
-  -d "name=***&email=***&product=kubedb-community&cluster=***&tos=true&token=***" \
+  -d "name=***&email=***&product=kubedb&cluster=***&tos=true&token=***" \
   https://license-issuer.appscode.com/issue-license
 
 # pass request body as application/json
 
 curl -X POST -H "Content-Type: application/json" \
-  -d '{"name":"***","email":"***","product":"kubedb-community","cluster":"***","tos":"true","token":"***"}' \
+  -d '{"name":"***","email":"***","product":"kubedb","cluster":"***","tos":"true","token":"***"}' \
   https://license-issuer.appscode.com/issue-license
 
 # pretty printed request json body
 {
   "name": "***",
   "email": "***",
-  "product": "kubedb-community",
+  "product": "kubedb",
   "cluster": "***",
   "tos": "true",
   "token": "***"
@@ -63,18 +63,12 @@ curl -X POST -H "Content-Type: application/json" \
 ```
 **List of products**
 
- - kubedb-enterprise
- - kubedb-community
- - stash-enterprise
- - stash-community
- - kubevault-enterprise
- - kubevault-community
- - kubeform-enterprise
- - kubeform-community
- - voyager-enterprise
- - voyager-community
- - platform-enterprise
- - config-syncer-enterprise
+ - kubedb
+ - stash
+ - kubevault
+ - voyager
+ - platform
+ - config-syncer
 
 ## Installation
 
@@ -83,7 +77,7 @@ These instructions are useful if you are trying to deploy your own license serve
 - Download pre-built binary into a server
 
 ```bash
-curl -fsSL -O https://github.com/bytebuilders/offline-license-server/releases/download/v0.0.51/offline-license-server-linux-amd64
+curl -fsSL -O https://github.com/bytebuilders/offline-license-server/releases/download/v0.0.52/offline-license-server-linux-amd64
 chmod +x offline-license-server-linux-amd64
 mv offline-license-server-linux-amd64 /usr/local/bin/offline-license-server
 sudo systemctl restart offline-license-server
@@ -92,7 +86,7 @@ sudo systemctl restart offline-license-server
 - Install systemd service
 
 ```bash
-curl -fsSL -O https://github.com/bytebuilders/offline-license-server/raw/v0.0.51/hack/systemd/offline-license-server.service
+curl -fsSL -O https://github.com/bytebuilders/offline-license-server/raw/v0.0.52/hack/systemd/offline-license-server.service
 chmod +x offline-license-server.service
 
 # 1. Copy Google cloud service account json key to /root/app/gcloud.json
