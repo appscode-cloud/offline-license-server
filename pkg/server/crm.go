@@ -88,7 +88,7 @@ func (s *Server) noteEventLicenseIssued(info LogEntry, event LicenseEventType) e
 			},
 		},
 		License: LicenseRef{
-			Product: info.Product,
+			Product: info.Product(),
 			Cluster: info.Cluster,
 		},
 	}

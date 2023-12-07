@@ -41,7 +41,7 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration
 			License:     string(crtLicense),
 		})
 		mailer.AttachmentBytes = map[string][]byte{
-			fmt.Sprintf("%s-license-%s.txt", info.Product, info.Cluster): crtLicense,
+			fmt.Sprintf("%s-license-%s.txt", info.Product(), info.Cluster): crtLicense,
 		}
 		err = mailer.SendMail(s.mg, info.Email, info.CC, nil)
 		if err != nil {

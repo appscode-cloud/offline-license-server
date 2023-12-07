@@ -59,7 +59,7 @@ Team AppsCode
 		Sender:          MailLicenseSender,
 		BCC:             MailLicenseTracker,
 		ReplyTo:         MailSupport,
-		Subject:         fmt.Sprintf("%s License for cluster %s", info.Product, info.Cluster),
+		Subject:         fmt.Sprintf("%s License for cluster %s", info.Product(), info.Cluster),
 		Body:            src,
 		Params:          info,
 		AttachmentBytes: nil,

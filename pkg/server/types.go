@@ -43,13 +43,13 @@ type RegisterRequest struct {
 }
 
 type LicenseForm struct {
-	Name    string `form:"name" binding:"Required" json:"name"`
-	Email   string `form:"email" binding:"Required;Email" json:"email"`
-	CC      string `form:"cc" json:"cc"`
-	Product string `form:"product" binding:"Required" json:"product"` // This is now called plan in a parsed LicenseInfo
-	Cluster string `form:"cluster" binding:"Required" json:"cluster"`
-	Tos     string `form:"tos" binding:"Required" json:"tos"`
-	Token   string `form:"token" json:"token"`
+	Name         string `form:"name" binding:"Required" json:"name"`
+	Email        string `form:"email" binding:"Required;Email" json:"email"`
+	CC           string `form:"cc" json:"cc"`
+	ProductAlias string `form:"product" binding:"Required" json:"product"` // This is now called plan in a parsed LicenseInfo
+	Cluster      string `form:"cluster" binding:"Required" json:"cluster"`
+	Tos          string `form:"tos" binding:"Required" json:"tos"`
+	Token        string `form:"token" json:"token"`
 }
 
 type LicenseMailData struct {
@@ -57,13 +57,17 @@ type LicenseMailData struct {
 	License     string
 }
 
+func (form LicenseForm) Product() string {
+	return productAliases[form.ProductAlias]
+}
+
 func (form LicenseForm) Validate() error {
 	_, err := uuid.Parse(form.Cluster)
 	if err != nil {
 		return err
 	}
-	if _, found := SupportedProducts[form.Product]; !found {
-		return fmt.Errorf("unknown product: %s", form.Product)
+	if form.Product() == "" {
+		return fmt.Errorf("unknown product alias: %s", form.ProductAlias)
 	}
 	if agree, _ := strconv.ParseBool(form.Tos); !agree {
 		return fmt.Errorf("user must agree to terms and services")
@@ -114,7 +118,7 @@ func (info LogEntry) Data() []string {
 		Domain(info.Email),
 		info.Name,
 		info.Email,
-		info.Product,
+		info.Product(),
 		info.Cluster,
 		info.Timestamp,
 		info.IP,

@@ -53,8 +53,8 @@ func GetCertStore(fs blobfs.Interface, issuer string) (*certstore.CertStore, err
 }
 
 func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, info LicenseForm, extendBy time.Duration, ff FeatureFlags) ([]byte, *LogEntry, error) {
-	if !IsEnterpriseProduct(info.Product) {
-		return nil, nil, fmt.Errorf("%s is not an Enterprise product", info.Product)
+	if !IsEnterpriseProduct(info.Product()) {
+		return nil, nil, fmt.Errorf("%s is not an Enterprise product", info.Product())
 	}
 
 	domain := Domain(info.Email)
@@ -70,7 +70,7 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 	// 1 yr domain license
 	license := &ProductLicense{
 		Domain:  domain,
-		Product: info.Product,
+		Product: info.Product(),
 		Agreement: &LicenseAgreement{
 			NumClusters: 1, // is not used currently
 			ExpiryDate:  metav1.NewTime(time.Now().Add(extendBy).UTC()),
@@ -119,7 +119,7 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 		if err != nil {
 			return nil, nil, err
 		}
-		err = fs.WriteFile(context.TODO(), FullLicenseIssueLogPath(domain, info.Product, info.Cluster, timestamp), data)
+		err = fs.WriteFile(context.TODO(), FullLicenseIssueLogPath(domain, info.Product(), info.Cluster, timestamp), data)
 		if err != nil {
 			return nil, nil, err
 		}
