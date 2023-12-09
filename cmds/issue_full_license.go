@@ -52,7 +52,7 @@ func NewCmdIssueFullLicense() *cobra.Command {
 
 			var d2 time.Duration
 			if expiryDate != "" {
-				t, err := time.Parse("2006-01-02", expiryDate)
+				t, err := time.Parse("2006-1-2", expiryDate)
 				if err != nil {
 					return fmt.Errorf("failed to parse expiry date %s, err: %v", expiryDate, err)
 				}
