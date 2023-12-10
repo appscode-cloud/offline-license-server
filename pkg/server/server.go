@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/smtp"
 	"os"
+	"strings"
 	"time"
 
 	"go.bytebuilders.dev/offline-license-server/templates"
@@ -537,7 +538,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 				License:     string(crtLicense),
 			})
 			mailer.AttachmentBytes = map[string][]byte{
-				fmt.Sprintf("%s-license-%s.txt", info.Product(), info.Cluster): crtLicense,
+				fmt.Sprintf("%s-license-%s.txt", strings.ToLower(SupportedProducts[info.Product()].DisplayName), info.Cluster): crtLicense,
 			}
 			err = mailer.SendMail(s.mg, info.Email, info.CC, nil)
 			if err != nil {

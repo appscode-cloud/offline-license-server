@@ -136,12 +136,14 @@ var SupportedProducts = map[string]PlanInfo{
 		MailingLists:   []string{MailingList_Voyager, MailingList_Panopticon},
 	},
 	"platform-enterprise": {
+		DisplayName:  "ACE",
 		ProductLine:  "platform",
 		TierName:     "enterprise",
 		Features:     []string{"panopticon-enterprise", "b3", "scanner"},
 		MailingLists: []string{MailingList_Platform, MailingList_Panopticon},
 	},
 	"config-syncer-enterprise": {
+		DisplayName:  "Config-Syncer",
 		ProductLine:  "config-syncer",
 		TierName:     "enterprise",
 		Features:     []string{"config-syncer-enterprise"},
