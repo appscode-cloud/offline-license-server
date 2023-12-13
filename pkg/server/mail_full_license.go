@@ -36,9 +36,10 @@ func NewEnterpriseLicenseMailer(info LicenseMailData) mailer.Mailer {
 			break
 		}
 	}
+	displayName := SupportedProducts[info.Product()].DisplayName
 
 	src := fmt.Sprintf(`Hi {{.Name}},
-Thanks for purchasing license for {{.Product}}. The full license for Kubernetes cluster {{.Cluster}} is attached with this email. 
+Thanks for purchasing license for %s. The full license for Kubernetes cluster {{.Cluster}} is attached with this email.
 
 Valid From: %s
 Valid To: %s
@@ -53,13 +54,13 @@ Regards,
 Team AppsCode
 
 [![Website](https://cdn.appscode.com/images/website.png)](https://appscode.com) [![Linkedin](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/ln.png)](https://www.linkedin.com/company/appscode/) [![Twitter](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/tt.png)](https://twitter.com/AppsCodeHQ) [![Youtube](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/yt.png)](https://www.youtube.com/c/AppsCodeInc)
-`, fromTimestamp, toTimeStamp, "```", "```")
+`, displayName, fromTimestamp, toTimeStamp, "```", "```")
 
 	return mailer.Mailer{
 		Sender:          MailLicenseSender,
 		BCC:             MailLicenseTracker,
 		ReplyTo:         MailSupport,
-		Subject:         fmt.Sprintf("%s License for cluster %s", SupportedProducts[info.Product()].DisplayName, info.Cluster),
+		Subject:         fmt.Sprintf("%s License for cluster %s", displayName, info.Cluster),
 		Body:            src,
 		Params:          info,
 		AttachmentBytes: nil,
