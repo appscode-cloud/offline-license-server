@@ -667,7 +667,7 @@
           ]
         },
         "delete": {
-          "description": "Permanently deletes a shared drive for which the user is an organizer. The shared drive cannot contain any untrashed items.",
+          "description": "Permanently deletes a shared drive for which the user is an `organizer`. The shared drive cannot contain any untrashed items.",
           "flatPath": "drives/{driveId}",
           "httpMethod": "DELETE",
           "id": "drive.drives.delete",
@@ -1024,7 +1024,7 @@
           "supportsMediaUpload": true
         },
         "delete": {
-          "description": "Permanently deletes a file owned by the user without moving it to the trash. If the file belongs to a shared drive the user must be an organizer on the parent. If the target is a folder, all descendants owned by the user are also deleted.",
+          "description": "Permanently deletes a file owned by the user without moving it to the trash. If the file belongs to a shared drive, the user must be an `organizer` on the parent folder. If the target is a folder, all descendants owned by the user are also deleted.",
           "flatPath": "files/{fileId}",
           "httpMethod": "DELETE",
           "id": "drive.files.delete",
@@ -1352,7 +1352,7 @@
           ],
           "parameters": {
             "fileId": {
-              "description": "The ID for the file or shared drive.",
+              "description": "The ID for the file.",
               "location": "path",
               "required": true,
               "type": "string"
@@ -2433,7 +2433,7 @@
       }
     }
   },
-  "revision": "20230520",
+  "revision": "20231128",
   "rootUrl": "https://www.googleapis.com/",
   "schemas": {
     "About": {
@@ -2449,6 +2449,7 @@
           "type": "boolean"
         },
         "canCreateTeamDrives": {
+          "deprecated": true,
           "description": "Deprecated: Use `canCreateDrives` instead.",
           "type": "boolean"
         },
@@ -2545,18 +2546,22 @@
           "type": "object"
         },
         "teamDriveThemes": {
+          "deprecated": true,
           "description": "Deprecated: Use `driveThemes` instead.",
           "items": {
             "properties": {
               "backgroundImageLink": {
+                "deprecated": true,
                 "description": "Deprecated: Use `driveThemes/backgroundImageLink` instead.",
                 "type": "string"
               },
               "colorRgb": {
+                "deprecated": true,
                 "description": "Deprecated: Use `driveThemes/colorRgb` instead.",
                 "type": "string"
               },
               "id": {
+                "deprecated": true,
                 "description": "Deprecated: Use `driveThemes/id` instead.",
                 "type": "string"
               }
@@ -2607,9 +2612,11 @@
         },
         "teamDrive": {
           "$ref": "TeamDrive",
+          "deprecated": true,
           "description": "Deprecated: Use `drive` instead."
         },
         "teamDriveId": {
+          "deprecated": true,
           "description": "Deprecated: Use `driveId` instead.",
           "type": "string"
         },
@@ -2619,6 +2626,7 @@
           "type": "string"
         },
         "type": {
+          "deprecated": true,
           "description": "Deprecated: Use `changeType` instead.",
           "type": "string"
         }
@@ -2642,11 +2650,11 @@
           "type": "string"
         },
         "newStartPageToken": {
-          "description": "The starting page token for future changes. This will be present only if the end of the current changes list has been reached.",
+          "description": "The starting page token for future changes. This will be present only if the end of the current changes list has been reached. The page token doesn't expire.",
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The page token for the next page of changes. This will be absent if the end of the changes list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results.",
+          "description": "The page token for the next page of changes. This will be absent if the end of the changes list has been reached. The page token doesn't expire.",
           "type": "string"
         }
       },
@@ -2705,7 +2713,7 @@
       "type": "object"
     },
     "Comment": {
-      "description": "A comment on a file.",
+      "description": "A comment on a file. Some resource methods (such as `comments.update`) require a `commentId`. Use the `comments.list` method to retrieve the ID for a comment in a file.",
       "id": "Comment",
       "properties": {
         "anchor": {
@@ -2798,7 +2806,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The page token for the next page of comments. This will be absent if the end of the comments list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results.",
+          "description": "The page token for the next page of comments. This will be absent if the end of the comments list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results. The page token is typically valid for several hours. However, if new items are added or removed, your expected results might differ.",
           "type": "string"
         }
       },
@@ -2808,6 +2816,10 @@
       "description": "A restriction for accessing the content of the file.",
       "id": "ContentRestriction",
       "properties": {
+        "ownerRestricted": {
+          "description": "Whether the content restriction can only be modified or removed by a user who owns the file. For files in shared drives, any user with `organizer` capabilities can modify or remove this content restriction.",
+          "type": "boolean"
+        },
         "readOnly": {
           "description": "Whether the content of the file is read-only. If a file is read-only, a new revision of the file may not be added, comments may not be added or modified, and the title of the file may not be modified.",
           "type": "boolean"
@@ -2825,6 +2837,10 @@
           "format": "date-time",
           "type": "string"
         },
+        "systemRestricted": {
+          "description": "Output only. Whether the content restriction was applied by the system, for example due to an esignature. Users cannot modify or remove system restricted content restrictions.",
+          "type": "boolean"
+        },
         "type": {
           "description": "Output only. The type of the content restriction. Currently the only possible value is `globalContentRestriction`.",
           "type": "string"
@@ -2833,7 +2849,7 @@
       "type": "object"
     },
     "Drive": {
-      "description": "Representation of a shared drive.",
+      "description": "Representation of a shared drive. Some resource methods (such as `drives.update`) require a `driveId`. Use the `drives.list` method to retrieve the ID for a shared drive.",
       "id": "Drive",
       "properties": {
         "backgroundImageFile": {
@@ -2982,7 +2998,7 @@
           "type": "string"
         },
         "restrictions": {
-          "description": "A set of restrictions that apply to this shared drive or items inside this shared drive.",
+          "description": "A set of restrictions that apply to this shared drive or items inside this shared drive. Note that restrictions can't be set when creating a shared drive. To add a restriction, first create a shared drive and then use `drives.update` to add restrictions.",
           "properties": {
             "adminManagedRestrictions": {
               "description": "Whether administrative privileges on this shared drive are required to modify restrictions.",
@@ -3031,14 +3047,14 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The page token for the next page of shared drives. This will be absent if the end of the list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results.",
+          "description": "The page token for the next page of shared drives. This will be absent if the end of the list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results. The page token is typically valid for several hours. However, if new items are added or removed, your expected results might differ.",
           "type": "string"
         }
       },
       "type": "object"
     },
     "File": {
-      "description": "The metadata for a file.",
+      "description": "The metadata for a file. Some resource methods (such as `files.update`) require a `fileId`. Use the `files.list` method to retrieve the ID for a file.",
       "id": "File",
       "properties": {
         "appProperties": {
@@ -3076,6 +3092,7 @@
               "type": "boolean"
             },
             "canChangeViewersCanCopyContent": {
+              "deprecated": true,
               "description": "Deprecated: Output only.",
               "type": "boolean"
             },
@@ -3112,11 +3129,20 @@
               "type": "boolean"
             },
             "canModifyContentRestriction": {
-              "description": "Output only. Whether the current user can modify restrictions on content of this file.",
+              "deprecated": true,
+              "description": "Deprecated: Output only. Use one of `canModifyEditorContentRestriction`, `canModifyOwnerContentRestriction` or `canRemoveContentRestriction`.",
+              "type": "boolean"
+            },
+            "canModifyEditorContentRestriction": {
+              "description": "Output only. Whether the current user can add or modify content restrictions on the file which are editor restricted.",
               "type": "boolean"
             },
             "canModifyLabels": {
               "description": "Output only. Whether the current user can modify the labels on the file.",
+              "type": "boolean"
+            },
+            "canModifyOwnerContentRestriction": {
+              "description": "Output only. Whether the current user can add or modify content restrictions which are owner restricted.",
               "type": "boolean"
             },
             "canMoveChildrenOutOfDrive": {
@@ -3124,6 +3150,7 @@
               "type": "boolean"
             },
             "canMoveChildrenOutOfTeamDrive": {
+              "deprecated": true,
               "description": "Deprecated: Output only. Use `canMoveChildrenOutOfDrive` instead.",
               "type": "boolean"
             },
@@ -3132,10 +3159,12 @@
               "type": "boolean"
             },
             "canMoveChildrenWithinTeamDrive": {
+              "deprecated": true,
               "description": "Deprecated: Output only. Use `canMoveChildrenWithinDrive` instead.",
               "type": "boolean"
             },
             "canMoveItemIntoTeamDrive": {
+              "deprecated": true,
               "description": "Deprecated: Output only. Use `canMoveItemOutOfDrive` instead.",
               "type": "boolean"
             },
@@ -3144,6 +3173,7 @@
               "type": "boolean"
             },
             "canMoveItemOutOfTeamDrive": {
+              "deprecated": true,
               "description": "Deprecated: Output only. Use `canMoveItemOutOfDrive` instead.",
               "type": "boolean"
             },
@@ -3152,10 +3182,12 @@
               "type": "boolean"
             },
             "canMoveItemWithinTeamDrive": {
+              "deprecated": true,
               "description": "Deprecated: Output only. Use `canMoveItemWithinDrive` instead.",
               "type": "boolean"
             },
             "canMoveTeamDriveItem": {
+              "deprecated": true,
               "description": "Deprecated: Output only. Use `canMoveItemWithinDrive` or `canMoveItemOutOfDrive` instead.",
               "type": "boolean"
             },
@@ -3172,11 +3204,16 @@
               "type": "boolean"
             },
             "canReadTeamDrive": {
+              "deprecated": true,
               "description": "Deprecated: Output only. Use `canReadDrive` instead.",
               "type": "boolean"
             },
             "canRemoveChildren": {
               "description": "Output only. Whether the current user can remove children from this folder. This is always false when the item is not a folder. For a folder in a shared drive, use `canDeleteChildren` or `canTrashChildren` instead.",
+              "type": "boolean"
+            },
+            "canRemoveContentRestriction": {
+              "description": "Output only. Whether there is a content restriction on the file that can be removed by the current user.",
               "type": "boolean"
             },
             "canRemoveMyDriveParent": {
@@ -3590,11 +3627,12 @@
           "type": "boolean"
         },
         "teamDriveId": {
+          "deprecated": true,
           "description": "Deprecated: Output only. Use `driveId` instead.",
           "type": "string"
         },
         "thumbnailLink": {
-          "description": "Output only. A short-lived link to the file's thumbnail, if available. Typically lasts on the order of hours. Only populated when the requesting app can access the file's content.",
+          "description": "Output only. A short-lived link to the file's thumbnail, if available. Typically lasts on the order of hours. Only populated when the requesting app can access the file's content. If the file isn't shared publicly, the URL returned in `Files.thumbnailLink` must be fetched using a credentialed request.",
           "type": "string"
         },
         "thumbnailVersion": {
@@ -3651,6 +3689,7 @@
           "type": "string"
         },
         "viewersCanCopyContent": {
+          "deprecated": true,
           "description": "Deprecated: Use `copyRequiresWriterPermission` instead.",
           "type": "boolean"
         },
@@ -3690,7 +3729,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The page token for the next page of files. This will be absent if the end of the files list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results.",
+          "description": "The page token for the next page of files. This will be absent if the end of the files list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results. The page token is typically valid for several hours. However, if new items are added or removed, your expected results might differ.",
           "type": "string"
         }
       },
@@ -3873,7 +3912,7 @@
           "type": "array"
         },
         "nextPageToken": {
-          "description": "The page token for the next page of labels. This field will be absent if the end of the list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results.",
+          "description": "The page token for the next page of labels. This field will be absent if the end of the list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results. The page token is typically valid for several hours. However, if new items are added or removed, your expected results might differ.",
           "type": "string"
         }
       },
@@ -3947,7 +3986,7 @@
       "type": "object"
     },
     "Permission": {
-      "description": "A permission for a file. A permission grants a user, group, domain or the world access to a file or a folder hierarchy.",
+      "description": "A permission for a file. A permission grants a user, group, domain, or the world access to a file or a folder hierarchy. Some resource methods (such as `permissions.update`) require a `permissionId`. Use the `permissions.list` method to retrieve the ID for a file, folder, or shared drive.",
       "id": "Permission",
       "properties": {
         "allowFileDiscovery": {
@@ -4028,22 +4067,27 @@
           "type": "string"
         },
         "teamDrivePermissionDetails": {
+          "deprecated": true,
           "description": "Output only. Deprecated: Output only. Use `permissionDetails` instead.",
           "items": {
             "properties": {
               "inherited": {
+                "deprecated": true,
                 "description": "Deprecated: Output only. Use `permissionDetails/inherited` instead.",
                 "type": "boolean"
               },
               "inheritedFrom": {
+                "deprecated": true,
                 "description": "Deprecated: Output only. Use `permissionDetails/inheritedFrom` instead.",
                 "type": "string"
               },
               "role": {
+                "deprecated": true,
                 "description": "Deprecated: Output only. Use `permissionDetails/role` instead.",
                 "type": "string"
               },
               "teamDrivePermissionType": {
+                "deprecated": true,
                 "description": "Deprecated: Output only. Use `permissionDetails/permissionType` instead.",
                 "type": "string"
               }
@@ -4079,7 +4123,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The page token for the next page of permissions. This field will be absent if the end of the permissions list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results.",
+          "description": "The page token for the next page of permissions. This field will be absent if the end of the permissions list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results. The page token is typically valid for several hours. However, if new items are added or removed, your expected results might differ.",
           "type": "string"
         },
         "permissions": {
@@ -4093,7 +4137,7 @@
       "type": "object"
     },
     "Reply": {
-      "description": "A reply to a comment on a file.",
+      "description": "A reply to a comment on a file. Some resource methods (such as `replies.update`) require a `replyId`. Use the `replies.list` method to retrieve the ID for a reply.",
       "id": "Reply",
       "properties": {
         "action": {
@@ -4153,7 +4197,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The page token for the next page of replies. This will be absent if the end of the replies list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results.",
+          "description": "The page token for the next page of replies. This will be absent if the end of the replies list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results. The page token is typically valid for several hours. However, if new items are added or removed, your expected results might differ.",
           "type": "string"
         },
         "replies": {
@@ -4167,7 +4211,7 @@
       "type": "object"
     },
     "Revision": {
-      "description": "The metadata for a revision to a file.",
+      "description": "The metadata for a revision to a file. Some resource methods (such as `revisions.update`) require a `revisionId`. Use the `revisions.list` method to retrieve the ID for a revision.",
       "id": "Revision",
       "properties": {
         "exportLinks": {
@@ -4245,7 +4289,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The page token for the next page of revisions. This will be absent if the end of the revisions list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results.",
+          "description": "The page token for the next page of revisions. This will be absent if the end of the revisions list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results. The page token is typically valid for several hours. However, if new items are added or removed, your expected results might differ.",
           "type": "string"
         },
         "revisions": {
@@ -4267,7 +4311,7 @@
           "type": "string"
         },
         "startPageToken": {
-          "description": "The starting page token for listing changes.",
+          "description": "The starting page token for listing future changes. The page token doesn't expire.",
           "type": "string"
         }
       },
@@ -4370,6 +4414,7 @@
               "type": "boolean"
             },
             "canRemoveChildren": {
+              "deprecated": true,
               "description": "Deprecated: Use `canDeleteChildren` or `canTrashChildren` instead.",
               "type": "boolean"
             },
@@ -4465,7 +4510,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "The page token for the next page of Team Drives. This will be absent if the end of the Team Drives list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results.",
+          "description": "The page token for the next page of Team Drives. This will be absent if the end of the Team Drives list has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be restarted from the first page of results. The page token is typically valid for several hours. However, if new items are added or removed, your expected results might differ.",
           "type": "string"
         },
         "teamDrives": {
