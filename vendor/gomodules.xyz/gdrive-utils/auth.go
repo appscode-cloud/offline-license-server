@@ -3,11 +3,14 @@ package gdrive_utils
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -16,7 +19,7 @@ import (
 )
 
 func DefaultClient(dir string, scopes ...string) (*http.Client, error) {
-	b, err := ioutil.ReadFile(filepath.Join(dir, "credentials.json"))
+	b, err := os.ReadFile(filepath.Join(dir, "credentials.json"))
 	if err != nil {
 		return nil, fmt.Errorf("unable to read client secret file: %v", err)
 	}
@@ -49,28 +52,70 @@ func NewClient(dir string, config *oauth2.Config) *http.Client {
 	tokFile := filepath.Join(dir, "token.json")
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
-		tok = getTokenFromWeb(config)
+		tok = tokenFromWeb(context.Background(), config)
 		saveToken(tokFile, tok)
 	}
 	return config.Client(context.Background(), tok)
 }
 
-// Requests a token from the web, then returns the retrieved token.
-func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the "+
-		"authorization code: \n%v\n", authURL)
+func tokenFromWeb(ctx context.Context, config *oauth2.Config) *oauth2.Token {
+	ch := make(chan string)
+	randState := fmt.Sprintf("st%d", time.Now().UnixNano())
+	ts := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.Path == "/favicon.ico" {
+			http.Error(rw, "", 404)
+			return
+		}
+		if req.FormValue("state") != randState {
+			log.Printf("State doesn't match: req = %#v", req)
+			http.Error(rw, "", 500)
+			return
+		}
+		if code := req.FormValue("code"); code != "" {
+			fmt.Fprintf(rw, "<h1>Success</h1>Authorized.")
+			rw.(http.Flusher).Flush()
+			ch <- code
+			return
+		}
+		log.Printf("no code")
+		http.Error(rw, "", 500)
+	}))
+	defer ts.Close()
 
-	var authCode string
-	if _, err := fmt.Scan(&authCode); err != nil {
-		log.Fatalf("Unable to read authorization code: %v", err)
-	}
+	config.RedirectURL = ts.URL
+	authURL := config.AuthCodeURL(randState)
+	go openURL(authURL)
+	log.Printf("Authorize this app at: %s", authURL)
+	code := <-ch
+	log.Printf("Got code: %s", code)
 
-	tok, err := config.Exchange(context.TODO(), authCode)
+	token, err := config.Exchange(ctx, code)
 	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
+		log.Fatalf("Token exchange error: %v", err)
 	}
-	return tok
+	return token
+}
+
+func openURL(url string) {
+	try := []string{"xdg-open", "google-chrome", "open"}
+	for _, bin := range try {
+		err := exec.Command(bin, url).Run()
+		if err == nil {
+			return
+		}
+	}
+	log.Printf("Error opening URL in browser.")
+}
+
+func valueOrFileContents(value string, filename string) string {
+	if value != "" {
+		return value
+	}
+	slurp, err := os.ReadFile(filename)
+	if err != nil {
+		log.Fatalf("Error reading %q: %v", filename, err)
+	}
+	return strings.TrimSpace(string(slurp))
 }
 
 // Retrieves a token from a local file.

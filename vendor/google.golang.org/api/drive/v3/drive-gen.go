@@ -8,6 +8,17 @@
 //
 // For product documentation, see: https://developers.google.com/drive/
 //
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
+//
 // # Creating a client
 //
 // Usage example:
@@ -17,28 +28,31 @@
 //	ctx := context.Background()
 //	driveService, err := drive.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
+// By default, all available scopes (see "Constants") are used to authenticate.
+// To restrict scopes, use [google.golang.org/api/option.WithScopes]:
 //
 //	driveService, err := drive.NewService(ctx, option.WithScopes(drive.DriveScriptsScope))
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	driveService, err := drive.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	driveService, err := drive.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package drive // import "google.golang.org/api/drive/v3"
 
 import (
@@ -547,13 +561,12 @@ type ChangeList struct {
 
 	// NewStartPageToken: The starting page token for future changes. This
 	// will be present only if the end of the current changes list has been
-	// reached.
+	// reached. The page token doesn't expire.
 	NewStartPageToken string `json:"newStartPageToken,omitempty"`
 
 	// NextPageToken: The page token for the next page of changes. This will
-	// be absent if the end of the changes list has been reached. If the
-	// token is rejected for any reason, it should be discarded, and
-	// pagination should be restarted from the first page of results.
+	// be absent if the end of the changes list has been reached. The page
+	// token doesn't expire.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -649,7 +662,9 @@ func (s *Channel) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// Comment: A comment on a file.
+// Comment: A comment on a file. Some resource methods (such as
+// `comments.update`) require a `commentId`. Use the `comments.list`
+// method to retrieve the ID for a comment in a file.
 type Comment struct {
 	// Anchor: A region of the document represented as a JSON string. For
 	// details on defining anchor properties, refer to Manage comments and
@@ -775,7 +790,9 @@ type CommentList struct {
 	// NextPageToken: The page token for the next page of comments. This
 	// will be absent if the end of the comments list has been reached. If
 	// the token is rejected for any reason, it should be discarded, and
-	// pagination should be restarted from the first page of results.
+	// pagination should be restarted from the first page of results. The
+	// page token is typically valid for several hours. However, if new
+	// items are added or removed, your expected results might differ.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -808,6 +825,12 @@ func (s *CommentList) MarshalJSON() ([]byte, error) {
 // ContentRestriction: A restriction for accessing the content of the
 // file.
 type ContentRestriction struct {
+	// OwnerRestricted: Whether the content restriction can only be modified
+	// or removed by a user who owns the file. For files in shared drives,
+	// any user with `organizer` capabilities can modify or remove this
+	// content restriction.
+	OwnerRestricted bool `json:"ownerRestricted,omitempty"`
+
 	// ReadOnly: Whether the content of the file is read-only. If a file is
 	// read-only, a new revision of the file may not be added, comments may
 	// not be added or modified, and the title of the file may not be
@@ -826,11 +849,16 @@ type ContentRestriction struct {
 	// (formatted RFC 3339 timestamp). Only populated if readOnly is true.
 	RestrictionTime string `json:"restrictionTime,omitempty"`
 
+	// SystemRestricted: Output only. Whether the content restriction was
+	// applied by the system, for example due to an esignature. Users cannot
+	// modify or remove system restricted content restrictions.
+	SystemRestricted bool `json:"systemRestricted,omitempty"`
+
 	// Type: Output only. The type of the content restriction. Currently the
 	// only possible value is `globalContentRestriction`.
 	Type string `json:"type,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "ReadOnly") to
+	// ForceSendFields is a list of field names (e.g. "OwnerRestricted") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
 	// non-pointer, non-interface field appearing in ForceSendFields will be
@@ -838,12 +866,13 @@ type ContentRestriction struct {
 	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "ReadOnly") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "OwnerRestricted") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
 	NullFields []string `json:"-"`
 }
 
@@ -853,7 +882,9 @@ func (s *ContentRestriction) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// Drive: Representation of a shared drive.
+// Drive: Representation of a shared drive. Some resource methods (such
+// as `drives.update`) require a `driveId`. Use the `drives.list` method
+// to retrieve the ID for a shared drive.
 type Drive struct {
 	// BackgroundImageFile: An image file and cropping parameters from which
 	// a background image for this shared drive is set. This is a write only
@@ -899,7 +930,9 @@ type Drive struct {
 	OrgUnitId string `json:"orgUnitId,omitempty"`
 
 	// Restrictions: A set of restrictions that apply to this shared drive
-	// or items inside this shared drive.
+	// or items inside this shared drive. Note that restrictions can't be
+	// set when creating a shared drive. To add a restriction, first create
+	// a shared drive and then use `drives.update` to add restrictions.
 	Restrictions *DriveRestrictions `json:"restrictions,omitempty"`
 
 	// ThemeId: The ID of the theme from which the background image and
@@ -1125,7 +1158,10 @@ func (s *DriveCapabilities) MarshalJSON() ([]byte, error) {
 }
 
 // DriveRestrictions: A set of restrictions that apply to this shared
-// drive or items inside this shared drive.
+// drive or items inside this shared drive. Note that restrictions can't
+// be set when creating a shared drive. To add a restriction, first
+// create a shared drive and then use `drives.update` to add
+// restrictions.
 type DriveRestrictions struct {
 	// AdminManagedRestrictions: Whether administrative privileges on this
 	// shared drive are required to modify restrictions.
@@ -1192,7 +1228,9 @@ type DriveList struct {
 	// NextPageToken: The page token for the next page of shared drives.
 	// This will be absent if the end of the list has been reached. If the
 	// token is rejected for any reason, it should be discarded, and
-	// pagination should be restarted from the first page of results.
+	// pagination should be restarted from the first page of results. The
+	// page token is typically valid for several hours. However, if new
+	// items are added or removed, your expected results might differ.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -1222,7 +1260,9 @@ func (s *DriveList) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// File: The metadata for a file.
+// File: The metadata for a file. Some resource methods (such as
+// `files.update`) require a `fileId`. Use the `files.list` method to
+// retrieve the ID for a file.
 type File struct {
 	// AppProperties: A collection of arbitrary key-value pairs which are
 	// private to the requesting app.
@@ -1456,7 +1496,9 @@ type File struct {
 
 	// ThumbnailLink: Output only. A short-lived link to the file's
 	// thumbnail, if available. Typically lasts on the order of hours. Only
-	// populated when the requesting app can access the file's content.
+	// populated when the requesting app can access the file's content. If
+	// the file isn't shared publicly, the URL returned in
+	// `Files.thumbnailLink` must be fetched using a credentialed request.
 	ThumbnailLink string `json:"thumbnailLink,omitempty"`
 
 	// ThumbnailVersion: Output only. The thumbnail version for use in
@@ -1612,13 +1654,24 @@ type FileCapabilities struct {
 	// the content of this file.
 	CanModifyContent bool `json:"canModifyContent,omitempty"`
 
-	// CanModifyContentRestriction: Output only. Whether the current user
-	// can modify restrictions on content of this file.
+	// CanModifyContentRestriction: Deprecated: Output only. Use one of
+	// `canModifyEditorContentRestriction`,
+	// `canModifyOwnerContentRestriction` or `canRemoveContentRestriction`.
 	CanModifyContentRestriction bool `json:"canModifyContentRestriction,omitempty"`
+
+	// CanModifyEditorContentRestriction: Output only. Whether the current
+	// user can add or modify content restrictions on the file which are
+	// editor restricted.
+	CanModifyEditorContentRestriction bool `json:"canModifyEditorContentRestriction,omitempty"`
 
 	// CanModifyLabels: Output only. Whether the current user can modify the
 	// labels on the file.
 	CanModifyLabels bool `json:"canModifyLabels,omitempty"`
+
+	// CanModifyOwnerContentRestriction: Output only. Whether the current
+	// user can add or modify content restrictions which are owner
+	// restricted.
+	CanModifyOwnerContentRestriction bool `json:"canModifyOwnerContentRestriction,omitempty"`
 
 	// CanMoveChildrenOutOfDrive: Output only. Whether the current user can
 	// move children of this folder outside of the shared drive. This is
@@ -1693,6 +1746,10 @@ type FileCapabilities struct {
 	// a folder. For a folder in a shared drive, use `canDeleteChildren` or
 	// `canTrashChildren` instead.
 	CanRemoveChildren bool `json:"canRemoveChildren,omitempty"`
+
+	// CanRemoveContentRestriction: Output only. Whether there is a content
+	// restriction on the file that can be removed by the current user.
+	CanRemoveContentRestriction bool `json:"canRemoveContentRestriction,omitempty"`
 
 	// CanRemoveMyDriveParent: Output only. Whether the current user can
 	// remove a parent from the item without adding another parent in the
@@ -2152,7 +2209,9 @@ type FileList struct {
 	// NextPageToken: The page token for the next page of files. This will
 	// be absent if the end of the files list has been reached. If the token
 	// is rejected for any reason, it should be discarded, and pagination
-	// should be restarted from the first page of results.
+	// should be restarted from the first page of results. The page token is
+	// typically valid for several hours. However, if new items are added or
+	// removed, your expected results might differ.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -2377,7 +2436,9 @@ type LabelList struct {
 	// NextPageToken: The page token for the next page of labels. This field
 	// will be absent if the end of the list has been reached. If the token
 	// is rejected for any reason, it should be discarded, and pagination
-	// should be restarted from the first page of results.
+	// should be restarted from the first page of results. The page token is
+	// typically valid for several hours. However, if new items are added or
+	// removed, your expected results might differ.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -2520,7 +2581,10 @@ func (s *ModifyLabelsResponse) MarshalJSON() ([]byte, error) {
 }
 
 // Permission: A permission for a file. A permission grants a user,
-// group, domain or the world access to a file or a folder hierarchy.
+// group, domain, or the world access to a file or a folder hierarchy.
+// Some resource methods (such as `permissions.update`) require a
+// `permissionId`. Use the `permissions.list` method to retrieve the ID
+// for a file, folder, or shared drive.
 type Permission struct {
 	// AllowFileDiscovery: Whether the permission allows the file to be
 	// discovered through search. This is only applicable for permissions of
@@ -2718,7 +2782,9 @@ type PermissionList struct {
 	// field will be absent if the end of the permissions list has been
 	// reached. If the token is rejected for any reason, it should be
 	// discarded, and pagination should be restarted from the first page of
-	// results.
+	// results. The page token is typically valid for several hours.
+	// However, if new items are added or removed, your expected results
+	// might differ.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// Permissions: The list of permissions. If nextPageToken is populated,
@@ -2753,7 +2819,9 @@ func (s *PermissionList) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// Reply: A reply to a comment on a file.
+// Reply: A reply to a comment on a file. Some resource methods (such as
+// `replies.update`) require a `replyId`. Use the `replies.list` method
+// to retrieve the ID for a reply.
 type Reply struct {
 	// Action: The action the reply performed to the parent comment. Valid
 	// values are: * `resolve` * `reopen`
@@ -2827,7 +2895,9 @@ type ReplyList struct {
 	// NextPageToken: The page token for the next page of replies. This will
 	// be absent if the end of the replies list has been reached. If the
 	// token is rejected for any reason, it should be discarded, and
-	// pagination should be restarted from the first page of results.
+	// pagination should be restarted from the first page of results. The
+	// page token is typically valid for several hours. However, if new
+	// items are added or removed, your expected results might differ.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// Replies: The list of replies. If nextPageToken is populated, then
@@ -2862,7 +2932,9 @@ func (s *ReplyList) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// Revision: The metadata for a revision to a file.
+// Revision: The metadata for a revision to a file. Some resource
+// methods (such as `revisions.update`) require a `revisionId`. Use the
+// `revisions.list` method to retrieve the ID for a revision.
 type Revision struct {
 	// ExportLinks: Output only. Links for exporting Docs Editors files to
 	// specific formats.
@@ -2958,7 +3030,9 @@ type RevisionList struct {
 	// NextPageToken: The page token for the next page of revisions. This
 	// will be absent if the end of the revisions list has been reached. If
 	// the token is rejected for any reason, it should be discarded, and
-	// pagination should be restarted from the first page of results.
+	// pagination should be restarted from the first page of results. The
+	// page token is typically valid for several hours. However, if new
+	// items are added or removed, your expected results might differ.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// Revisions: The list of revisions. If nextPageToken is populated, then
@@ -2998,7 +3072,8 @@ type StartPageToken struct {
 	// string "drive#startPageToken".
 	Kind string `json:"kind,omitempty"`
 
-	// StartPageToken: The starting page token for listing changes.
+	// StartPageToken: The starting page token for listing future changes.
+	// The page token doesn't expire.
 	StartPageToken string `json:"startPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -3357,7 +3432,9 @@ type TeamDriveList struct {
 	// NextPageToken: The page token for the next page of Team Drives. This
 	// will be absent if the end of the Team Drives list has been reached.
 	// If the token is rejected for any reason, it should be discarded, and
-	// pagination should be restarted from the first page of results.
+	// pagination should be restarted from the first page of results. The
+	// page token is typically valid for several hours. However, if new
+	// items are added or removed, your expected results might differ.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// TeamDrives: The list of Team Drives. If nextPageToken is populated,
@@ -5504,7 +5581,7 @@ type DrivesDeleteCall struct {
 }
 
 // Delete: Permanently deletes a shared drive for which the user is an
-// organizer. The shared drive cannot contain any untrashed items.
+// `organizer`. The shared drive cannot contain any untrashed items.
 //
 // - driveId: The ID of the shared drive.
 func (r *DrivesService) Delete(driveId string) *DrivesDeleteCall {
@@ -5592,7 +5669,7 @@ func (c *DrivesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	return nil
 	// {
-	//   "description": "Permanently deletes a shared drive for which the user is an organizer. The shared drive cannot contain any untrashed items.",
+	//   "description": "Permanently deletes a shared drive for which the user is an `organizer`. The shared drive cannot contain any untrashed items.",
 	//   "flatPath": "drives/{driveId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "drive.drives.delete",
@@ -7045,9 +7122,9 @@ type FilesDeleteCall struct {
 }
 
 // Delete: Permanently deletes a file owned by the user without moving
-// it to the trash. If the file belongs to a shared drive the user must
-// be an organizer on the parent. If the target is a folder, all
-// descendants owned by the user are also deleted.
+// it to the trash. If the file belongs to a shared drive, the user must
+// be an `organizer` on the parent folder. If the target is a folder,
+// all descendants owned by the user are also deleted.
 //
 // - fileId: The ID of the file.
 func (r *FilesService) Delete(fileId string) *FilesDeleteCall {
@@ -7141,7 +7218,7 @@ func (c *FilesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	return nil
 	// {
-	//   "description": "Permanently deletes a file owned by the user without moving it to the trash. If the file belongs to a shared drive the user must be an organizer on the parent. If the target is a folder, all descendants owned by the user are also deleted.",
+	//   "description": "Permanently deletes a file owned by the user without moving it to the trash. If the file belongs to a shared drive, the user must be an `organizer` on the parent folder. If the target is a folder, all descendants owned by the user are also deleted.",
 	//   "flatPath": "files/{fileId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "drive.files.delete",
@@ -8275,7 +8352,7 @@ type FilesListLabelsCall struct {
 
 // ListLabels: Lists the labels on a file.
 //
-// - fileId: The ID for the file or shared drive.
+// - fileId: The ID for the file.
 func (r *FilesService) ListLabels(fileId string) *FilesListLabelsCall {
 	c := &FilesListLabelsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -8405,7 +8482,7 @@ func (c *FilesListLabelsCall) Do(opts ...googleapi.CallOption) (*LabelList, erro
 	//   ],
 	//   "parameters": {
 	//     "fileId": {
-	//       "description": "The ID for the file or shared drive.",
+	//       "description": "The ID for the file.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"

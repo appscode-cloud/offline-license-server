@@ -8,6 +8,17 @@
 //
 // For product documentation, see: https://developers.google.com/docs/
 //
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
+//
 // # Creating a client
 //
 // Usage example:
@@ -17,28 +28,31 @@
 //	ctx := context.Background()
 //	docsService, err := docs.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
-//
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
 // # Other authentication options
 //
-// By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
+// By default, all available scopes (see "Constants") are used to authenticate.
+// To restrict scopes, use [google.golang.org/api/option.WithScopes]:
 //
 //	docsService, err := docs.NewService(ctx, option.WithScopes(docs.DriveReadonlyScope))
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
 //	docsService, err := docs.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
 //	config := &oauth2.Config{...}
 //	// ...
 //	token, err := config.Exchange(ctx, ...)
 //	docsService, err := docs.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package docs // import "google.golang.org/api/docs/v1"
 
 import (
@@ -1495,6 +1509,11 @@ type DocumentStyle struct {
 	// If not set, there's no first page header. This property is read-only.
 	FirstPageHeaderId string `json:"firstPageHeaderId,omitempty"`
 
+	// FlipPageOrientation: Optional. Indicates whether to flip the
+	// dimensions of the page_size, which allows changing the page
+	// orientation between portrait and landscape.
+	FlipPageOrientation bool `json:"flipPageOrientation,omitempty"`
+
 	// MarginBottom: The bottom page margin. Updating the bottom page margin
 	// on the document style clears the bottom page margin on all section
 	// styles.
@@ -1598,6 +1617,10 @@ type DocumentStyleSuggestionState struct {
 	// FirstPageHeaderIdSuggested: Indicates if there was a suggested change
 	// to first_page_header_id.
 	FirstPageHeaderIdSuggested bool `json:"firstPageHeaderIdSuggested,omitempty"`
+
+	// FlipPageOrientationSuggested: Optional. Indicates if there was a
+	// suggested change to flip_page_orientation.
+	FlipPageOrientationSuggested bool `json:"flipPageOrientationSuggested,omitempty"`
 
 	// MarginBottomSuggested: Indicates if there was a suggested change to
 	// margin_bottom.
@@ -5139,6 +5162,15 @@ type SectionStyle struct {
 	// SectionBreak, it inherits from DocumentStyle's first_page_header_id.
 	// This property is read-only.
 	FirstPageHeaderId string `json:"firstPageHeaderId,omitempty"`
+
+	// FlipPageOrientation: Optional. Indicates whether to flip the
+	// dimensions of DocumentStyle's page_size for this section, which
+	// allows changing the page orientation between portrait and landscape.
+	// If unset, the value inherits from DocumentStyle's
+	// flip_page_orientation. When updating this property, setting a
+	// concrete value is required. Unsetting this property results in a 400
+	// bad request error.
+	FlipPageOrientation bool `json:"flipPageOrientation,omitempty"`
 
 	// MarginBottom: The bottom page margin of the section. If unset, the
 	// value defaults to margin_bottom from DocumentStyle. When updating
