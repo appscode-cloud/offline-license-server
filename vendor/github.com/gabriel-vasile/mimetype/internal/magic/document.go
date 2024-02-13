@@ -4,15 +4,7 @@ import "bytes"
 
 var (
 	// Pdf matches a Portable Document Format file.
-	// https://github.com/file/file/blob/11010cc805546a3e35597e67e1129a481aed40e8/magic/Magdir/pdf
-	Pdf = prefix(
-		// usual pdf signature
-		[]byte("%PDF-"),
-		// new-line prefixed signature
-		[]byte("\012%PDF-"),
-		// UTF-8 BOM prefixed signature
-		[]byte("\xef\xbb\xbf%PDF-"),
-	)
+	Pdf = prefix([]byte{0x25, 0x50, 0x44, 0x46})
 	// Fdf matches a Forms Data Format file.
 	Fdf = prefix([]byte("%FDF"))
 	// Mobi matches a Mobi file.

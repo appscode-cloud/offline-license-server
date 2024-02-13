@@ -256,6 +256,14 @@ func (r *reader) Read(p []byte) (int, error) {
 	return r.r.Read(p)
 }
 
+func (r *reader) Download(w io.Writer) error {
+	// This should always work because r.r was created from a bytes.Reader.
+	// It's only not a WriterTo when we wrap it with a LimitReader,
+	// which is guaranteed not to happen by the driver interface.
+	_, err := r.r.(io.WriterTo).WriteTo(w)
+	return err
+}
+
 func (r *reader) Close() error {
 	return nil
 }
@@ -314,6 +322,11 @@ func (w *writer) Write(p []byte) (n int, err error) {
 	return w.buf.Write(p)
 }
 
+func (w *writer) Upload(r io.Reader) error {
+	_, err := w.buf.ReadFrom(r)
+	return err
+}
+
 func (w *writer) Close() error {
 	// Check if the write was cancelled.
 	if err := w.ctx.Err(); err != nil {
@@ -354,7 +367,9 @@ func (b *bucket) Copy(ctx context.Context, dstKey, srcKey string, opts *driver.C
 	defer b.mu.Unlock()
 
 	if opts.BeforeCopy != nil {
-		return opts.BeforeCopy(func(interface{}) bool { return false })
+		if err := opts.BeforeCopy(func(interface{}) bool { return false }); err != nil {
+			return err
+		}
 	}
 	v := b.blobs[srcKey]
 	if v == nil {

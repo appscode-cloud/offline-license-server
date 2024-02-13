@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/smtp"
 	"os"
@@ -61,9 +60,10 @@ type Mailer struct {
 	BCC     string
 	ReplyTo string
 
-	Subject string
-	Body    string
-	Params  interface{}
+	Subject   string
+	Body      string
+	Plaintext bool
+	Params    interface{}
 
 	AttachmentBytes map[string][]byte
 	GDriveFiles     map[string]string
@@ -99,18 +99,20 @@ func (m *Mailer) renderMail(src string, params interface{}) (string, string, err
 	}
 
 	var bodyHtml bytes.Buffer
-	md := goldmark.New(
-		goldmark.WithExtensions(extension.GFM),
-		goldmark.WithParserOptions(
-			parser.WithAutoHeadingID(),
-		),
-		goldmark.WithRendererOptions(
-			html.WithHardWraps(),
-			html.WithXHTML(),
-		),
-	)
-	if err := md.Convert(bodyText.Bytes(), &bodyHtml); err != nil {
-		return "", "", err
+	if !m.Plaintext {
+		md := goldmark.New(
+			goldmark.WithExtensions(extension.GFM),
+			goldmark.WithParserOptions(
+				parser.WithAutoHeadingID(),
+			),
+			goldmark.WithRendererOptions(
+				html.WithHardWraps(),
+				html.WithXHTML(),
+			),
+		)
+		if err := md.Convert(bodyText.Bytes(), &bodyHtml); err != nil {
+			return "", "", err
+		}
 	}
 	return bodyText.String(), bodyHtml.String(), nil
 }
@@ -202,7 +204,7 @@ func ExportPDF(srvDrive *drive.Service, docId, filename string) error {
 		return err
 	}
 	fmt.Println("writing file:", filename)
-	return ioutil.WriteFile(filename, buf.Bytes(), 0o644)
+	return os.WriteFile(filename, buf.Bytes(), 0o644)
 }
 
 func DownloadFile(srvDrive *drive.Service, docId, filename string) error {
@@ -222,5 +224,5 @@ func DownloadFile(srvDrive *drive.Service, docId, filename string) error {
 		return err
 	}
 	fmt.Println("writing file:", filename)
-	return ioutil.WriteFile(filename, buf.Bytes(), 0o644)
+	return os.WriteFile(filename, buf.Bytes(), 0o644)
 }

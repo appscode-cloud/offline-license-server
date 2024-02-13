@@ -7,17 +7,62 @@ import (
 	"strings"
 )
 
+// Line break constants
+// Deprecated: Please use HTML2TextWithOptions(text, WithUnixLineBreak())
 const (
 	WIN_LBR  = "\r\n"
 	UNIX_LBR = "\n"
 )
 
-var lbr = WIN_LBR
+var legacyLBR = WIN_LBR
 var badTagnamesRE = regexp.MustCompile(`^(head|script|style|a)($|\s+)`)
-var linkTagRE = regexp.MustCompile(`a.*href=('([^']*?)'|"([^"]*?)")`)
+var linkTagRE = regexp.MustCompile(`^(?i:a)(?:$|\s).*(?i:href)\s*=\s*('([^']*?)'|"([^"]*?)"|([^\s"'` + "`" + `=<>]+))`)
 var badLinkHrefRE = regexp.MustCompile(`javascript:`)
 var headersRE = regexp.MustCompile(`^(\/)?h[1-6]`)
-var numericEntityRE = regexp.MustCompile(`^#([0-9]+)$`)
+var numericEntityRE = regexp.MustCompile(`(?i)^#(x?[a-f0-9]+)$`)
+
+type options struct {
+	lbr            string
+	linksInnerText bool
+	listPrefix     string
+}
+
+func newOptions() *options {
+	// apply defaults
+	return &options{
+		lbr: WIN_LBR,
+	}
+}
+
+// Option is a functional option
+type Option func(*options)
+
+// WithUnixLineBreaks instructs the converter to use unix line breaks ("\n" instead of "\r\n" default)
+func WithUnixLineBreaks() Option {
+	return func(o *options) {
+		o.lbr = UNIX_LBR
+	}
+}
+
+// WithLinksInnerText instructs the converter to retain link tag inner text and append href URLs in angle brackets after the text
+// Example: click news <http://bit.ly/2n4wXRs>
+func WithLinksInnerText() Option {
+	return func(o *options) {
+		o.linksInnerText = true
+	}
+}
+
+// WithListSupportPrefix formats <ul> and <li> lists with the specified prefix
+func WithListSupportPrefix(prefix string) Option {
+	return func(o *options) {
+		o.listPrefix = prefix
+	}
+}
+
+// WithListSupport formats <ul> and <li> lists with " - " prefix
+func WithListSupport() Option {
+	return WithListSupportPrefix(" - ")
+}
 
 func parseHTMLEntity(entName string) (string, bool) {
 	if r, ok := entity[entName]; ok {
@@ -25,8 +70,18 @@ func parseHTMLEntity(entName string) (string, bool) {
 	}
 
 	if match := numericEntityRE.FindStringSubmatch(entName); len(match) == 2 {
-		digits := match[1]
-		n, err := strconv.Atoi(digits)
+		var (
+			err    error
+			n      int64
+			digits = match[1]
+		)
+
+		if digits != "" && (digits[0] == 'x' || digits[0] == 'X') {
+			n, err = strconv.ParseInt(digits[1:], 16, 64)
+		} else {
+			n, err = strconv.ParseInt(digits, 10, 64)
+		}
+
 		if err == nil && (n == 9 || n == 10 || n == 13 || n > 31) {
 			return string(rune(n)), true
 		}
@@ -37,11 +92,12 @@ func parseHTMLEntity(entName string) (string, bool) {
 
 // SetUnixLbr with argument true sets Unix-style line-breaks in output ("\n")
 // with argument false sets Windows-style line-breaks in output ("\r\n", the default)
+// Deprecated: Please use HTML2TextWithOptions(text, WithUnixLineBreak())
 func SetUnixLbr(b bool) {
 	if b {
-		lbr = UNIX_LBR
+		legacyLBR = UNIX_LBR
 	} else {
-		lbr = WIN_LBR
+		legacyLBR = WIN_LBR
 	}
 }
 
@@ -103,11 +159,27 @@ func writeSpace(outBuf *bytes.Buffer) {
 
 // HTML2Text converts html into a text form
 func HTML2Text(html string) string {
+	var opts []Option
+	if legacyLBR == UNIX_LBR {
+		opts = append(opts, WithUnixLineBreaks())
+	}
+	return HTML2TextWithOptions(html, opts...)
+}
+
+// HTML2TextWithOptions converts html into a text form with additional options
+func HTML2TextWithOptions(html string, reqOpts ...Option) string {
+	opts := newOptions()
+	for _, opt := range reqOpts {
+		opt(opts)
+	}
+
 	inLen := len(html)
 	tagStart := 0
 	inEnt := false
 	badTagStackDepth := 0 // if == 1 it means we are inside <head>...</head>
 	shouldOutput := true
+	// maintain a stack of <a> tag href links and output it after the tag's inner text (for opts.linksInnerText only)
+	hrefs := []string{}
 	// new line cannot be printed at the beginning or
 	// for <p> after a new line created by previous <p></p>
 	canPrintNewline := false
@@ -172,37 +244,74 @@ func HTML2Text(html string) string {
 			tag := html[tagStart:i]
 			tagNameLowercase := strings.ToLower(tag)
 
-			if tagNameLowercase == "/ul" {
-				outBuf.WriteString(lbr)
+			if tagNameLowercase == "/ul" || tagNameLowercase == "/ol" {
+				outBuf.WriteString(opts.lbr)
 			} else if tagNameLowercase == "li" || tagNameLowercase == "li/" {
-				outBuf.WriteString(lbr)
+				if opts.listPrefix != "" {
+					outBuf.WriteString(opts.lbr + opts.listPrefix)
+				} else {
+					outBuf.WriteString(opts.lbr)
+				}
 			} else if headersRE.MatchString(tagNameLowercase) {
 				if canPrintNewline {
-					outBuf.WriteString(lbr + lbr)
+					outBuf.WriteString(opts.lbr + opts.lbr)
 				}
 				canPrintNewline = false
 			} else if tagNameLowercase == "br" || tagNameLowercase == "br/" {
 				// new line
-				outBuf.WriteString(lbr)
+				outBuf.WriteString(opts.lbr)
 			} else if tagNameLowercase == "p" || tagNameLowercase == "/p" {
 				if canPrintNewline {
-					outBuf.WriteString(lbr + lbr)
+					outBuf.WriteString(opts.lbr + opts.lbr)
 				}
 				canPrintNewline = false
+			} else if opts.linksInnerText && tagNameLowercase == "/a" {
+				// end of link
+				// links can be empty can happen if the link matches the badLinkHrefRE
+				if len(hrefs) > 0 {
+					outBuf.WriteString(" <")
+					outBuf.WriteString(HTMLEntitiesToText(hrefs[0]))
+					outBuf.WriteString(">")
+					hrefs = hrefs[1:]
+				}
+			} else if opts.linksInnerText && linkTagRE.MatchString(tagNameLowercase) {
+				// parse link href
+				// add special handling for a tags
+				m := linkTagRE.FindStringSubmatch(tag)
+				if len(m) == 5 {
+					link := m[2]
+					if len(link) == 0 {
+						link = m[3]
+						if len(link) == 0 {
+							link = m[4]
+						}
+					}
+
+					if opts.linksInnerText && !badLinkHrefRE.MatchString(link) {
+						hrefs = append(hrefs, link)
+					}
+				}
 			} else if badTagnamesRE.MatchString(tagNameLowercase) {
 				// unwanted block
 				badTagStackDepth++
 
-				// parse link href
-				m := linkTagRE.FindStringSubmatch(tag)
-				if len(m) == 4 {
-					link := m[2]
-					if len(link) == 0 {
-						link = m[3]
-					}
+				// if link inner text preservation is not enabled
+				// and the current tag is a link tag, parse its href and output that
+				if !opts.linksInnerText {
+					// parse link href
+					m := linkTagRE.FindStringSubmatch(tag)
+					if len(m) == 5 {
+						link := m[2]
+						if len(link) == 0 {
+							link = m[3]
+							if len(link) == 0 {
+								link = m[4]
+							}
+						}
 
-					if !badLinkHrefRE.MatchString(link) {
-						outBuf.WriteString(HTMLEntitiesToText(link))
+						if !badLinkHrefRE.MatchString(link) {
+							outBuf.WriteString(HTMLEntitiesToText(link))
+						}
 					}
 				}
 			} else if len(tagNameLowercase) > 0 && tagNameLowercase[0] == '/' &&

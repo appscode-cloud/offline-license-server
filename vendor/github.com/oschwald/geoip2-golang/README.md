@@ -1,7 +1,6 @@
 # GeoIP2 Reader for Go #
 
-[![Build Status](https://travis-ci.org/oschwald/geoip2-golang.png?branch=master)](https://travis-ci.org/oschwald/geoip2-golang)
-[![GoDoc](https://godoc.org/github.com/oschwald/geoip2-golang?status.png)](https://godoc.org/github.com/oschwald/geoip2-golang)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/oschwald/geoip2-golang)](https://pkg.go.dev/github.com/oschwald/geoip2-golang)
 
 This library reads MaxMind [GeoLite2](http://dev.maxmind.com/geoip/geoip2/geolite2/)
 and [GeoIP2](http://www.maxmind.com/en/geolocation_landing) databases.
@@ -11,7 +10,7 @@ This library is built using
 All data for the database record is decoded using this library. If you only
 need several fields, you may get superior performance by using maxminddb's
 `Lookup` directly with a result struct that only contains the required fields.
-(See [example_test.go](https://github.com/oschwald/maxminddb-golang/blob/master/example_test.go)
+(See [example_test.go](https://github.com/oschwald/maxminddb-golang/blob/main/example_test.go)
 in the maxminddb repository for an example of this.)
 
 ## Installation ##
@@ -32,9 +31,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/oschwald/geoip2-golang"
 	"log"
 	"net"
+
+	"github.com/oschwald/geoip2-golang"
 )
 
 func main() {
@@ -65,6 +65,7 @@ func main() {
 	// Time zone: Europe/London
 	// Coordinates: 51.5142, -0.0931
 }
+
 ```
 
 ## Testing ##

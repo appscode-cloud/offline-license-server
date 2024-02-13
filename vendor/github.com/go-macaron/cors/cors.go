@@ -46,6 +46,8 @@ type Options struct {
 	AllowDomain      []string
 	AllowSubdomain   bool
 	Methods          []string
+	AllowHeaders     []string
+	ExposeHeaders    []string
 	MaxAgeSeconds    int
 	AllowCredentials bool
 }
@@ -106,9 +108,10 @@ func CORS(options ...Options) macaron.Handler {
 		reqOptions := ctx.Req.Method == http.MethodOptions
 
 		headers := map[string]string{
-			"access-control-allow-methods": strings.Join(opt.Methods, ","),
-			"access-control-allow-headers": ctx.Req.Header.Get("access-control-request-headers"),
-			"access-control-max-age":       strconv.Itoa(opt.MaxAgeSeconds),
+			"access-control-allow-methods":  strings.Join(opt.Methods, ","),
+			"access-control-allow-headers":  strings.Join(opt.AllowHeaders, ","),
+			"access-control-expose-headers": strings.Join(opt.ExposeHeaders, ","),
+			"access-control-max-age":        strconv.Itoa(opt.MaxAgeSeconds),
 		}
 		if opt.AllowDomain[0] == "*" {
 			headers["access-control-allow-origin"] = "*"
