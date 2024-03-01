@@ -1,6 +1,6 @@
 module go.bytebuilders.dev/offline-license-server
 
-go 1.21.5
+go 1.22.0
 
 require (
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
@@ -28,7 +28,7 @@ require (
 	golang.org/x/net v0.21.0
 	golang.org/x/text v0.14.0
 	gomodules.xyz/blobfs v0.1.14
-	gomodules.xyz/cert v1.5.2
+	gomodules.xyz/cert v1.6.0
 	gomodules.xyz/email-providers v0.1.4
 	gomodules.xyz/encoding v0.0.7
 	gomodules.xyz/errors v0.1.0
@@ -41,7 +41,7 @@ require (
 	gomodules.xyz/password-generator v0.2.9
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/sets v0.2.1
-	gomodules.xyz/x v0.0.15
+	gomodules.xyz/x v0.0.17
 	gomodules.xyz/zoom-lib-golang v0.0.0-20230924092137-92156e0a6cc9
 	google.golang.org/api v0.164.0
 	gopkg.in/macaron.v1 v1.5.0
@@ -88,6 +88,7 @@ require (
 	github.com/oschwald/maxminddb-golang v1.11.0 // indirect
 	github.com/rickb777/plural v1.4.1 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
+	github.com/smarty/assertions v1.15.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/tchap/go-patricia v2.3.0+incompatible // indirect
 	github.com/unknwon/com v0.0.0-20190804042917-757f69c95f3e // indirect

@@ -36,11 +36,7 @@ func NewCmdCreateCA(certDir string) *cobra.Command {
 		Short:             "Create CA cert/key pair",
 		DisableAutoGenTag: true,
 		Run: func(cmd *cobra.Command, args []string) {
-			store, err := certstore.New(blobfs.New("file:///"), certDir, org...)
-			if err != nil {
-				fmt.Printf("Failed to create certificate store. Reason: %v.", err)
-				os.Exit(1)
-			}
+			store := certstore.New(blobfs.New("file:///"), certDir, 0, org...)
 
 			var p []string
 			if prefix != "" {
@@ -51,7 +47,7 @@ func NewCmdCreateCA(certDir string) *cobra.Command {
 				os.Exit(1)
 			}
 
-			err = store.NewCA(p...)
+			err := store.NewCA(p...)
 			if err != nil {
 				fmt.Printf("Failed to init ca. Reason: %v.", err)
 				os.Exit(1)

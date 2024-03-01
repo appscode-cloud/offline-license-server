@@ -41,11 +41,8 @@ func GetCertStore(fs blobfs.Interface, issuer string) (*certstore.CertStore, err
 		caCertPath = path.Join(CACertificatesPath(), issuer)
 		issuerName = issuer
 	}
-	certs, err := certstore.New(fs, caCertPath, issuerName)
-	if err != nil {
-		return nil, err
-	}
-	err = certs.InitCA()
+	certs := certstore.New(fs, caCertPath, 0, issuerName)
+	err := certs.InitCA()
 	if err != nil {
 		return nil, err
 	}

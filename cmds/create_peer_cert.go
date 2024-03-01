@@ -54,11 +54,7 @@ func NewCmdCreatePeer(certDir string) *cobra.Command {
 				AltNames: sans,
 			}
 
-			store, err := certstore.New(blobfs.New("file:///"), certDir, org...)
-			if err != nil {
-				fmt.Printf("Failed to create certificate store. Reason: %v.", err)
-				os.Exit(1)
-			}
+			store := certstore.New(blobfs.New("file:///"), certDir, 0, org...)
 
 			var p []string
 			if prefix != "" {
@@ -69,7 +65,7 @@ func NewCmdCreatePeer(certDir string) *cobra.Command {
 				os.Exit(1)
 			}
 
-			if err = store.LoadCA(p...); err != nil {
+			if err := store.LoadCA(p...); err != nil {
 				fmt.Printf("CA certificates not found in %s. Run `init ca`", store.Location())
 				os.Exit(1)
 			}

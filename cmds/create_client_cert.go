@@ -52,11 +52,7 @@ func NewCmdCreateClient(certDir string) *cobra.Command {
 				Organization: org,
 			}
 
-			store, err := certstore.New(blobfs.New("file:///"), certDir)
-			if err != nil {
-				fmt.Printf("Failed to create certificate store. Reason: %v.", err)
-				os.Exit(1)
-			}
+			store := certstore.New(blobfs.New("file:///"), certDir, 0)
 
 			var p []string
 			if prefix != "" {

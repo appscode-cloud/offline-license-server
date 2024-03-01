@@ -201,6 +201,8 @@ github.com/rs/xid
 # github.com/shopspring/decimal v1.2.0
 ## explicit; go 1.13
 github.com/shopspring/decimal
+# github.com/smarty/assertions v1.15.1
+## explicit; go 1.18
 # github.com/spf13/cast v1.3.1
 ## explicit
 github.com/spf13/cast
@@ -382,8 +384,8 @@ golang.org/x/xerrors/internal
 # gomodules.xyz/blobfs v0.1.14
 ## explicit; go 1.18
 gomodules.xyz/blobfs
-# gomodules.xyz/cert v1.5.2
-## explicit; go 1.20
+# gomodules.xyz/cert v1.6.0
+## explicit; go 1.22.0
 gomodules.xyz/cert
 gomodules.xyz/cert/certstore
 # gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f
@@ -442,8 +444,8 @@ gomodules.xyz/sets
 # gomodules.xyz/wait v0.2.0
 ## explicit; go 1.14
 gomodules.xyz/wait
-# gomodules.xyz/x v0.0.15
-## explicit; go 1.18
+# gomodules.xyz/x v0.0.17
+## explicit; go 1.22.0
 gomodules.xyz/x/net
 gomodules.xyz/x/time
 gomodules.xyz/x/version
