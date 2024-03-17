@@ -29,7 +29,7 @@ func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration
 	}
 
 	{
-		err = LogLicense(s.sheet, accesslog)
+		err = LogLicense(s.sheet, accesslog, "")
 		if err != nil {
 			return err
 		}

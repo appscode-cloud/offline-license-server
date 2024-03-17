@@ -85,6 +85,8 @@ type Server struct {
 
 	blockedDomains sets.String
 	blockedEmails  sets.String
+
+	couponCodes map[string]string
 }
 
 func New(opts *Options) (*Server, error) {
@@ -171,6 +173,7 @@ func New(opts *Options) (*Server, error) {
 		zoomAccountEmail: os.Getenv("ZOOM_ACCOUNT_EMAIL"),
 		blockedDomains:   sets.NewString(opts.BlockedDomains...),
 		blockedEmails:    sets.NewString(opts.BlockedEmails...),
+		couponCodes:      ParseCouponCodes(opts.Coupons),
 	}, nil
 }
 
@@ -432,7 +435,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		if err != nil {
 			return err
 		}
-		err = s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseBlocked)
+		err = s.recordLicenseEvent(ctx, info, timestamp, "", EventTypeLicenseBlocked)
 		if err != nil {
 			return err
 		}
@@ -455,6 +458,11 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	license, err := s.GetDomainLicense(domain, info.Product())
 	if err != nil {
 		return err
+	}
+	couponEvent, couponOK := s.couponCodes[info.Coupon]
+	if couponOK {
+		oneyr := metav1.Duration{Duration: DefaultTTLForCommunityProduct}
+		license.TTL = &oneyr
 	}
 	crtLicense, err := s.CreateOrRetrieveLicense(info, *license, info.Cluster)
 	if err != nil {
@@ -525,7 +533,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 			//	return err
 			//}
 
-			err = s.recordLicenseEvent(ctx, info, timestamp, EventTypeLicenseIssued)
+			err = s.recordLicenseEvent(ctx, info, timestamp, couponEvent, EventTypeLicenseIssued)
 			return
 		}()
 	}
@@ -565,7 +573,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	return nil
 }
 
-func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, timestamp string, event LicenseEventType) error {
+func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, timestamp, couponEvent string, event LicenseEventType) error {
 	domain := Domain(info.Email)
 
 	// record request
@@ -594,7 +602,7 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 		return err
 	}
 
-	err = LogLicense(s.sheet, &accesslog)
+	err = LogLicense(s.sheet, &accesslog, couponEvent)
 	if err != nil {
 		return err
 	}
@@ -679,12 +687,29 @@ func (s *Server) CreateOrRetrieveLicense(info LicenseForm, license ProductLicens
 	return CreateLicense(s.fs, s.certs, info, license, cluster, nil)
 }
 
-func LogLicense(si *gdrive.Spreadsheet, info *LogEntry) error {
+func LogLicense(si *gdrive.Spreadsheet, info *LogEntry, couponEvent string) error {
 	const sheetName = "License Issue Log"
 
 	sheetId, err := si.EnsureSheet(sheetName, LogEntry{}.Headers())
 	if err != nil {
 		return err
 	}
-	return si.AppendRowData(sheetId, info.Data(), false)
+	err = si.AppendRowData(sheetId, info.Data(), false)
+	if err != nil {
+		return err
+	}
+
+	if couponEvent != "" {
+		couponSheet := "COUPON_" + couponEvent
+		couponSheetId, err := si.EnsureSheet(couponSheet, LogEntry{}.Headers())
+		if err != nil {
+			return err
+		}
+		err = si.AppendRowData(couponSheetId, info.Data(), false)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
