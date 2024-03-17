@@ -88,7 +88,7 @@ func main_sheets() {
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
 
-	err = server.LogLicense(si, &info)
+	err = server.LogLicense(si, &info, "")
 	if err != nil {
 		klog.Fatal(err)
 	}

@@ -50,6 +50,7 @@ type LicenseForm struct {
 	Cluster      string `form:"cluster" binding:"Required" json:"cluster"`
 	Tos          string `form:"tos" binding:"Required" json:"tos"`
 	Token        string `form:"token" json:"token"`
+	Coupon       string `form:"coupon" json:"coupon"`
 }
 
 type LicenseMailData struct {
