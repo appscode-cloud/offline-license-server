@@ -65,6 +65,10 @@ var templateIds = map[string]QuoteInfo{
 		TemplateDocId: "1Li9ERfgYEXL80_kE-Mg1PKCQXt2cs6aK-xzhP9j45Q4",
 		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
 	},
+	"kubedb-reseller-3_2": {
+		TemplateDocId: "1sfEYcRZHKwquoW2Bitf3P05YxZPSMkSGUF87dt1jHjs",
+		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
+	},
 	"kubedb-reseller-4_2": {
 		TemplateDocId: "1S2GQdvfn_z2n3S0_eR8CCeDc6VAW2IzLHRaWWsGz0MQ",
 		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
