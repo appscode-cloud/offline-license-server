@@ -83,8 +83,9 @@ type Server struct {
 	zc               *zoom.Client
 	zoomAccountEmail string
 
-	blockedDomains sets.String
-	blockedEmails  sets.String
+	blockedDomains  sets.String
+	blockedEmails   sets.String
+	blockedClusters sets.String
 
 	couponCodes map[string]string
 }
@@ -173,6 +174,7 @@ func New(opts *Options) (*Server, error) {
 		zoomAccountEmail: os.Getenv("ZOOM_ACCOUNT_EMAIL"),
 		blockedDomains:   sets.NewString(opts.BlockedDomains...),
 		blockedEmails:    sets.NewString(opts.BlockedEmails...),
+		blockedClusters:  sets.NewString(opts.BlockedClusters...),
 		couponCodes:      ParseCouponCodes(opts.Coupons),
 	}, nil
 }
@@ -427,7 +429,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 
-	if s.blockedDomains.Has(domain) || s.blockedEmails.Has(info.Email) {
+	if s.blockedDomains.Has(domain) || s.blockedEmails.Has(info.Email) || s.blockedClusters.Has(info.Cluster) {
 		mailer := NewBlockedLicenseMailer(LicenseMailData{
 			LicenseForm: info,
 		})
