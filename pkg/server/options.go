@@ -49,8 +49,9 @@ type Options struct {
 
 	GoogleCredentialDir string
 
-	BlockedDomains []string
-	BlockedEmails  []string
+	BlockedDomains  []string
+	BlockedEmails   []string
+	BlockedClusters []string
 
 	EnableDripCampaign bool
 
@@ -109,6 +110,7 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 
 	fs.StringSliceVar(&s.BlockedDomains, "blocked-domains", s.BlockedDomains, "Domains blocked from downloading license automatically")
 	fs.StringSliceVar(&s.BlockedEmails, "blocked-emails", s.BlockedEmails, "Emails blocked from downloading license automatically")
+	fs.StringSliceVar(&s.BlockedClusters, "blocked-clusters", s.BlockedClusters, "Clusters blocked from downloading license automatically")
 
 	fs.BoolVar(&s.EnableDripCampaign, "drip-campaign", s.EnableDripCampaign, "Set true to enable drip campaign runner")
 
