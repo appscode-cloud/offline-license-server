@@ -105,7 +105,7 @@ var SupportedProducts = map[string]PlanInfo{
 		TierName:       "enterprise",
 		TwitterHandle:  "KubeDB",
 		QuickstartLink: "https://kubedb.com/docs/latest/",
-		Features:       []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash", "panopticon-enterprise", "kubedb-monitoring-agent"},
+		Features:       []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash", "panopticon-enterprise", "panopticon-community", "kubedb-monitoring-agent"},
 		MailingLists:   []string{MailingList_KubeDB, MailingList_Stash, MailingList_Panopticon},
 	},
 	"stash-enterprise": {
@@ -114,7 +114,7 @@ var SupportedProducts = map[string]PlanInfo{
 		TierName:       "enterprise",
 		TwitterHandle:  "KubeStash",
 		QuickstartLink: "https://stash.run/docs/latest/",
-		Features:       []string{"stash-enterprise", "stash-community", "kubedb-ext-stash", "panopticon-enterprise"},
+		Features:       []string{"stash-enterprise", "stash-community", "kubedb-ext-stash", "panopticon-enterprise", "panopticon-community"},
 		MailingLists:   []string{MailingList_Stash, MailingList_Panopticon},
 	},
 	"kubevault-enterprise": {
@@ -123,7 +123,7 @@ var SupportedProducts = map[string]PlanInfo{
 		TierName:       "enterprise",
 		TwitterHandle:  "KubeVault",
 		QuickstartLink: "https://kubevault.com/docs/latest/",
-		Features:       []string{"kubevault-enterprise", "kubevault-community", "panopticon-enterprise"},
+		Features:       []string{"kubevault-enterprise", "kubevault-community", "panopticon-enterprise", "panopticon-community"},
 		MailingLists:   []string{MailingList_KubeVault, MailingList_Panopticon},
 	},
 	"voyager-enterprise": {
@@ -132,14 +132,14 @@ var SupportedProducts = map[string]PlanInfo{
 		TierName:       "enterprise",
 		TwitterHandle:  "voyagermesh",
 		QuickstartLink: "https://voyagermesh.com/docs/latest/",
-		Features:       []string{"voyager-enterprise", "voyager-community", "panopticon-enterprise"},
+		Features:       []string{"voyager-enterprise", "voyager-community", "panopticon-enterprise", "panopticon-community"},
 		MailingLists:   []string{MailingList_Voyager, MailingList_Panopticon},
 	},
 	"platform-enterprise": {
 		DisplayName:  "ACE",
 		ProductLine:  "platform",
 		TierName:     "enterprise",
-		Features:     []string{"panopticon-enterprise", "b3", "scanner"},
+		Features:     []string{"panopticon-enterprise", "panopticon-community", "b3", "scanner"},
 		MailingLists: []string{MailingList_Platform, MailingList_Panopticon},
 	},
 	"config-syncer-enterprise": {
