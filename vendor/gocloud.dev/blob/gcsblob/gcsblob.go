@@ -383,7 +383,9 @@ func (b *bucket) ErrorCode(err error) gcerrors.ErrorCode {
 	if gerr, ok := err.(*googleapi.Error); ok {
 		switch gerr.Code {
 		case http.StatusForbidden:
-			return gcerrors.PermissionDenied
+			// 'Permission 'storage.objects.list' denied on resource (or it may not exist)'
+			// So we have to pick one.
+			return gcerrors.NotFound
 		case http.StatusNotFound:
 			return gcerrors.NotFound
 		case http.StatusPreconditionFailed:
@@ -626,6 +628,7 @@ func (b *bucket) NewTypedWriter(ctx context.Context, key string, contentType str
 		w.ChunkSize = bufferSize(opts.BufferSize)
 		w.Metadata = opts.Metadata
 		w.MD5 = opts.ContentMD5
+		w.ForceEmptyContentType = opts.DisableContentTypeDetection
 		return w
 	}
 

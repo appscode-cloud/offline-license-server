@@ -445,7 +445,7 @@ func (r *Renderer) renderList(w util.BufWriter, source []byte, node ast.Node, en
 		_ = w.WriteByte('<')
 		_, _ = w.WriteString(tag)
 		if n.IsOrdered() && n.Start != 1 {
-			fmt.Fprintf(w, " start=\"%d\"", n.Start)
+			_, _ = fmt.Fprintf(w, " start=\"%d\"", n.Start)
 		}
 		if n.Attributes() != nil {
 			RenderAttributes(w, n, ListAttributeFilter)
@@ -786,7 +786,14 @@ func RenderAttributes(w util.BufWriter, node ast.Node, filter util.BytesFilter) 
 		_, _ = w.Write(attr.Name)
 		_, _ = w.WriteString(`="`)
 		// TODO: convert numeric values to strings
-		_, _ = w.Write(util.EscapeHTML(attr.Value.([]byte)))
+		var value []byte
+		switch typed := attr.Value.(type) {
+		case []byte:
+			value = typed
+		case string:
+			value = util.StringToReadOnlyBytes(typed)
+		}
+		_, _ = w.Write(util.EscapeHTML(value))
 		_ = w.WriteByte('"')
 	}
 }
