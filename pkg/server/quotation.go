@@ -49,6 +49,10 @@ type QuoteInfo struct {
 }
 
 var templateIds = map[string]QuoteInfo{
+	"ace": {
+		TemplateDocId: "1eCiJXFRpQ5j_PZVNPHQiYmSAktQYtk1oF4m-e4Bja3o",
+		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
+	},
 	"kubedb-enterprise-36": {
 		TemplateDocId: "1iyvqM_AW3uGb0TLFQgG8HwXJQNNcfxv6EhVPFVBb58w",
 		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},

@@ -87,6 +87,7 @@
                       <option value="kubedb-reseller-3_2">KubeDB Reseller 3_2</option>
                       <option value="kubedb-reseller-4_2">KubeDB Reseller 4_2</option>
                       <option value="kubedb-reseller-5_2">KubeDB Reseller 5_2</option>
+                      <option value="ace" {{ if eq .Product "ace" }}selected{{ end }}>ACE</option>
                       <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>Stash Enterprise</option>
                       <option value="kubevault-enterprise" {{ if eq .Product "kubevault-enterprise" }}selected{{ end }}>KubeVault Enterprise</option>
                       <option value="voyager-enterprise" {{ if eq .Product "voyager-enterprise" }}selected{{ end }}>Voyager Enterprise</option>
