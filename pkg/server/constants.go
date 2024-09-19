@@ -150,3 +150,13 @@ var SupportedProducts = map[string]PlanInfo{
 		MailingLists: []string{MailingList_Platform},
 	},
 }
+
+var PaidFeatures = sets.NewString(
+	"config-syncer-enterprise",
+	"kubedb-autoscaler",
+	"kubedb-enterprise",
+	"kubedb-ext-stash",
+	"kubevault-enterprise",
+	"stash-enterprise",
+	"voyager-enterprise",
+)
