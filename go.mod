@@ -46,6 +46,7 @@ require (
 	gomodules.xyz/x v0.0.17
 	gomodules.xyz/zoom-lib-golang v0.0.0-20230924092137-92156e0a6cc9
 	google.golang.org/api v0.185.0
+	gopkg.in/Regis24GmbH/go-diacritics.v2 v2.0.3
 	gopkg.in/macaron.v1 v1.5.0
 	k8s.io/apimachinery v0.30.1
 	k8s.io/klog/v2 v2.130.1

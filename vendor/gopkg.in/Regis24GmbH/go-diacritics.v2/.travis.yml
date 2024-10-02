@@ -1,0 +1,25 @@
+# This is a weird way of telling Travis to use the fast container-based test
+# runner instead of the slow VM-based runner.
+sudo: false
+
+language: go
+
+go:
+  - 1.14.x
+  - 1.15.x
+  - 1.16.x
+
+before_script:
+  - go get -u golang.org/x/lint/golint
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/mattn/goveralls
+  - go mod vendor
+
+script:
+  - make lint
+  - make test
+  - make race
+  - make coverage
+
+after_success:
+  - $GOPATH/bin/goveralls -service=travis-ci
