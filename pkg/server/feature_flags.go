@@ -23,7 +23,7 @@ import (
 	"gomodules.xyz/sets"
 )
 
-var knownFlags = sets.NewString("DisableAnalytics")
+var knownFlags = sets.NewString("DisableAnalytics", "Constraints")
 
 type FeatureFlags map[string]string
 
