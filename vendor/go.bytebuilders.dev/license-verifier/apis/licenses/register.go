@@ -1,5 +1,5 @@
 /*
-Copyright 2015 The Kubernetes Authors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,5 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package errors implements various utility functions and types around errors.
-package errors // import "gomodules.xyz/errors"
+package licenses
+
+// GroupName is the group name use in this package
+const GroupName = "licenses.appscode.com"

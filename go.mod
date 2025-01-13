@@ -24,16 +24,16 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/yuin/goldmark v1.7.2
+	go.bytebuilders.dev/license-verifier v0.14.5
 	go.wandrs.dev/macaron-embed v0.0.2
 	gocloud.dev v0.37.0
-	golang.org/x/crypto v0.24.0
-	golang.org/x/net v0.26.0
-	golang.org/x/text v0.16.0
+	golang.org/x/crypto v0.31.0
+	golang.org/x/net v0.33.0
+	golang.org/x/text v0.21.0
 	gomodules.xyz/blobfs v0.1.14
 	gomodules.xyz/cert v1.6.0
 	gomodules.xyz/email-providers v0.1.4
 	gomodules.xyz/encoding v0.0.8
-	gomodules.xyz/errors v0.1.0
 	gomodules.xyz/freshsales-client-go v0.1.1
 	gomodules.xyz/gdrive-utils v0.0.9
 	gomodules.xyz/homedir v0.1.0
@@ -103,8 +103,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	golang.org/x/oauth2 v0.21.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect

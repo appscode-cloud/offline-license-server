@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	licenseapi "go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1"
 	"go.bytebuilders.dev/offline-license-server/pkg/server"
 
 	"github.com/google/uuid"
@@ -82,10 +83,13 @@ func NewCmdIssueFullLicense() *cobra.Command {
 				fmt.Println("Do you want to disable analytics? [Y/N]")
 				if askForConfirmation() {
 					featureFlags = map[string]string{}
-					featureFlags["DisableAnalytics"] = "true"
+					featureFlags[string(licenseapi.FeatureDisableAnalytics)] = "true"
 				}
 			}
-			ff := server.FeatureFlags(featureFlags)
+			ff := licenseapi.FeatureFlags{}
+			for k, v := range featureFlags {
+				ff[licenseapi.FeatureFlag(k)] = v
+			}
 			if err := ff.IsValid(); err != nil {
 				panic(err)
 			}

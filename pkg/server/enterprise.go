@@ -20,9 +20,11 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	licenseapi "go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1"
 )
 
-func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration, ff FeatureFlags) error {
+func (s *Server) IssueEnterpriseLicense(info LicenseForm, extendBy time.Duration, ff licenseapi.FeatureFlags) error {
 	crtLicense, accesslog, err := IssueEnterpriseLicense(s.fs, s.certs, info, extendBy, ff)
 	if err != nil {
 		return err

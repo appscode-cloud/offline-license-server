@@ -24,6 +24,8 @@ import (
 	"path"
 	"time"
 
+	licenseapi "go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1"
+
 	"github.com/pkg/errors"
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
@@ -50,7 +52,7 @@ func GetCertStore(fs blobfs.Interface, issuer string) (*certstore.CertStore, err
 	return certs, nil
 }
 
-func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, info LicenseForm, extendBy time.Duration, ff FeatureFlags) ([]byte, *LogEntry, error) {
+func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, info LicenseForm, extendBy time.Duration, ff licenseapi.FeatureFlags) ([]byte, *LogEntry, error) {
 	if !IsEnterpriseProduct(info.Product()) {
 		return nil, nil, fmt.Errorf("%s is not an Enterprise product", info.Product())
 	}
@@ -136,7 +138,7 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 	return crtLicense, &accesslog, nil
 }
 
-func CreateLicense(fs blobfs.Interface, certs *certstore.CertStore, info LicenseForm, license ProductLicense, cluster string, ff FeatureFlags) ([]byte, error) {
+func CreateLicense(fs blobfs.Interface, certs *certstore.CertStore, info LicenseForm, license ProductLicense, cluster string, ff licenseapi.FeatureFlags) ([]byte, error) {
 	// agreement, TTL
 	sans := AltNames{
 		DNSNames: []string{cluster},
