@@ -24,7 +24,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/yuin/goldmark v1.7.2
-	go.bytebuilders.dev/license-verifier v0.14.5
+	go.bytebuilders.dev/license-verifier v0.14.6
 	go.wandrs.dev/macaron-embed v0.0.2
 	gocloud.dev v0.37.0
 	golang.org/x/crypto v0.31.0
