@@ -17,6 +17,7 @@ limitations under the License.
 package server
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -28,6 +29,17 @@ import (
 	"google.golang.org/api/sheets/v4"
 	"k8s.io/klog/v2"
 )
+
+func DomainWithMXRecord(domain string) error {
+	records, err := net.LookupMX(domain)
+	if err != nil {
+		return err
+	}
+	if len(records) == 0 {
+		return errors.New("no MX records")
+	}
+	return nil
+}
 
 func IsEnterpriseProduct(product string) bool {
 	return strings.HasSuffix(strings.ToLower(product), "-enterprise")

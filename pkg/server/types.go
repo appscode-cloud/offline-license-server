@@ -22,6 +22,7 @@ import (
 
 	"github.com/avct/uasurfer"
 	"github.com/google/uuid"
+	"golang.org/x/net/publicsuffix"
 	. "gomodules.xyz/email-providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -72,6 +73,13 @@ func (form LicenseForm) Validate() error {
 	}
 	if agree, _ := strconv.ParseBool(form.Tos); !agree {
 		return fmt.Errorf("user must agree to terms and services")
+	}
+	if apex, err := publicsuffix.EffectiveTLDPlusOne(Domain(form.Email)); err != nil {
+		return err
+	} else {
+		if err := DomainWithMXRecord(apex); err != nil {
+			return err
+		}
 	}
 	return nil
 }
