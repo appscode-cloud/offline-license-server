@@ -17,7 +17,6 @@ limitations under the License.
 package server
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -33,10 +32,10 @@ import (
 func DomainWithMXRecord(domain string) error {
 	records, err := net.LookupMX(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("no MX records for domain %s: %w", domain, err)
 	}
 	if len(records) == 0 {
-		return errors.New("no MX records")
+		return fmt.Errorf("no MX records for domain %s", domain)
 	}
 	return nil
 }
