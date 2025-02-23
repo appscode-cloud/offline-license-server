@@ -15,8 +15,13 @@ jobs:
     name: Build
     runs-on: ubuntu-24.04
     steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v1
+      - uses: actions/checkout@v1
+
+      - name: Set up Go 1.24
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+        id: go
 
       - name: Print version info
         id: semver
@@ -32,21 +37,26 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build
+      - name: Publish to GitHub Container Registry
         env:
+          REGISTRY: ghcr.io/appscode
+          DOCKER_TOKEN: ${{ secrets.LGTM_GITHUB_TOKEN }}
+          USERNAME: 1gtm
           APPSCODE_ENV: prod
         run: |
-          make release
+          docker login ghcr.io --username ${USERNAME} --password ${DOCKER_TOKEN}
+          make release COMPRESS=yes
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            bin/offline-license-server-linux-amd64
-            bin/offline-license-server-linux-arm
-            bin/offline-license-server-linux-arm64
-            bin/offline-license-server-darwin-amd64
-            bin/offline-license-server-darwin-arm64
+            bin/offline-license-server-darwin-amd64.tar.gz
+            bin/offline-license-server-darwin-arm64.tar.gz
+            bin/offline-license-server-linux-amd64.tar.gz
+            bin/offline-license-server-linux-arm64.tar.gz
+            bin/offline-license-server-windows-amd64.zip
+            bin/offline-license-server-checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -29,6 +29,7 @@ jobs:
 
       - name: Run checks
         run: |
+          sudo apt-get -qq update || true
           make ci
 
       - name: Test Vulnerability
