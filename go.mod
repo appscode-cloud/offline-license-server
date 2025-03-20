@@ -1,8 +1,8 @@
 module go.bytebuilders.dev/offline-license-server
 
-go 1.22.1
+go 1.23.0
 
-toolchain go1.22.4
+toolchain go1.24.1
 
 require (
 	github.com/avct/uasurfer v0.0.0-20240501094946-ca0c4d1e541b
@@ -27,9 +27,9 @@ require (
 	go.bytebuilders.dev/license-verifier v0.14.6
 	go.wandrs.dev/macaron-embed v0.0.2
 	gocloud.dev v0.37.0
-	golang.org/x/crypto v0.31.0
-	golang.org/x/net v0.33.0
-	golang.org/x/text v0.21.0
+	golang.org/x/crypto v0.35.0
+	golang.org/x/net v0.36.0
+	golang.org/x/text v0.22.0
 	gomodules.xyz/blobfs v0.1.14
 	gomodules.xyz/cert v1.6.0
 	gomodules.xyz/email-providers v0.1.4
@@ -102,9 +102,9 @@ require (
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
-	golang.org/x/oauth2 v0.21.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
