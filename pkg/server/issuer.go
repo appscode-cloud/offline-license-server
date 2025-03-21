@@ -69,6 +69,7 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 
 	// 1 yr domain license
 	license := &ProductLicense{
+		ID:      info.ID,
 		Domain:  domain,
 		Product: info.Product(),
 		Agreement: &LicenseAgreement{
@@ -78,12 +79,12 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 	}
 
 	var crtLicense []byte
-	exists, err := fs.Exists(context.TODO(), LicenseCertPath(license.Domain, license.Product, info.Cluster))
+	exists, err := fs.Exists(context.TODO(), license.LicenseCertPath(info.Cluster))
 	if err != nil {
 		return nil, nil, err
 	}
 	if exists {
-		data, err := fs.ReadFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, info.Cluster))
+		data, err := fs.ReadFile(context.TODO(), license.LicenseCertPath(info.Cluster))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -92,7 +93,7 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 			return nil, nil, err
 		}
 		if len(certs) > 1 {
-			return nil, nil, fmt.Errorf("multiple certificates found in %s", LicenseCertPath(license.Domain, license.Product, info.Cluster))
+			return nil, nil, fmt.Errorf("multiple certificates found in %s", license.LicenseCertPath(info.Cluster))
 		}
 
 		if !certs[0].NotAfter.Before(license.Agreement.ExpiryDate.Time) {
@@ -113,24 +114,27 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 		LicenseForm: info,
 		Timestamp:   timestamp,
 	}
-	{
-		// record request
-		data, err := json.MarshalIndent(accesslog, "", "  ")
-		if err != nil {
-			return nil, nil, err
-		}
-		err = fs.WriteFile(context.TODO(), FullLicenseIssueLogPath(domain, info.Product(), info.Cluster, timestamp), data)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	{
-		// mark email as verified
-		if exists, err := fs.Exists(context.TODO(), EmailVerifiedPath(domain, info.Email)); err == nil && !exists {
-			err = fs.WriteFile(context.TODO(), EmailVerifiedPath(domain, info.Email), []byte(timestamp))
+	// only log for https://appscode.com/issue-license/
+	if license.ID <= 0 {
+		{
+			// record request
+			data, err := json.MarshalIndent(accesslog, "", "  ")
 			if err != nil {
 				return nil, nil, err
+			}
+			err = fs.WriteFile(context.TODO(), FullLicenseIssueLogPath(domain, info.Product(), info.Cluster, timestamp), data)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+
+		{
+			// mark email as verified
+			if exists, err := fs.Exists(context.TODO(), EmailVerifiedPath(domain, info.Email)); err == nil && !exists {
+				err = fs.WriteFile(context.TODO(), EmailVerifiedPath(domain, info.Email), []byte(timestamp))
+				if err != nil {
+					return nil, nil, err
+				}
 			}
 		}
 	}
@@ -176,11 +180,11 @@ func CreateLicense(fs blobfs.Interface, certs *certstore.CertStore, info License
 		return nil, errors.Wrap(err, "failed to generate client certificate")
 	}
 
-	err = fs.WriteFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster), cert.EncodeCertPEM(crt))
+	err = fs.WriteFile(context.TODO(), license.LicenseCertPath(cluster), cert.EncodeCertPEM(crt))
 	if err != nil {
 		return nil, err
 	}
-	err = fs.WriteFile(context.TODO(), LicenseKeyPath(license.Domain, license.Product, cluster), cert.EncodePrivateKeyPEM(key))
+	err = fs.WriteFile(context.TODO(), license.LicenseKeyPath(cluster), cert.EncodePrivateKeyPEM(key))
 	if err != nil {
 		return nil, err
 	}

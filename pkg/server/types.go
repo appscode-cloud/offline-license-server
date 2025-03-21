@@ -28,6 +28,7 @@ import (
 )
 
 type ProductLicense struct {
+	ID        int64             `json:"id"`
 	Domain    string            `json:"domain"`
 	Product   string            `json:"product"` // This is now called plan in a parsed LicenseInfo
 	TTL       *metav1.Duration  `json:"ttl,omitempty"`
@@ -44,6 +45,7 @@ type RegisterRequest struct {
 }
 
 type LicenseForm struct {
+	ID           int64  `form:"id" json:"id"`
 	Name         string `form:"name" binding:"Required" json:"name"`
 	Email        string `form:"email" binding:"Required;Email" json:"email"`
 	CC           string `form:"cc" json:"cc"`
