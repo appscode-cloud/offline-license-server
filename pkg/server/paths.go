@@ -38,8 +38,18 @@ func AgreementPath(domain, product string) string {
 	return fmt.Sprintf("domains/%s/products/%s/agreement.json", domain, product)
 }
 
-func LicenseCertPath(domain, product, cluster string) string {
-	return fmt.Sprintf("domains/%s/products/%s/clusters/%s/tls.crt", domain, product, cluster)
+func (l ProductLicense) LicenseCertPath(cluster string) string {
+	if l.ID > 0 {
+		return fmt.Sprintf("id/%d/products/%s/clusters/%s/tls.crt", l.ID, l.Product, cluster)
+	}
+	return fmt.Sprintf("domains/%s/products/%s/clusters/%s/tls.crt", l.Domain, l.Product, cluster)
+}
+
+func (l ProductLicense) LicenseKeyPath(cluster string) string {
+	if l.ID > 0 {
+		return fmt.Sprintf("id/%d/products/%s/clusters/%s/tls.key", l.ID, l.Product, cluster)
+	}
+	return fmt.Sprintf("domains/%s/products/%s/clusters/%s/tls.key", l.Domain, l.Product, cluster)
 }
 
 func ProductAccessLogPath(domain, product, cluster, timestamp string) string {
@@ -52,8 +62,4 @@ func FullLicenseIssueLogPath(domain, product, cluster, timestamp string) string 
 
 func EmailAccessLogPath(domain, email, product, timestamp string) string {
 	return fmt.Sprintf("domains/%s/emails/%s/products/%s/accesslog/%s", domain, email, product, timestamp)
-}
-
-func LicenseKeyPath(domain, product, cluster string) string {
-	return fmt.Sprintf("domains/%s/products/%s/clusters/%s/tls.key", domain, product, cluster)
 }

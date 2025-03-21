@@ -678,12 +678,12 @@ func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicens
 func (s *Server) CreateOrRetrieveLicense(info LicenseForm, license ProductLicense, cluster string) ([]byte, error) {
 	// Return existing license for enterprise products
 	if IsEnterpriseProduct(license.Product) {
-		exists, err := s.fs.Exists(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
+		exists, err := s.fs.Exists(context.TODO(), license.LicenseCertPath(cluster))
 		if err != nil {
 			return nil, err
 		}
 		if exists {
-			return s.fs.ReadFile(context.TODO(), LicenseCertPath(license.Domain, license.Product, cluster))
+			return s.fs.ReadFile(context.TODO(), license.LicenseCertPath(cluster))
 		}
 	}
 	return CreateLicense(s.fs, s.certs, info, license, cluster, nil)
