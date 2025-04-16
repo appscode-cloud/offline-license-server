@@ -53,6 +53,18 @@ var templateIds = map[string]QuoteInfo{
 		TemplateDocId: "1eCiJXFRpQ5j_PZVNPHQiYmSAktQYtk1oF4m-e4Bja3o",
 		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
 	},
+	"kubedb-cloud": {
+		TemplateDocId: "1oD9_jpzRL5djK7i9jQ74PvzFx2xN3O867DrWSiAZrSg",
+		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
+	},
+	"kubedb-onprem": {
+		TemplateDocId: "1XLgH6JFA2CAk-lQwZYbv921x1Izpjq7yMza8tNYwxiU",
+		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
+	},
+	"kubedb-ent": {
+		TemplateDocId: "1O7jaucpPSt1x9KedTsWHgOBGZ5wjZ3sUQJ_LcwpA-28",
+		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},
+	},
 	"kubedb-enterprise-36": {
 		TemplateDocId: "1iyvqM_AW3uGb0TLFQgG8HwXJQNNcfxv6EhVPFVBb58w",
 		MailingLists:  []string{listmonkclient.MailingList_KubeDB, listmonkclient.MailingList_Stash},

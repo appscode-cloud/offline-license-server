@@ -81,12 +81,17 @@
                 <div class="control">
                   <div class="select is-multiple">
                     <select id="product" name="product" multiple size="10">
+                      <option value="kubedb-cloud">KubeDB Cloud</option>
+                      <option value="kubedb-onprem">KubeDB OnPrem</option>
+                      <option value="kubedb-ent">KubeDB Enterprise</option>
+                      <!--
                       <option value="kubedb-enterprise-60" {{ if eq .Product "kubedb-enterprise" }}selected{{ end }}>KubeDB Enterprise 60</option>
                       <option value="kubedb-enterprise-50">KubeDB Enterprise 50</option>
                       <option value="kubedb-enterprise-40">KubeDB Enterprise 40</option>
                       <option value="kubedb-reseller-3_2">KubeDB Reseller 3_2</option>
                       <option value="kubedb-reseller-4_2">KubeDB Reseller 4_2</option>
                       <option value="kubedb-reseller-5_2">KubeDB Reseller 5_2</option>
+                      -->
                       <option value="ace" {{ if eq .Product "ace" }}selected{{ end }}>ACE</option>
                       <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>Stash Enterprise</option>
                       <option value="kubevault-enterprise" {{ if eq .Product "kubevault-enterprise" }}selected{{ end }}>KubeVault Enterprise</option>
