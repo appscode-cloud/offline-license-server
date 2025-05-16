@@ -74,7 +74,7 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 		Product: info.Product(),
 		Agreement: &LicenseAgreement{
 			NumClusters: 1, // is not used currently
-			ExpiryDate:  metav1.NewTime(time.Now().Add(extendBy).UTC()),
+			ExpiryDate:  metav1.NewTime(time.Now().Add(extendBy).UTC().Truncate(time.Second)),
 		},
 	}
 
