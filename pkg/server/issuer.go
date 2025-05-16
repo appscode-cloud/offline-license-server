@@ -22,6 +22,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"reflect"
+	"strings"
 	"time"
 
 	licenseapi "go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1"
@@ -96,7 +98,17 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 			return nil, nil, fmt.Errorf("multiple certificates found in %s", license.LicenseCertPath(info.Cluster))
 		}
 
-		if !certs[0].NotAfter.Before(license.Agreement.ExpiryDate.Time) {
+		existingFeatureFlags := licenseapi.FeatureFlags{}
+		for _, ff := range certs[0].Subject.Locality {
+			parts := strings.SplitN(ff, "=", 2)
+			if len(parts) == 2 {
+				existingFeatureFlags[licenseapi.FeatureFlag(parts[0])] = parts[1]
+			}
+		}
+
+		if !certs[0].NotAfter.Before(license.Agreement.ExpiryDate.Time) &&
+			reflect.DeepEqual(existingFeatureFlags, ff) {
+
 			// Original license is sufficiently valid. Keep using that.
 			crtLicense = cert.EncodeCertPEM(certs[0])
 			license.Agreement.ExpiryDate = metav1.NewTime(certs[0].NotAfter.UTC())
