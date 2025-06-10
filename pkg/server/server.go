@@ -641,14 +641,15 @@ func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicens
 		return nil, err
 	}
 
+	var ttl metav1.Duration
+	if IsEnterpriseProduct(product) {
+		ttl = metav1.Duration{Duration: DefaultTTLForEnterpriseProduct}
+	} else {
+		ttl = metav1.Duration{Duration: DefaultTTLForCommunityProduct}
+	}
+
 	var opts ProductLicense
 	if !exists {
-		var ttl metav1.Duration
-		if IsEnterpriseProduct(product) {
-			ttl = metav1.Duration{Duration: DefaultTTLForEnterpriseProduct}
-		} else {
-			ttl = metav1.Duration{Duration: DefaultTTLForCommunityProduct}
-		}
 		opts = ProductLicense{
 			Domain:  domain,
 			Product: product,
@@ -672,16 +673,9 @@ func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicens
 			return nil, err
 		}
 
-		var requiredTTL time.Duration
-		if IsEnterpriseProduct(product) {
-			requiredTTL = DefaultTTLForEnterpriseProduct
-		} else {
-			requiredTTL = DefaultTTLForCommunityProduct
-		}
-
 		// If the stored TTL is too low, bump it and persist
-		if opts.TTL.Duration < requiredTTL {
-			opts.TTL.Duration = requiredTTL
+		if opts.TTL != nil && opts.TTL.Duration < ttl.Duration {
+			opts.TTL.Duration = ttl.Duration
 
 			data, err = json.Marshal(opts)
 			if err != nil {
