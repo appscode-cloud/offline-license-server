@@ -671,6 +671,25 @@ func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicens
 		if err != nil {
 			return nil, err
 		}
+
+		var requiredTTL time.Duration
+		if IsEnterpriseProduct(product) {
+			requiredTTL = DefaultTTLForEnterpriseProduct
+		} else {
+			requiredTTL = DefaultTTLForCommunityProduct
+		}
+
+		// If the stored TTL is too low, bump it and persist
+		if opts.TTL.Duration < requiredTTL {
+			opts.TTL.Duration = requiredTTL
+
+			data, err = json.Marshal(opts)
+			if err != nil {
+				klog.Errorf("Failed to marshal license options: %v", err)
+			} else if err = s.fs.WriteFile(context.TODO(), AgreementPath(domain, product), data); err != nil {
+				klog.Errorf("Failed to write updated license options: %v", err)
+			}
+		}
 	}
 	return &opts, nil
 }
