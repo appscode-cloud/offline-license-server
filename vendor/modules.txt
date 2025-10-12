@@ -393,7 +393,6 @@ golang.org/x/text/internal/tag
 golang.org/x/text/language
 golang.org/x/text/message
 golang.org/x/text/message/catalog
-golang.org/x/text/runes
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
@@ -616,9 +615,6 @@ google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/emptypb
 google.golang.org/protobuf/types/known/fieldmaskpb
 google.golang.org/protobuf/types/known/timestamppb
-# gopkg.in/Regis24GmbH/go-diacritics.v2 v2.0.3
-## explicit; go 1.18
-gopkg.in/Regis24GmbH/go-diacritics.v2
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0

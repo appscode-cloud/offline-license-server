@@ -33,7 +33,6 @@ import (
 	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
 	. "gomodules.xyz/email-providers"
-	godiacritics "gopkg.in/Regis24GmbH/go-diacritics.v2"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -160,7 +159,7 @@ func CreateLicense(fs blobfs.Interface, certs *certstore.CertStore, info License
 		DNSNames: []string{cluster},
 		EmailAddresses: []string{
 			// Fixes error: x509: SAN rfc822Name is malformed
-			FormatRFC822Email(godiacritics.Normalize(info.Name), info.Email),
+			// FormatRFC822Email(godiacritics.Normalize(info.Name), info.Email),
 			info.Email,
 		},
 	}
