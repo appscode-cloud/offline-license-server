@@ -20,6 +20,7 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"path"
 	"reflect"
@@ -28,7 +29,6 @@ import (
 
 	licenseapi "go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1"
 
-	"github.com/pkg/errors"
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
@@ -159,7 +159,8 @@ func CreateLicense(fs blobfs.Interface, certs *certstore.CertStore, info License
 	sans := AltNames{
 		DNSNames: []string{cluster},
 		EmailAddresses: []string{
-			fmt.Sprintf("%s <%s>", godiacritics.Normalize(info.Name), info.Email),
+			// Fixes error: x509: SAN rfc822Name is malformed
+			FormatRFC822Email(godiacritics.Normalize(info.Name), info.Email),
 			info.Email,
 		},
 	}
@@ -180,16 +181,16 @@ func CreateLicense(fs blobfs.Interface, certs *certstore.CertStore, info License
 	} else if license.TTL != nil {
 		cfg.NotAfter = now.Add(license.TTL.Duration).UTC()
 	} else {
-		return nil, apierrors.NewInternalError(fmt.Errorf("Missing license TTL")) // this should never happen
+		return nil, apierrors.NewInternalError(errors.New("missing license TTL")) // this should never happen
 	}
 
 	key, err := cert.NewPrivateKey()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate private key")
+		return nil, fmt.Errorf("failed to generate private key, reason: %w", err)
 	}
 	crt, err := NewSignedCert(cfg, key, certs.CACert(), certs.CAKey())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate client certificate")
+		return nil, fmt.Errorf("failed to generate client certificate, reason: %w", err)
 	}
 
 	err = fs.WriteFile(context.TODO(), license.LicenseCertPath(cluster), cert.EncodeCertPEM(crt))
