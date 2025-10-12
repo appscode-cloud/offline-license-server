@@ -24,7 +24,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/yuin/goldmark v1.7.2
-	go.bytebuilders.dev/license-verifier v0.14.6
+	go.bytebuilders.dev/license-verifier v0.14.9
 	go.wandrs.dev/macaron-embed v0.0.2
 	gocloud.dev v0.37.0
 	golang.org/x/crypto v0.36.0
@@ -62,6 +62,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
+	github.com/PuerkitoBio/purell v1.2.1 // indirect
 	github.com/dustin/go-humanize v1.0.1-0.20220316001817-d5090ed65664 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect

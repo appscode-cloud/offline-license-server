@@ -89,28 +89,27 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 		if err != nil {
 			return nil, nil, err
 		}
-		certs, err := cert.ParseCertsPEM(data)
-		if err != nil {
-			return nil, nil, err
-		}
-		if len(certs) > 1 {
-			return nil, nil, fmt.Errorf("multiple certificates found in %s", license.LicenseCertPath(info.Cluster))
-		}
-
-		existingFeatureFlags := licenseapi.FeatureFlags{}
-		for _, ff := range certs[0].Subject.Locality {
-			parts := strings.SplitN(ff, "=", 2)
-			if len(parts) == 2 {
-				existingFeatureFlags[licenseapi.FeatureFlag(parts[0])] = parts[1]
+		// If rfc822 name is valid, further consider existing license
+		if certs, err := cert.ParseCertsPEM(data); err == nil {
+			if len(certs) > 1 {
+				return nil, nil, fmt.Errorf("multiple certificates found in %s", license.LicenseCertPath(info.Cluster))
 			}
-		}
 
-		if !certs[0].NotAfter.Before(license.Agreement.ExpiryDate.Time) &&
-			reflect.DeepEqual(existingFeatureFlags, ff) {
+			existingFeatureFlags := licenseapi.FeatureFlags{}
+			for _, ff := range certs[0].Subject.Locality {
+				parts := strings.SplitN(ff, "=", 2)
+				if len(parts) == 2 {
+					existingFeatureFlags[licenseapi.FeatureFlag(parts[0])] = parts[1]
+				}
+			}
 
-			// Original license is sufficiently valid. Keep using that.
-			crtLicense = cert.EncodeCertPEM(certs[0])
-			license.Agreement.ExpiryDate = metav1.NewTime(certs[0].NotAfter.UTC())
+			if !certs[0].NotAfter.Before(license.Agreement.ExpiryDate.Time) &&
+				reflect.DeepEqual(existingFeatureFlags, ff) {
+
+				// Original license is sufficiently valid. Keep using that.
+				crtLicense = cert.EncodeCertPEM(certs[0])
+				license.Agreement.ExpiryDate = metav1.NewTime(certs[0].NotAfter.UTC())
+			}
 		}
 	}
 	if len(crtLicense) == 0 {

@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	"go.bytebuilders.dev/license-verifier/info"
 	"go.bytebuilders.dev/offline-license-server/templates"
 
 	"github.com/avct/uasurfer"
@@ -688,7 +689,7 @@ func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicens
 	return &opts, nil
 }
 
-func (s *Server) CreateOrRetrieveLicense(info LicenseForm, license ProductLicense, cluster string) ([]byte, error) {
+func (s *Server) CreateOrRetrieveLicense(info2 LicenseForm, license ProductLicense, cluster string) ([]byte, error) {
 	// Return existing license for enterprise products
 	if IsEnterpriseProduct(license.Product) {
 		exists, err := s.fs.Exists(context.TODO(), license.LicenseCertPath(cluster))
@@ -696,10 +697,17 @@ func (s *Server) CreateOrRetrieveLicense(info LicenseForm, license ProductLicens
 			return nil, err
 		}
 		if exists {
-			return s.fs.ReadFile(context.TODO(), license.LicenseCertPath(cluster))
+			data, err := s.fs.ReadFile(context.TODO(), license.LicenseCertPath(cluster))
+			if err != nil {
+				return nil, err
+			}
+			// If rfc822 name is valid, return existing license
+			if _, err := info.ParseCertificate(data); err == nil {
+				return data, nil
+			}
 		}
 	}
-	return CreateLicense(s.fs, s.certs, info, license, cluster, nil)
+	return CreateLicense(s.fs, s.certs, info2, license, cluster, nil)
 }
 
 func LogLicense(si *gdrive.Spreadsheet, info *LogEntry, couponEvent string) error {

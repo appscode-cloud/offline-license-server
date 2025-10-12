@@ -48,6 +48,9 @@ github.com/Masterminds/semver/v3
 # github.com/Masterminds/sprig/v3 v3.2.2 => github.com/gomodules/sprig/v3 v3.2.3-0.20220405051441-0a8a99bac1b8
 ## explicit; go 1.17
 github.com/Masterminds/sprig/v3
+# github.com/PuerkitoBio/purell v1.2.1
+## explicit; go 1.21
+github.com/PuerkitoBio/purell
 # github.com/avct/uasurfer v0.0.0-20240501094946-ca0c4d1e541b
 ## explicit; go 1.19
 github.com/avct/uasurfer
@@ -259,10 +262,11 @@ github.com/yuin/goldmark/renderer
 github.com/yuin/goldmark/renderer/html
 github.com/yuin/goldmark/text
 github.com/yuin/goldmark/util
-# go.bytebuilders.dev/license-verifier v0.14.6
-## explicit; go 1.21
+# go.bytebuilders.dev/license-verifier v0.14.9
+## explicit; go 1.23.0
 go.bytebuilders.dev/license-verifier/apis/licenses
 go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1
+go.bytebuilders.dev/license-verifier/info
 # go.opencensus.io v0.24.0
 ## explicit; go 1.13
 go.opencensus.io
@@ -397,6 +401,7 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
+golang.org/x/text/width
 # golang.org/x/time v0.7.0
 ## explicit; go 1.18
 golang.org/x/time/rate
