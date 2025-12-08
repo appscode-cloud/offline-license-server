@@ -2,8 +2,6 @@ module go.bytebuilders.dev/offline-license-server
 
 go 1.24.0
 
-toolchain go1.24.1
-
 require (
 	github.com/avct/uasurfer v0.0.0-20240501094946-ca0c4d1e541b
 	github.com/davegardnerisme/phonegeocode v0.0.0-20160120101024-a49b977f8889
@@ -24,12 +22,12 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/yuin/goldmark v1.7.2
-	go.bytebuilders.dev/license-verifier v0.14.9
+	go.bytebuilders.dev/license-verifier v0.14.10
 	go.wandrs.dev/macaron-embed v0.0.2
 	gocloud.dev v0.37.0
-	golang.org/x/crypto v0.45.0
+	golang.org/x/crypto v0.46.0
 	golang.org/x/net v0.47.0
-	golang.org/x/text v0.31.0
+	golang.org/x/text v0.32.0
 	gomodules.xyz/blobfs v0.1.14
 	gomodules.xyz/cert v1.6.0
 	gomodules.xyz/email-providers v0.1.4
@@ -105,8 +103,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
