@@ -32,7 +32,7 @@ import (
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert"
 	"gomodules.xyz/cert/certstore"
-	. "gomodules.xyz/email-providers"
+	ep "gomodules.xyz/email-providers"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -58,9 +58,9 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 		return nil, nil, fmt.Errorf("%s is not an Enterprise product", info.Product())
 	}
 
-	domain := Domain(info.Email)
+	domain := ep.Domain(info.Email)
 
-	if IsDisposableEmail(domain) {
+	if ep.IsDisposableEmail(domain) {
 		return nil, nil, fmt.Errorf("disposable email %s is not supported", info.Email)
 	}
 

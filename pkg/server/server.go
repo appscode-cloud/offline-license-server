@@ -43,7 +43,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	"gomodules.xyz/blobfs"
 	"gomodules.xyz/cert/certstore"
-	. "gomodules.xyz/email-providers"
+	ep "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
 	listmonkclient "gomodules.xyz/listmonk-client-go"
@@ -182,10 +182,10 @@ func New(opts *Options) (*Server, error) {
 
 func (s *Server) Close() {
 	if s.geodb != nil {
-		_ = s.geodb.Close()
+		_ = s.geodb.Close() // nolint:errcheck
 	}
 	if s.sch != nil {
-		_ = s.sch.Close()
+		_ = s.sch.Close() // nolint:errcheck
 	}
 }
 
@@ -381,10 +381,10 @@ func (s *Server) Run() error {
 }
 
 func (s *Server) HandleRegisterEmail(req RegisterRequest) error {
-	domain := Domain(req.Email)
+	domain := ep.Domain(req.Email)
 	token := uuid.New()
 
-	if IsDisposableEmail(domain) {
+	if ep.IsDisposableEmail(domain) {
 		return fmt.Errorf("disposable email %s is not supported", req.Email)
 	}
 
@@ -422,9 +422,9 @@ func (s *Server) HandleRegisterEmail(req RegisterRequest) error {
 }
 
 func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) error {
-	domain := Domain(info.Email)
+	domain := ep.Domain(info.Email)
 
-	if IsDisposableEmail(domain) {
+	if ep.IsDisposableEmail(domain) {
 		return fmt.Errorf("disposable email %s is not supported", info.Email)
 	}
 
@@ -472,7 +472,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 		return err
 	}
 
-	if !skipEmailDomains.Has(Domain(info.Email)) {
+	if !skipEmailDomains.Has(ep.Domain(info.Email)) {
 		// nolint:errcheck
 		go func() (err error) {
 			defer func() {
@@ -577,7 +577,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 }
 
 func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, timestamp, couponEvent string, event LicenseEventType) error {
-	domain := Domain(info.Email)
+	domain := ep.Domain(info.Email)
 
 	// record request
 	accesslog := LogEntry{
@@ -625,7 +625,7 @@ func (s *Server) recordLicenseEvent(ctx *macaron.Context, info LicenseForm, time
 }
 
 func (s *Server) GetDomainLicense(domain string, product string) (*ProductLicense, error) {
-	if !IsWorkEmail(domain) {
+	if !ep.IsWorkEmail(domain) {
 		if IsEnterpriseProduct(product) {
 			return nil, apierrors.NewBadRequest("Please provide work email to issue license for Enterprise products.")
 		}

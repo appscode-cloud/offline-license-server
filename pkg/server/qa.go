@@ -29,7 +29,6 @@ import (
 	"github.com/gocarina/gocsv"
 	"github.com/pkg/errors"
 	csvtypes "gomodules.xyz/encoding/csv/types"
-	_ "gomodules.xyz/gdrive-utils"
 	gdrive "gomodules.xyz/gdrive-utils"
 	"google.golang.org/api/sheets/v4"
 	"gopkg.in/macaron.v1"
@@ -62,7 +61,7 @@ const (
 func SaveConfig(svcSheets *sheets.Service, configDocId string, cfg QuestionConfig) error {
 	w := gdrive.NewRowWriter(svcSheets, configDocId, ProjectConfigSheet, &gdrive.Predicate{
 		Header: "Config Type",
-		By: func(column []interface{}) (int, error) {
+		By: func(column []any) (int, error) {
 			for i, v := range column {
 				if v.(string) == string(cfg.ConfigType) {
 					return i, nil
@@ -81,7 +80,7 @@ func SaveConfig(svcSheets *sheets.Service, configDocId string, cfg QuestionConfi
 func loadConfig(svcSheets *sheets.Service, configDocId string) (*QuestionConfig, error) {
 	r, err := gdrive.NewRowReader(svcSheets, configDocId, ProjectConfigSheet, &gdrive.Predicate{
 		Header: "Config Type",
-		By: func(column []interface{}) (int, error) {
+		By: func(column []any) (int, error) {
 			for i, v := range column {
 				if v.(string) == string(ConfigTypeQuestion) {
 					return i, nil
@@ -132,7 +131,7 @@ type TestAnswer struct {
 func SaveTestAnswer(svcSheets *sheets.Service, configDocId string, ans TestAnswer) error {
 	w := gdrive.NewRowWriter(svcSheets, configDocId, ProjectTestSheet, &gdrive.Predicate{
 		Header: "Email",
-		By: func(column []interface{}) (int, error) {
+		By: func(column []any) (int, error) {
 			for i, v := range column {
 				if v.(string) == ans.Email {
 					return i, nil
@@ -151,7 +150,7 @@ func SaveTestAnswer(svcSheets *sheets.Service, configDocId string, ans TestAnswe
 func LoadTestAnswer(svcSheets *sheets.Service, configDocId, email string) (*TestAnswer, error) {
 	r, err := gdrive.NewRowReader(svcSheets, configDocId, ProjectTestSheet, &gdrive.Predicate{
 		Header: "Email",
-		By: func(column []interface{}) (int, error) {
+		By: func(column []any) (int, error) {
 			for i, v := range column {
 				if v.(string) == email {
 					return i, nil
@@ -187,7 +186,7 @@ func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) 
 	}
 
 	if now.After(cfg.EndDate.Time) {
-		return fmt.Errorf("Time passed for this test")
+		return fmt.Errorf("time passed for this test")
 	}
 	ans, err := LoadTestAnswer(s.srvSheets, configDocId, email)
 	if err != nil && err != io.EOF {
@@ -195,7 +194,7 @@ func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) 
 	}
 	if err == nil {
 		if now.After(ans.EndDate.Time) {
-			return fmt.Errorf("%s passed after test has ended!", time.Since(ans.EndDate.Time))
+			return fmt.Errorf("%s passed after test has ended", time.Since(ans.EndDate.Time))
 		}
 	} else {
 		location := GeoLocation{
@@ -328,17 +327,17 @@ func (s *Server) RegisterQAAPI(m *macaron.Macaron) {
 
 		ans, err := LoadTestAnswer(s.srvSheets, configDocId, email)
 		if err == io.EOF {
-			ctx.JSON(200, map[string]interface{}{
+			ctx.JSON(200, map[string]any{
 				"wait": true,
 			})
 			return
 		} else if err != nil {
-			ctx.JSON(200, map[string]interface{}{
+			ctx.JSON(200, map[string]any{
 				"err": err.Error(),
 			})
 			return
 		}
-		ctx.JSON(200, map[string]interface{}{
+		ctx.JSON(200, map[string]any{
 			"docId":   ans.DocId,
 			"endTime": ans.EndDate.Time.UTC().Format(time.RFC3339),
 		})

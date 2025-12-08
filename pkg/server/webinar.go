@@ -190,7 +190,7 @@ func (s *Server) NextWebinarSchedule() (*WebinarSchedule, error) {
 
 	reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Predicate{
 		Header: "Schedules",
-		By: func(column []interface{}) (int, error) {
+		By: func(column []any) (int, error) {
 			for i, v := range column {
 				schedules := csvtypes.Dates{}
 				err := schedules.UnmarshalCSV(v.(string))
@@ -256,7 +256,7 @@ func (s *Server) UpcomingWebinarSchedules() ([]*WebinarSchedule, error) {
 
 	reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, WebinarScheduleSheet, &gdrive.Predicate{
 		Header: "Schedules",
-		By: func(column []interface{}) (int, error) {
+		By: func(column []any) (int, error) {
 			pos := math.MaxInt
 			for i, v := range column {
 				schedules := csvtypes.Dates{}
@@ -442,7 +442,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 
 			reader, err := gdrive.NewRowReader(s.srvSheets, WebinarSpreadsheetId, "Schedule", &gdrive.Predicate{
 				Header: "Schedules",
-				By: func(values []interface{}) (int, error) {
+				By: func(values []any) (int, error) {
 					for i, v := range values {
 						schedules := csvtypes.Dates{}
 						err := schedules.UnmarshalCSV(v.(string))
@@ -553,7 +553,7 @@ func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrati
 
 			ww := gdrive.NewRowWriter(s.srvSheets, WebinarSpreadsheetId, "Schedule", &gdrive.Predicate{
 				Header: "Schedules",
-				By: func(values []interface{}) (int, error) {
+				By: func(values []any) (int, error) {
 					for i, v := range values {
 						schedules := csvtypes.Dates{}
 						err := schedules.UnmarshalCSV(v.(string))

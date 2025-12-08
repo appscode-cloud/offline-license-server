@@ -30,7 +30,7 @@ import (
 )
 
 var buffers = sync.Pool{
-	New: func() interface{} { return new(bytes.Buffer) },
+	New: func() any { return new(bytes.Buffer) },
 }
 
 type Scheduler struct {
@@ -55,7 +55,7 @@ func NewScheduler(dir string) (*Scheduler, error) {
 
 func (s *Scheduler) Close() error {
 	s.s.Stop()
-	return s.db.Close()
+	return s.db.Close() // nolint:errcheck
 }
 
 func (s *Scheduler) Cleanup(fn func([]byte) error) error {

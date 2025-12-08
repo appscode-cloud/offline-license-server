@@ -18,7 +18,7 @@ package server
 
 import "gomodules.xyz/mailer"
 
-func NewRegistrationMailer(params interface{}) mailer.Mailer {
+func NewRegistrationMailer(params any) mailer.Mailer {
 	src := `Hi,
 Please use the token below to issue licenses using this email address.
 
