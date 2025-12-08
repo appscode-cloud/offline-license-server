@@ -147,7 +147,7 @@ func CreateZoomMeeting(srv *calendar.Service, zc *zoom.Client, calendarId, zoomE
 		ConferenceDataVersion(1).
 		Do()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to create event. %v\n", err)
+		return nil, fmt.Errorf("unable to create event. %v", err)
 	}
 
 	return &WebinarMeetingID{

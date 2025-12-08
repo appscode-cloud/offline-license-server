@@ -34,7 +34,7 @@ func NewCmdRun() *cobra.Command {
 				return err
 			}
 			defer func() {
-				s.Close()
+				s.Close() // nolint:errcheck
 			}()
 			return s.Run()
 		},

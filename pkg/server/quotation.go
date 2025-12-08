@@ -18,6 +18,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -29,8 +30,7 @@ import (
 
 	"github.com/avct/uasurfer"
 	"github.com/davegardnerisme/phonegeocode"
-	"golang.org/x/net/context"
-	. "gomodules.xyz/email-providers"
+	ep "gomodules.xyz/email-providers"
 	freshsalesclient "gomodules.xyz/freshsales-client-go"
 	gdrive "gomodules.xyz/gdrive-utils"
 	listmonkclient "gomodules.xyz/listmonk-client-go"
@@ -199,10 +199,10 @@ func (form ProductQuotation) Replacements() map[string]string {
 		replacements["{{"+k+"}}"] = v
 	}
 
-	if IsPublicEmail(form.Email) {
+	if ep.IsPublicEmail(form.Email) {
 		replacements["{{website}}"] = ""
 	} else {
-		replacements["{{website}}"] = Domain(form.Email)
+		replacements["{{website}}"] = ep.Domain(form.Email)
 	}
 
 	now := time.Now()
@@ -550,7 +550,7 @@ func logQuotation(si *gdrive.Spreadsheet, headers, data []string) (string, error
 }
 
 func FolderName(email string) string {
-	if IsPublicEmail(email) {
+	if ep.IsPublicEmail(email) {
 		return email
 	}
 	parts := strings.Split(email, "@")

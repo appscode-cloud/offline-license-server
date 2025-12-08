@@ -88,14 +88,14 @@ func (s *Server) NextNewsSnippet(p string) (*NewsSnippet, error) {
 
 	reader, err := gdrive.NewRowReader(s.srvSheets, NewsSnippetSpreadsheetId, NewsSnippetSheet, &gdrive.Predicate{
 		Header: "End Date",
-		By: func(column []interface{}) (int, error) {
+		By: func(column []any) (int, error) {
 			for i, v := range column {
 				var d csvtypes.Date
 				err := d.UnmarshalCSV(v.(string))
 				if err != nil {
 					return -1, err
 				}
-				if d.Time.After(now) {
+				if d.After(now) {
 					return i, nil
 				}
 			}

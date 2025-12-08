@@ -31,7 +31,7 @@ import (
 	"github.com/oschwald/geoip2-golang"
 	"github.com/spf13/cobra"
 	"gocloud.dev/blob"
-	. "gomodules.xyz/email-providers"
+	ep "gomodules.xyz/email-providers"
 )
 
 func NewCmdGenerateAccessLogCSV() *cobra.Command {
@@ -48,7 +48,7 @@ func NewCmdGenerateAccessLogCSV() *cobra.Command {
 				return err
 			}
 			defer func() {
-				f.Close()
+				f.Close() // nolint:errcheck
 			}()
 			w := csv.NewWriter(f)
 
@@ -57,7 +57,7 @@ func NewCmdGenerateAccessLogCSV() *cobra.Command {
 				return err
 			}
 			defer func() {
-				db.Close()
+				db.Close() // nolint:errcheck
 			}()
 
 			bucket, err := blob.OpenBucket(context.TODO(), "gs://"+LicenseBucket)
@@ -65,7 +65,7 @@ func NewCmdGenerateAccessLogCSV() *cobra.Command {
 				return err
 			}
 			defer func() {
-				bucket.Close()
+				bucket.Close() // nolint:errcheck
 			}()
 
 			iter := bucket.List(&blob.ListOptions{
@@ -105,7 +105,7 @@ func NewCmdGenerateAccessLogCSV() *cobra.Command {
 					return err
 				}
 
-				if Domain(accesslog.Email) == "appscode.com" {
+				if ep.Domain(accesslog.Email) == "appscode.com" {
 					continue
 				}
 

@@ -23,7 +23,7 @@ import (
 	"github.com/avct/uasurfer"
 	"github.com/google/uuid"
 	"golang.org/x/net/publicsuffix"
-	. "gomodules.xyz/email-providers"
+	ep "gomodules.xyz/email-providers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -76,7 +76,7 @@ func (form LicenseForm) Validate() error {
 	if agree, _ := strconv.ParseBool(form.Tos); !agree {
 		return fmt.Errorf("user must agree to terms and services")
 	}
-	if apex, err := publicsuffix.EffectiveTLDPlusOne(Domain(form.Email)); err != nil {
+	if apex, err := publicsuffix.EffectiveTLDPlusOne(ep.Domain(form.Email)); err != nil {
 		return err
 	} else {
 		if err := DomainWithMXRecord(apex); err != nil {
@@ -101,7 +101,7 @@ type GeoLocation struct {
 	Coordinates string `json:"coordinates,omitempty"`
 }
 
-func (_ LogEntry) Headers() []string {
+func (LogEntry) Headers() []string {
 	return []string{
 		"Domain",
 		"Name",
@@ -126,7 +126,7 @@ func (info LogEntry) Data() []string {
 		clientDevice = info.UA.DeviceType.StringTrimPrefix()
 	}
 	return []string{
-		Domain(info.Email),
+		ep.Domain(info.Email),
 		info.Name,
 		info.Email,
 		info.Product(),
