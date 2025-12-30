@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC.
+// Copyright 2025 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -62,11 +62,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/googleapis/gax-go/v2/internallog"
 	googleapi "google.golang.org/api/googleapi"
 	internal "google.golang.org/api/internal"
 	gensupport "google.golang.org/api/internal/gensupport"
@@ -90,6 +92,7 @@ var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
 var _ = internal.Version
+var _ = internallog.New
 
 const apiId = "youtube:v3"
 const apiName = "youtube"
@@ -146,26 +149,7 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	if err != nil {
 		return nil, err
 	}
-	s, err := New(client)
-	if err != nil {
-		return nil, err
-	}
-	if endpoint != "" {
-		s.BasePath = endpoint
-	}
-	return s, nil
-}
-
-// New creates a new Service. It uses the provided http.Client for requests.
-//
-// Deprecated: please use NewService instead.
-// To provide a custom HTTP client, use option.WithHTTPClient.
-// If you are using google.golang.org/api/googleapis/transport.APIKey, use option.WithAPIKey with NewService instead.
-func New(client *http.Client) (*Service, error) {
-	if client == nil {
-		return nil, errors.New("client is nil")
-	}
-	s := &Service{client: client, BasePath: basePath}
+	s := &Service{client: client, BasePath: basePath, logger: internaloption.GetLogger(opts)}
 	s.AbuseReports = NewAbuseReportsService(s)
 	s.Activities = NewActivitiesService(s)
 	s.Captions = NewCaptionsService(s)
@@ -194,14 +178,34 @@ func New(client *http.Client) (*Service, error) {
 	s.Thumbnails = NewThumbnailsService(s)
 	s.VideoAbuseReportReasons = NewVideoAbuseReportReasonsService(s)
 	s.VideoCategories = NewVideoCategoriesService(s)
+	s.VideoTrainability = NewVideoTrainabilityService(s)
 	s.Videos = NewVideosService(s)
 	s.Watermarks = NewWatermarksService(s)
 	s.Youtube = NewYoutubeService(s)
+	if err != nil {
+		return nil, err
+	}
+	if endpoint != "" {
+		s.BasePath = endpoint
+	}
 	return s, nil
+}
+
+// New creates a new Service. It uses the provided http.Client for requests.
+//
+// Deprecated: please use NewService instead.
+// To provide a custom HTTP client, use option.WithHTTPClient.
+// If you are using google.golang.org/api/googleapis/transport.APIKey, use option.WithAPIKey with NewService instead.
+func New(client *http.Client) (*Service, error) {
+	if client == nil {
+		return nil, errors.New("client is nil")
+	}
+	return NewService(context.TODO(), option.WithHTTPClient(client))
 }
 
 type Service struct {
 	client    *http.Client
+	logger    *slog.Logger
 	BasePath  string // API endpoint base URL
 	UserAgent string // optional additional User-Agent fragment
 
@@ -260,6 +264,8 @@ type Service struct {
 	VideoAbuseReportReasons *VideoAbuseReportReasonsService
 
 	VideoCategories *VideoCategoriesService
+
+	VideoTrainability *VideoTrainabilityService
 
 	Videos *VideosService
 
@@ -527,6 +533,15 @@ type VideoCategoriesService struct {
 	s *Service
 }
 
+func NewVideoTrainabilityService(s *Service) *VideoTrainabilityService {
+	rs := &VideoTrainabilityService{s: s}
+	return rs
+}
+
+type VideoTrainabilityService struct {
+	s *Service
+}
+
 func NewVideosService(s *Service) *VideosService {
 	rs := &VideosService{s: s}
 	return rs
@@ -587,9 +602,9 @@ type AbuseReport struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *AbuseReport) MarshalJSON() ([]byte, error) {
+func (s AbuseReport) MarshalJSON() ([]byte, error) {
 	type NoMethod AbuseReport
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type AbuseType struct {
@@ -607,9 +622,9 @@ type AbuseType struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *AbuseType) MarshalJSON() ([]byte, error) {
+func (s AbuseType) MarshalJSON() ([]byte, error) {
 	type NoMethod AbuseType
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // AccessPolicy: Rights management policy for YouTube resources.
@@ -633,9 +648,9 @@ type AccessPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *AccessPolicy) MarshalJSON() ([]byte, error) {
+func (s AccessPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod AccessPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Activity: An *activity* resource contains information about an action that a
@@ -674,9 +689,9 @@ type Activity struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Activity) MarshalJSON() ([]byte, error) {
+func (s Activity) MarshalJSON() ([]byte, error) {
 	type NoMethod Activity
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetails: Details about the content of an activity: the video
@@ -736,9 +751,9 @@ type ActivityContentDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetails) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsBulletin: Details about a channel bulletin post.
@@ -759,9 +774,9 @@ type ActivityContentDetailsBulletin struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsBulletin) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsBulletin) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsBulletin
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsChannelItem: Details about a resource which was added
@@ -783,9 +798,9 @@ type ActivityContentDetailsChannelItem struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsChannelItem) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsChannelItem) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsChannelItem
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsComment: Information about a resource that received a
@@ -807,9 +822,9 @@ type ActivityContentDetailsComment struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsComment) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsComment) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsComment
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsFavorite: Information about a video that was marked as
@@ -831,9 +846,9 @@ type ActivityContentDetailsFavorite struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsFavorite) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsFavorite) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsFavorite
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsLike: Information about a resource that received a
@@ -855,9 +870,9 @@ type ActivityContentDetailsLike struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsLike) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsLike) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsLike
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsPlaylistItem: Information about a new playlist item.
@@ -882,9 +897,9 @@ type ActivityContentDetailsPlaylistItem struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsPlaylistItem) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsPlaylistItem) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsPlaylistItem
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsPromotedItem: Details about a resource which is being
@@ -935,9 +950,9 @@ type ActivityContentDetailsPromotedItem struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsPromotedItem) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsPromotedItem) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsPromotedItem
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsRecommendation: Information that identifies the
@@ -970,9 +985,9 @@ type ActivityContentDetailsRecommendation struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsRecommendation) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsRecommendation) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsRecommendation
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsSocial: Details about a social network post.
@@ -1007,9 +1022,9 @@ type ActivityContentDetailsSocial struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsSocial) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsSocial) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsSocial
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsSubscription: Information about a channel that a user
@@ -1031,9 +1046,9 @@ type ActivityContentDetailsSubscription struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsSubscription) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsSubscription) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsSubscription
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivityContentDetailsUpload: Information about the uploaded video.
@@ -1053,9 +1068,9 @@ type ActivityContentDetailsUpload struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityContentDetailsUpload) MarshalJSON() ([]byte, error) {
+func (s ActivityContentDetailsUpload) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityContentDetailsUpload
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ActivityListResponse struct {
@@ -1094,9 +1109,9 @@ type ActivityListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivityListResponse) MarshalJSON() ([]byte, error) {
+func (s ActivityListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivityListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ActivitySnippet: Basic details about an activity, including title,
@@ -1155,9 +1170,9 @@ type ActivitySnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ActivitySnippet) MarshalJSON() ([]byte, error) {
+func (s ActivitySnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod ActivitySnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Caption: A *caption* resource represents a YouTube caption track. A caption
@@ -1188,9 +1203,9 @@ type Caption struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Caption) MarshalJSON() ([]byte, error) {
+func (s Caption) MarshalJSON() ([]byte, error) {
 	type NoMethod Caption
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type CaptionListResponse struct {
@@ -1221,9 +1236,9 @@ type CaptionListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CaptionListResponse) MarshalJSON() ([]byte, error) {
+func (s CaptionListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod CaptionListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CaptionSnippet: Basic details about a caption track, such as its language
@@ -1305,9 +1320,9 @@ type CaptionSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CaptionSnippet) MarshalJSON() ([]byte, error) {
+func (s CaptionSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod CaptionSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CdnSettings: Brief description of the live stream cdn settings.
@@ -1357,9 +1372,9 @@ type CdnSettings struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CdnSettings) MarshalJSON() ([]byte, error) {
+func (s CdnSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod CdnSettings
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Channel: A *channel* resource contains information about a YouTube channel.
@@ -1415,9 +1430,9 @@ type Channel struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Channel) MarshalJSON() ([]byte, error) {
+func (s Channel) MarshalJSON() ([]byte, error) {
 	type NoMethod Channel
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelAuditDetails: The auditDetails object encapsulates channel data that
@@ -1446,9 +1461,9 @@ type ChannelAuditDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelAuditDetails) MarshalJSON() ([]byte, error) {
+func (s ChannelAuditDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelAuditDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelBannerResource: A channel banner returned as the response to a
@@ -1476,9 +1491,9 @@ type ChannelBannerResource struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelBannerResource) MarshalJSON() ([]byte, error) {
+func (s ChannelBannerResource) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelBannerResource
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelBrandingSettings: Branding properties of a YouTube channel.
@@ -1504,9 +1519,9 @@ type ChannelBrandingSettings struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelBrandingSettings) MarshalJSON() ([]byte, error) {
+func (s ChannelBrandingSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelBrandingSettings
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelContentDetails: Details about the content of a channel.
@@ -1525,9 +1540,9 @@ type ChannelContentDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelContentDetails) MarshalJSON() ([]byte, error) {
+func (s ChannelContentDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelContentDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ChannelContentDetailsRelatedPlaylists struct {
@@ -1564,9 +1579,9 @@ type ChannelContentDetailsRelatedPlaylists struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelContentDetailsRelatedPlaylists) MarshalJSON() ([]byte, error) {
+func (s ChannelContentDetailsRelatedPlaylists) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelContentDetailsRelatedPlaylists
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelContentOwnerDetails: The contentOwnerDetails object encapsulates
@@ -1590,9 +1605,9 @@ type ChannelContentOwnerDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelContentOwnerDetails) MarshalJSON() ([]byte, error) {
+func (s ChannelContentOwnerDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelContentOwnerDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelConversionPing: Pings that the app shall fire (authenticated by
@@ -1627,9 +1642,9 @@ type ChannelConversionPing struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelConversionPing) MarshalJSON() ([]byte, error) {
+func (s ChannelConversionPing) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelConversionPing
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelConversionPings: The conversionPings object encapsulates information
@@ -1652,9 +1667,9 @@ type ChannelConversionPings struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelConversionPings) MarshalJSON() ([]byte, error) {
+func (s ChannelConversionPings) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelConversionPings
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ChannelListResponse struct {
@@ -1693,9 +1708,9 @@ type ChannelListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelListResponse) MarshalJSON() ([]byte, error) {
+func (s ChannelListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelLocalization: Channel localization setting
@@ -1717,9 +1732,9 @@ type ChannelLocalization struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelLocalization) MarshalJSON() ([]byte, error) {
+func (s ChannelLocalization) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelLocalization
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ChannelProfileDetails struct {
@@ -1744,9 +1759,9 @@ type ChannelProfileDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelProfileDetails) MarshalJSON() ([]byte, error) {
+func (s ChannelProfileDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelProfileDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ChannelSection struct {
@@ -1785,9 +1800,9 @@ type ChannelSection struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelSection) MarshalJSON() ([]byte, error) {
+func (s ChannelSection) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelSection
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelSectionContentDetails: Details about a channelsection, including
@@ -1811,9 +1826,9 @@ type ChannelSectionContentDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelSectionContentDetails) MarshalJSON() ([]byte, error) {
+func (s ChannelSectionContentDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelSectionContentDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ChannelSectionListResponse struct {
@@ -1844,9 +1859,9 @@ type ChannelSectionListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelSectionListResponse) MarshalJSON() ([]byte, error) {
+func (s ChannelSectionListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelSectionListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelSectionLocalization: ChannelSection localization setting
@@ -1866,9 +1881,9 @@ type ChannelSectionLocalization struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelSectionLocalization) MarshalJSON() ([]byte, error) {
+func (s ChannelSectionLocalization) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelSectionLocalization
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelSectionSnippet: Basic details about a channel section, including
@@ -1928,9 +1943,9 @@ type ChannelSectionSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelSectionSnippet) MarshalJSON() ([]byte, error) {
+func (s ChannelSectionSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelSectionSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelSectionTargeting: ChannelSection targeting setting.
@@ -1954,9 +1969,9 @@ type ChannelSectionTargeting struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelSectionTargeting) MarshalJSON() ([]byte, error) {
+func (s ChannelSectionTargeting) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelSectionTargeting
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelSettings: Branding properties for the channel view.
@@ -2004,9 +2019,9 @@ type ChannelSettings struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelSettings) MarshalJSON() ([]byte, error) {
+func (s ChannelSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelSettings
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelSnippet: Basic details about a channel, including title, description
@@ -2053,9 +2068,9 @@ type ChannelSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelSnippet) MarshalJSON() ([]byte, error) {
+func (s ChannelSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelStatistics: Statistics about a channel: number of subscribers, number
@@ -2085,13 +2100,16 @@ type ChannelStatistics struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelStatistics) MarshalJSON() ([]byte, error) {
+func (s ChannelStatistics) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelStatistics
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelStatus: JSON template for the status part of a channel.
 type ChannelStatus struct {
+	// IsChannelMonetizationEnabled: Whether the channel is considered ypp
+	// monetization enabled. See go/yppornot for more details.
+	IsChannelMonetizationEnabled bool `json:"isChannelMonetizationEnabled,omitempty"`
 	// IsLinked: If true, then the user is linked to either a YouTube username or
 	// G+ account. Otherwise, the user doesn't have a public YouTube identity.
 	IsLinked bool `json:"isLinked,omitempty"`
@@ -2113,22 +2131,22 @@ type ChannelStatus struct {
 	//   "private"
 	PrivacyStatus           string `json:"privacyStatus,omitempty"`
 	SelfDeclaredMadeForKids bool   `json:"selfDeclaredMadeForKids,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "IsLinked") to
-	// unconditionally include in API requests. By default, fields with empty or
-	// default values are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
-	// details.
+	// ForceSendFields is a list of field names (e.g.
+	// "IsChannelMonetizationEnabled") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. See https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields
+	// for more details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "IsLinked") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "IsChannelMonetizationEnabled") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelStatus) MarshalJSON() ([]byte, error) {
+func (s ChannelStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelToStoreLinkDetails: Information specific to a store on a
@@ -2136,6 +2154,9 @@ func (s *ChannelStatus) MarshalJSON() ([]byte, error) {
 type ChannelToStoreLinkDetails struct {
 	// BillingDetails: Information specific to billing (read-only).
 	BillingDetails *ChannelToStoreLinkDetailsBillingDetails `json:"billingDetails,omitempty"`
+	// MerchantAffiliateProgramDetails: Information specific to merchant affiliate
+	// program (read-only).
+	MerchantAffiliateProgramDetails *ChannelToStoreLinkDetailsMerchantAffiliateProgramDetails `json:"merchantAffiliateProgramDetails,omitempty"`
 	// MerchantId: Google Merchant Center id of the store.
 	MerchantId uint64 `json:"merchantId,omitempty,string"`
 	// StoreName: Name of the store.
@@ -2155,9 +2176,9 @@ type ChannelToStoreLinkDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelToStoreLinkDetails) MarshalJSON() ([]byte, error) {
+func (s ChannelToStoreLinkDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelToStoreLinkDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelToStoreLinkDetailsBillingDetails: Information specific to billing.
@@ -2183,9 +2204,41 @@ type ChannelToStoreLinkDetailsBillingDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelToStoreLinkDetailsBillingDetails) MarshalJSON() ([]byte, error) {
+func (s ChannelToStoreLinkDetailsBillingDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelToStoreLinkDetailsBillingDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// ChannelToStoreLinkDetailsMerchantAffiliateProgramDetails: Information
+// specific to merchant affiliate program.
+type ChannelToStoreLinkDetailsMerchantAffiliateProgramDetails struct {
+	// Status: The current merchant affiliate program status.
+	//
+	// Possible values:
+	//   "merchantAffiliateProgramStatusUnspecified" - Unspecified status.
+	//   "merchantAffiliateProgramStatusEligible" - Merchant is eligible for the
+	// merchant affiliate program.
+	//   "merchantAffiliateProgramStatusActive" - Merchant affiliate program is
+	// active.
+	//   "merchantAffiliateProgramStatusPaused" - Merchant affiliate program is
+	// paused.
+	Status string `json:"status,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Status") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Status") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s ChannelToStoreLinkDetailsMerchantAffiliateProgramDetails) MarshalJSON() ([]byte, error) {
+	type NoMethod ChannelToStoreLinkDetailsMerchantAffiliateProgramDetails
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ChannelTopicDetails: Freebase topic information related to the channel.
@@ -2209,9 +2262,9 @@ type ChannelTopicDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ChannelTopicDetails) MarshalJSON() ([]byte, error) {
+func (s ChannelTopicDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ChannelTopicDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Comment: A *comment* represents a single YouTube comment.
@@ -2241,9 +2294,9 @@ type Comment struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Comment) MarshalJSON() ([]byte, error) {
+func (s Comment) MarshalJSON() ([]byte, error) {
 	type NoMethod Comment
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type CommentListResponse struct {
@@ -2280,9 +2333,9 @@ type CommentListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CommentListResponse) MarshalJSON() ([]byte, error) {
+func (s CommentListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod CommentListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CommentSnippet: Basic details about a comment, such as its author and text.
@@ -2351,9 +2404,9 @@ type CommentSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CommentSnippet) MarshalJSON() ([]byte, error) {
+func (s CommentSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod CommentSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CommentSnippetAuthorChannelId: The id of the author's YouTube channel, if
@@ -2373,9 +2426,9 @@ type CommentSnippetAuthorChannelId struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CommentSnippetAuthorChannelId) MarshalJSON() ([]byte, error) {
+func (s CommentSnippetAuthorChannelId) MarshalJSON() ([]byte, error) {
 	type NoMethod CommentSnippetAuthorChannelId
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CommentThread: A *comment thread* represents information that applies to a
@@ -2411,9 +2464,9 @@ type CommentThread struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CommentThread) MarshalJSON() ([]byte, error) {
+func (s CommentThread) MarshalJSON() ([]byte, error) {
 	type NoMethod CommentThread
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type CommentThreadListResponse struct {
@@ -2450,9 +2503,9 @@ type CommentThreadListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CommentThreadListResponse) MarshalJSON() ([]byte, error) {
+func (s CommentThreadListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod CommentThreadListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CommentThreadReplies: Comments written in (direct or indirect) reply to the
@@ -2475,9 +2528,9 @@ type CommentThreadReplies struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CommentThreadReplies) MarshalJSON() ([]byte, error) {
+func (s CommentThreadReplies) MarshalJSON() ([]byte, error) {
 	type NoMethod CommentThreadReplies
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CommentThreadSnippet: Basic details about a comment thread.
@@ -2513,9 +2566,9 @@ type CommentThreadSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CommentThreadSnippet) MarshalJSON() ([]byte, error) {
+func (s CommentThreadSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod CommentThreadSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ContentRating: Ratings schemes. The country-specific ratings are mostly for
@@ -2823,6 +2876,10 @@ type ContentRating struct {
 	// language)
 	//   "djctqCriminalActs" - Atos Criminosos (Criminal Acts)
 	//   "djctqImpactingContent" - Conteúdo Impactante (Impacting content)
+	//   "djctqFear" - Temer (Fear)
+	//   "djctqMedicalProcedures" - Procedimentos médicos (Medical Procedures)
+	//   "djctqSensitiveTopics" - Tópicos sensíveis (Sensitive Topics)
+	//   "djctqFantasyViolence" - Fantasia Violência (Fantasy Violence)
 	DjctqRatingReasons []string `json:"djctqRatingReasons,omitempty"`
 	// EcbmctRating: Rating system in Turkey - Evaluation and Classification Board
 	// of the Ministry of Culture and Tourism
@@ -3468,9 +3525,9 @@ type ContentRating struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ContentRating) MarshalJSON() ([]byte, error) {
+func (s ContentRating) MarshalJSON() ([]byte, error) {
 	type NoMethod ContentRating
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Cuepoint: Note that there may be a 5-second end-point resolution issue. For
@@ -3508,9 +3565,9 @@ type Cuepoint struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Cuepoint) MarshalJSON() ([]byte, error) {
+func (s Cuepoint) MarshalJSON() ([]byte, error) {
 	type NoMethod Cuepoint
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CuepointSchedule: Schedule to insert cuepoints into a broadcast by ads
@@ -3547,9 +3604,9 @@ type CuepointSchedule struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CuepointSchedule) MarshalJSON() ([]byte, error) {
+func (s CuepointSchedule) MarshalJSON() ([]byte, error) {
 	type NoMethod CuepointSchedule
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Entity struct {
@@ -3569,9 +3626,9 @@ type Entity struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Entity) MarshalJSON() ([]byte, error) {
+func (s Entity) MarshalJSON() ([]byte, error) {
 	type NoMethod Entity
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GeoPoint: Geographical coordinates of a point, in WGS84.
@@ -3595,9 +3652,9 @@ type GeoPoint struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GeoPoint) MarshalJSON() ([]byte, error) {
+func (s GeoPoint) MarshalJSON() ([]byte, error) {
 	type NoMethod GeoPoint
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 func (s *GeoPoint) UnmarshalJSON(data []byte) error {
@@ -3644,9 +3701,9 @@ type I18nLanguage struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *I18nLanguage) MarshalJSON() ([]byte, error) {
+func (s I18nLanguage) MarshalJSON() ([]byte, error) {
 	type NoMethod I18nLanguage
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type I18nLanguageListResponse struct {
@@ -3678,9 +3735,9 @@ type I18nLanguageListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *I18nLanguageListResponse) MarshalJSON() ([]byte, error) {
+func (s I18nLanguageListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod I18nLanguageListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // I18nLanguageSnippet: Basic details about an i18n language, such as language
@@ -3703,9 +3760,9 @@ type I18nLanguageSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *I18nLanguageSnippet) MarshalJSON() ([]byte, error) {
+func (s I18nLanguageSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod I18nLanguageSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // I18nRegion: A *i18nRegion* resource identifies a region where YouTube is
@@ -3734,9 +3791,9 @@ type I18nRegion struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *I18nRegion) MarshalJSON() ([]byte, error) {
+func (s I18nRegion) MarshalJSON() ([]byte, error) {
 	type NoMethod I18nRegion
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type I18nRegionListResponse struct {
@@ -3769,9 +3826,9 @@ type I18nRegionListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *I18nRegionListResponse) MarshalJSON() ([]byte, error) {
+func (s I18nRegionListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod I18nRegionListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // I18nRegionSnippet: Basic details about an i18n region, such as region code
@@ -3794,9 +3851,9 @@ type I18nRegionSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *I18nRegionSnippet) MarshalJSON() ([]byte, error) {
+func (s I18nRegionSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod I18nRegionSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ImageSettings: Branding properties for images associated with the channel.
@@ -3874,9 +3931,9 @@ type ImageSettings struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ImageSettings) MarshalJSON() ([]byte, error) {
+func (s ImageSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod ImageSettings
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // IngestionInfo: Describes information necessary for ingesting an RTMP, HTTP,
@@ -3915,12 +3972,12 @@ type IngestionInfo struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *IngestionInfo) MarshalJSON() ([]byte, error) {
+func (s IngestionInfo) MarshalJSON() ([]byte, error) {
 	type NoMethod IngestionInfo
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// InvideoBranding: LINT.IfChange Describes an invideo branding.
+// InvideoBranding: Describes an invideo branding.
 type InvideoBranding struct {
 	// ImageBytes: The bytes the uploaded image. Only used in api to youtube
 	// communication.
@@ -3950,9 +4007,9 @@ type InvideoBranding struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *InvideoBranding) MarshalJSON() ([]byte, error) {
+func (s InvideoBranding) MarshalJSON() ([]byte, error) {
 	type NoMethod InvideoBranding
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // InvideoPosition: Describes the spatial position of a visual widget inside a
@@ -3986,9 +4043,9 @@ type InvideoPosition struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *InvideoPosition) MarshalJSON() ([]byte, error) {
+func (s InvideoPosition) MarshalJSON() ([]byte, error) {
 	type NoMethod InvideoPosition
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // InvideoTiming: Describes a temporal position of a visual widget inside a
@@ -4024,9 +4081,9 @@ type InvideoTiming struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *InvideoTiming) MarshalJSON() ([]byte, error) {
+func (s InvideoTiming) MarshalJSON() ([]byte, error) {
 	type NoMethod InvideoTiming
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LanguageTag struct {
@@ -4044,9 +4101,9 @@ type LanguageTag struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LanguageTag) MarshalJSON() ([]byte, error) {
+func (s LanguageTag) MarshalJSON() ([]byte, error) {
 	type NoMethod LanguageTag
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LevelDetails struct {
@@ -4065,9 +4122,9 @@ type LevelDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LevelDetails) MarshalJSON() ([]byte, error) {
+func (s LevelDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LevelDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveBroadcast: A *liveBroadcast* resource represents an event that will be
@@ -4114,9 +4171,9 @@ type LiveBroadcast struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveBroadcast) MarshalJSON() ([]byte, error) {
+func (s LiveBroadcast) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveBroadcast
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveBroadcastContentDetails: Detailed settings of a broadcast.
@@ -4232,9 +4289,9 @@ type LiveBroadcastContentDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveBroadcastContentDetails) MarshalJSON() ([]byte, error) {
+func (s LiveBroadcastContentDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveBroadcastContentDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveBroadcastListResponse struct {
@@ -4274,9 +4331,9 @@ type LiveBroadcastListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveBroadcastListResponse) MarshalJSON() ([]byte, error) {
+func (s LiveBroadcastListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveBroadcastListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveBroadcastMonetizationDetails: Monetization settings of a broadcast.
@@ -4295,9 +4352,9 @@ type LiveBroadcastMonetizationDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveBroadcastMonetizationDetails) MarshalJSON() ([]byte, error) {
+func (s LiveBroadcastMonetizationDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveBroadcastMonetizationDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveBroadcastSnippet: Basic broadcast information.
@@ -4350,9 +4407,9 @@ type LiveBroadcastSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveBroadcastSnippet) MarshalJSON() ([]byte, error) {
+func (s LiveBroadcastSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveBroadcastSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveBroadcastStatistics: Statistics about the live broadcast. These
@@ -4380,9 +4437,9 @@ type LiveBroadcastStatistics struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveBroadcastStatistics) MarshalJSON() ([]byte, error) {
+func (s LiveBroadcastStatistics) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveBroadcastStatistics
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveBroadcastStatus: Live broadcast state.
@@ -4451,9 +4508,9 @@ type LiveBroadcastStatus struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveBroadcastStatus) MarshalJSON() ([]byte, error) {
+func (s LiveBroadcastStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveBroadcastStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveChatBan: A `__liveChatBan__` resource represents a ban for a YouTube
@@ -4484,9 +4541,9 @@ type LiveChatBan struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatBan) MarshalJSON() ([]byte, error) {
+func (s LiveChatBan) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatBan
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatBanSnippet struct {
@@ -4516,9 +4573,9 @@ type LiveChatBanSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatBanSnippet) MarshalJSON() ([]byte, error) {
+func (s LiveChatBanSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatBanSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatFanFundingEventDetails struct {
@@ -4544,9 +4601,9 @@ type LiveChatFanFundingEventDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatFanFundingEventDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatFanFundingEventDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatFanFundingEventDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatGiftMembershipReceivedDetails struct {
@@ -4579,9 +4636,9 @@ type LiveChatGiftMembershipReceivedDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatGiftMembershipReceivedDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatGiftMembershipReceivedDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatGiftMembershipReceivedDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatMemberMilestoneChatDetails struct {
@@ -4609,9 +4666,9 @@ type LiveChatMemberMilestoneChatDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatMemberMilestoneChatDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatMemberMilestoneChatDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatMemberMilestoneChatDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatMembershipGiftingDetails struct {
@@ -4634,9 +4691,9 @@ type LiveChatMembershipGiftingDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatMembershipGiftingDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatMembershipGiftingDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatMembershipGiftingDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveChatMessage: A *liveChatMessage* resource represents a chat message in a
@@ -4670,9 +4727,9 @@ type LiveChatMessage struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatMessage) MarshalJSON() ([]byte, error) {
+func (s LiveChatMessage) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatMessage
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatMessageAuthorDetails struct {
@@ -4705,9 +4762,9 @@ type LiveChatMessageAuthorDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatMessageAuthorDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatMessageAuthorDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatMessageAuthorDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatMessageDeletedDetails struct {
@@ -4725,9 +4782,9 @@ type LiveChatMessageDeletedDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatMessageDeletedDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatMessageDeletedDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatMessageDeletedDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatMessageListResponse struct {
@@ -4768,9 +4825,9 @@ type LiveChatMessageListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatMessageListResponse) MarshalJSON() ([]byte, error) {
+func (s LiveChatMessageListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatMessageListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatMessageRetractedDetails struct {
@@ -4788,9 +4845,9 @@ type LiveChatMessageRetractedDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatMessageRetractedDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatMessageRetractedDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatMessageRetractedDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveChatMessageSnippet: Next ID: 34
@@ -4883,9 +4940,9 @@ type LiveChatMessageSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatMessageSnippet) MarshalJSON() ([]byte, error) {
+func (s LiveChatMessageSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatMessageSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveChatModerator: A *liveChatModerator* resource represents a moderator for
@@ -4917,9 +4974,9 @@ type LiveChatModerator struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatModerator) MarshalJSON() ([]byte, error) {
+func (s LiveChatModerator) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatModerator
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatModeratorListResponse struct {
@@ -4959,9 +5016,9 @@ type LiveChatModeratorListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatModeratorListResponse) MarshalJSON() ([]byte, error) {
+func (s LiveChatModeratorListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatModeratorListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatModeratorSnippet struct {
@@ -4982,9 +5039,9 @@ type LiveChatModeratorSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatModeratorSnippet) MarshalJSON() ([]byte, error) {
+func (s LiveChatModeratorSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatModeratorSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatNewSponsorDetails struct {
@@ -5008,9 +5065,9 @@ type LiveChatNewSponsorDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatNewSponsorDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatNewSponsorDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatNewSponsorDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatPollDetails struct {
@@ -5033,9 +5090,9 @@ type LiveChatPollDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatPollDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatPollDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatPollDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatPollDetailsPollMetadata struct {
@@ -5055,9 +5112,9 @@ type LiveChatPollDetailsPollMetadata struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatPollDetailsPollMetadata) MarshalJSON() ([]byte, error) {
+func (s LiveChatPollDetailsPollMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatPollDetailsPollMetadata
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatPollDetailsPollMetadataPollOption struct {
@@ -5076,9 +5133,9 @@ type LiveChatPollDetailsPollMetadataPollOption struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatPollDetailsPollMetadataPollOption) MarshalJSON() ([]byte, error) {
+func (s LiveChatPollDetailsPollMetadataPollOption) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatPollDetailsPollMetadataPollOption
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatSuperChatDetails struct {
@@ -5108,9 +5165,9 @@ type LiveChatSuperChatDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatSuperChatDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatSuperChatDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatSuperChatDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatSuperStickerDetails struct {
@@ -5140,9 +5197,9 @@ type LiveChatSuperStickerDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatSuperStickerDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatSuperStickerDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatSuperStickerDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatTextMessageDetails struct {
@@ -5161,9 +5218,9 @@ type LiveChatTextMessageDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatTextMessageDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatTextMessageDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatTextMessageDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveChatUserBannedMessageDetails struct {
@@ -5191,9 +5248,9 @@ type LiveChatUserBannedMessageDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveChatUserBannedMessageDetails) MarshalJSON() ([]byte, error) {
+func (s LiveChatUserBannedMessageDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveChatUserBannedMessageDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveStream: A live stream describes a live ingestion point.
@@ -5233,9 +5290,9 @@ type LiveStream struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveStream) MarshalJSON() ([]byte, error) {
+func (s LiveStream) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveStream
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveStreamConfigurationIssue struct {
@@ -5301,9 +5358,9 @@ type LiveStreamConfigurationIssue struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveStreamConfigurationIssue) MarshalJSON() ([]byte, error) {
+func (s LiveStreamConfigurationIssue) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveStreamConfigurationIssue
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveStreamContentDetails: Detailed settings of a stream.
@@ -5337,9 +5394,9 @@ type LiveStreamContentDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveStreamContentDetails) MarshalJSON() ([]byte, error) {
+func (s LiveStreamContentDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveStreamContentDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveStreamHealthStatus struct {
@@ -5369,9 +5426,9 @@ type LiveStreamHealthStatus struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveStreamHealthStatus) MarshalJSON() ([]byte, error) {
+func (s LiveStreamHealthStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveStreamHealthStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveStreamListResponse struct {
@@ -5410,9 +5467,9 @@ type LiveStreamListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveStreamListResponse) MarshalJSON() ([]byte, error) {
+func (s LiveStreamListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveStreamListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LiveStreamSnippet struct {
@@ -5441,9 +5498,9 @@ type LiveStreamSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveStreamSnippet) MarshalJSON() ([]byte, error) {
+func (s LiveStreamSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveStreamSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LiveStreamStatus: Brief description of the live stream status.
@@ -5470,9 +5527,9 @@ type LiveStreamStatus struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LiveStreamStatus) MarshalJSON() ([]byte, error) {
+func (s LiveStreamStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod LiveStreamStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LocalizedProperty struct {
@@ -5493,9 +5550,9 @@ type LocalizedProperty struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LocalizedProperty) MarshalJSON() ([]byte, error) {
+func (s LocalizedProperty) MarshalJSON() ([]byte, error) {
 	type NoMethod LocalizedProperty
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type LocalizedString struct {
@@ -5514,9 +5571,9 @@ type LocalizedString struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LocalizedString) MarshalJSON() ([]byte, error) {
+func (s LocalizedString) MarshalJSON() ([]byte, error) {
 	type NoMethod LocalizedString
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Member: A *member* resource represents a member for a YouTube channel. A
@@ -5543,9 +5600,9 @@ type Member struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Member) MarshalJSON() ([]byte, error) {
+func (s Member) MarshalJSON() ([]byte, error) {
 	type NoMethod Member
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type MemberListResponse struct {
@@ -5581,9 +5638,9 @@ type MemberListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MemberListResponse) MarshalJSON() ([]byte, error) {
+func (s MemberListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod MemberListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type MemberSnippet struct {
@@ -5606,9 +5663,9 @@ type MemberSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MemberSnippet) MarshalJSON() ([]byte, error) {
+func (s MemberSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod MemberSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type MembershipsDetails struct {
@@ -5641,9 +5698,9 @@ type MembershipsDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MembershipsDetails) MarshalJSON() ([]byte, error) {
+func (s MembershipsDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod MembershipsDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type MembershipsDuration struct {
@@ -5667,9 +5724,9 @@ type MembershipsDuration struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MembershipsDuration) MarshalJSON() ([]byte, error) {
+func (s MembershipsDuration) MarshalJSON() ([]byte, error) {
 	type NoMethod MembershipsDuration
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type MembershipsDurationAtLevel struct {
@@ -5695,9 +5752,9 @@ type MembershipsDurationAtLevel struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MembershipsDurationAtLevel) MarshalJSON() ([]byte, error) {
+func (s MembershipsDurationAtLevel) MarshalJSON() ([]byte, error) {
 	type NoMethod MembershipsDurationAtLevel
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // MembershipsLevel: A *membershipsLevel* resource represents an offer made by
@@ -5727,9 +5784,9 @@ type MembershipsLevel struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MembershipsLevel) MarshalJSON() ([]byte, error) {
+func (s MembershipsLevel) MarshalJSON() ([]byte, error) {
 	type NoMethod MembershipsLevel
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type MembershipsLevelListResponse struct {
@@ -5760,9 +5817,9 @@ type MembershipsLevelListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MembershipsLevelListResponse) MarshalJSON() ([]byte, error) {
+func (s MembershipsLevelListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod MembershipsLevelListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type MembershipsLevelSnippet struct {
@@ -5783,9 +5840,9 @@ type MembershipsLevelSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MembershipsLevelSnippet) MarshalJSON() ([]byte, error) {
+func (s MembershipsLevelSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod MembershipsLevelSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // MonitorStreamInfo: Settings and Info of the monitor stream
@@ -5817,9 +5874,9 @@ type MonitorStreamInfo struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MonitorStreamInfo) MarshalJSON() ([]byte, error) {
+func (s MonitorStreamInfo) MarshalJSON() ([]byte, error) {
 	type NoMethod MonitorStreamInfo
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // PageInfo: Paging details for lists of resources, including total number of
@@ -5842,9 +5899,9 @@ type PageInfo struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PageInfo) MarshalJSON() ([]byte, error) {
+func (s PageInfo) MarshalJSON() ([]byte, error) {
 	type NoMethod PageInfo
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Playlist: A *playlist* resource represents a YouTube playlist. A playlist is
@@ -5898,9 +5955,9 @@ type Playlist struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Playlist) MarshalJSON() ([]byte, error) {
+func (s Playlist) MarshalJSON() ([]byte, error) {
 	type NoMethod Playlist
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistContentDetails struct {
@@ -5919,9 +5976,9 @@ type PlaylistContentDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistContentDetails) MarshalJSON() ([]byte, error) {
+func (s PlaylistContentDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistContentDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistImage struct {
@@ -5947,9 +6004,9 @@ type PlaylistImage struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistImage) MarshalJSON() ([]byte, error) {
+func (s PlaylistImage) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistImage
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistImageListResponse struct {
@@ -5981,9 +6038,9 @@ type PlaylistImageListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistImageListResponse) MarshalJSON() ([]byte, error) {
+func (s PlaylistImageListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistImageListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // PlaylistImageSnippet: A *playlistImage* resource identifies another
@@ -6024,9 +6081,9 @@ type PlaylistImageSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistImageSnippet) MarshalJSON() ([]byte, error) {
+func (s PlaylistImageSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistImageSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // PlaylistItem: A *playlistItem* resource identifies another resource, such as
@@ -6078,9 +6135,9 @@ type PlaylistItem struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistItem) MarshalJSON() ([]byte, error) {
+func (s PlaylistItem) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistItem
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistItemContentDetails struct {
@@ -6116,9 +6173,9 @@ type PlaylistItemContentDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistItemContentDetails) MarshalJSON() ([]byte, error) {
+func (s PlaylistItemContentDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistItemContentDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistItemListResponse struct {
@@ -6128,7 +6185,7 @@ type PlaylistItemListResponse struct {
 	// Items: A list of playlist items that match the request criteria.
 	Items []*PlaylistItem `json:"items,omitempty"`
 	// Kind: Identifies what kind of resource this is. Value: the fixed string
-	// "youtube#playlistItemListResponse". Etag of this resource.
+	// "youtube#playlistItemListResponse".
 	Kind string `json:"kind,omitempty"`
 	// NextPageToken: The token that can be used as the value of the pageToken
 	// parameter to retrieve the next page in the result set.
@@ -6157,9 +6214,9 @@ type PlaylistItemListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistItemListResponse) MarshalJSON() ([]byte, error) {
+func (s PlaylistItemListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistItemListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // PlaylistItemSnippet: Basic details about a playlist, including title,
@@ -6209,9 +6266,9 @@ type PlaylistItemSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistItemSnippet) MarshalJSON() ([]byte, error) {
+func (s PlaylistItemSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistItemSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // PlaylistItemStatus: Information about the playlist item's privacy status.
@@ -6236,9 +6293,9 @@ type PlaylistItemStatus struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistItemStatus) MarshalJSON() ([]byte, error) {
+func (s PlaylistItemStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistItemStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistListResponse struct {
@@ -6278,9 +6335,9 @@ type PlaylistListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistListResponse) MarshalJSON() ([]byte, error) {
+func (s PlaylistListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // PlaylistLocalization: Playlist localization setting
@@ -6302,9 +6359,9 @@ type PlaylistLocalization struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistLocalization) MarshalJSON() ([]byte, error) {
+func (s PlaylistLocalization) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistLocalization
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistPlayer struct {
@@ -6323,9 +6380,9 @@ type PlaylistPlayer struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistPlayer) MarshalJSON() ([]byte, error) {
+func (s PlaylistPlayer) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistPlayer
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // PlaylistSnippet: Basic details about a playlist, including title,
@@ -6375,12 +6432,18 @@ type PlaylistSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistSnippet) MarshalJSON() ([]byte, error) {
+func (s PlaylistSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistStatus struct {
+	// PodcastStatus: The playlist's podcast status.
+	//
+	// Possible values:
+	//   "enabled"
+	//   "disabled"
+	PodcastStatus string `json:"podcastStatus,omitempty"`
 	// PrivacyStatus: The playlist's privacy status.
 	//
 	// Possible values:
@@ -6388,22 +6451,22 @@ type PlaylistStatus struct {
 	//   "unlisted"
 	//   "private"
 	PrivacyStatus string `json:"privacyStatus,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "PrivacyStatus") to
+	// ForceSendFields is a list of field names (e.g. "PodcastStatus") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "PrivacyStatus") to include in API
+	// NullFields is a list of field names (e.g. "PodcastStatus") to include in API
 	// requests with the JSON null value. By default, fields with empty values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
-func (s *PlaylistStatus) MarshalJSON() ([]byte, error) {
+func (s PlaylistStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod PlaylistStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // PropertyValue: A pair Property / Value.
@@ -6425,9 +6488,9 @@ type PropertyValue struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *PropertyValue) MarshalJSON() ([]byte, error) {
+func (s PropertyValue) MarshalJSON() ([]byte, error) {
 	type NoMethod PropertyValue
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type RelatedEntity struct {
@@ -6445,9 +6508,9 @@ type RelatedEntity struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *RelatedEntity) MarshalJSON() ([]byte, error) {
+func (s RelatedEntity) MarshalJSON() ([]byte, error) {
 	type NoMethod RelatedEntity
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ResourceId: A resource id is a generic reference that points to another
@@ -6480,9 +6543,9 @@ type ResourceId struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ResourceId) MarshalJSON() ([]byte, error) {
+func (s ResourceId) MarshalJSON() ([]byte, error) {
 	type NoMethod ResourceId
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type SearchListResponse struct {
@@ -6523,9 +6586,9 @@ type SearchListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SearchListResponse) MarshalJSON() ([]byte, error) {
+func (s SearchListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SearchListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SearchResult: A search result contains information about a YouTube video,
@@ -6559,9 +6622,9 @@ type SearchResult struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SearchResult) MarshalJSON() ([]byte, error) {
+func (s SearchResult) MarshalJSON() ([]byte, error) {
 	type NoMethod SearchResult
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SearchResultSnippet: Basic details about a search result, including title,
@@ -6607,9 +6670,9 @@ type SearchResultSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SearchResultSnippet) MarshalJSON() ([]byte, error) {
+func (s SearchResultSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod SearchResultSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Subscription: A *subscription* resource contains information about a YouTube
@@ -6649,9 +6712,9 @@ type Subscription struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Subscription) MarshalJSON() ([]byte, error) {
+func (s Subscription) MarshalJSON() ([]byte, error) {
 	type NoMethod Subscription
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SubscriptionContentDetails: Details about the content to witch a
@@ -6684,9 +6747,9 @@ type SubscriptionContentDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SubscriptionContentDetails) MarshalJSON() ([]byte, error) {
+func (s SubscriptionContentDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod SubscriptionContentDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type SubscriptionListResponse struct {
@@ -6725,9 +6788,9 @@ type SubscriptionListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SubscriptionListResponse) MarshalJSON() ([]byte, error) {
+func (s SubscriptionListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SubscriptionListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SubscriptionSnippet: Basic details about a subscription, including title,
@@ -6736,9 +6799,6 @@ type SubscriptionSnippet struct {
 	// ChannelId: The ID that YouTube uses to uniquely identify the subscriber's
 	// channel.
 	ChannelId string `json:"channelId,omitempty"`
-	// ChannelTitle: Channel title for the channel that the subscription belongs
-	// to.
-	ChannelTitle string `json:"channelTitle,omitempty"`
 	// Description: The subscription's details.
 	Description string `json:"description,omitempty"`
 	// PublishedAt: The date and time that the subscription was created.
@@ -6765,9 +6825,9 @@ type SubscriptionSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SubscriptionSnippet) MarshalJSON() ([]byte, error) {
+func (s SubscriptionSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod SubscriptionSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SubscriptionSubscriberSnippet: Basic details about a subscription's
@@ -6794,9 +6854,9 @@ type SubscriptionSubscriberSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SubscriptionSubscriberSnippet) MarshalJSON() ([]byte, error) {
+func (s SubscriptionSubscriberSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod SubscriptionSubscriberSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SuperChatEvent: A `__superChatEvent__` resource represents a Super Chat
@@ -6825,9 +6885,9 @@ type SuperChatEvent struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SuperChatEvent) MarshalJSON() ([]byte, error) {
+func (s SuperChatEvent) MarshalJSON() ([]byte, error) {
 	type NoMethod SuperChatEvent
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type SuperChatEventListResponse struct {
@@ -6863,9 +6923,9 @@ type SuperChatEventListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SuperChatEventListResponse) MarshalJSON() ([]byte, error) {
+func (s SuperChatEventListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SuperChatEventListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type SuperChatEventSnippet struct {
@@ -6906,9 +6966,9 @@ type SuperChatEventSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SuperChatEventSnippet) MarshalJSON() ([]byte, error) {
+func (s SuperChatEventSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod SuperChatEventSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type SuperStickerMetadata struct {
@@ -6935,12 +6995,14 @@ type SuperStickerMetadata struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SuperStickerMetadata) MarshalJSON() ([]byte, error) {
+func (s SuperStickerMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod SuperStickerMetadata
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type TestItem struct {
+	// Etag: Etag for the resource. See https://en.wikipedia.org/wiki/HTTP_ETag.
+	Etag         string                   `json:"etag,omitempty"`
 	FeaturedPart bool                     `json:"featuredPart,omitempty"`
 	Gaia         int64                    `json:"gaia,omitempty,string"`
 	Id           string                   `json:"id,omitempty"`
@@ -6948,22 +7010,22 @@ type TestItem struct {
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "FeaturedPart") to
-	// unconditionally include in API requests. By default, fields with empty or
-	// default values are omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "Etag") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "FeaturedPart") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "Etag") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
-func (s *TestItem) MarshalJSON() ([]byte, error) {
+func (s TestItem) MarshalJSON() ([]byte, error) {
 	type NoMethod TestItem
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type TestItemTestItemSnippet struct {
@@ -7002,9 +7064,9 @@ type ThirdPartyLink struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ThirdPartyLink) MarshalJSON() ([]byte, error) {
+func (s ThirdPartyLink) MarshalJSON() ([]byte, error) {
 	type NoMethod ThirdPartyLink
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ThirdPartyLinkListResponse struct {
@@ -7030,9 +7092,9 @@ type ThirdPartyLinkListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ThirdPartyLinkListResponse) MarshalJSON() ([]byte, error) {
+func (s ThirdPartyLinkListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ThirdPartyLinkListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ThirdPartyLinkSnippet: Basic information about a third party account link,
@@ -7062,9 +7124,9 @@ type ThirdPartyLinkSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ThirdPartyLinkSnippet) MarshalJSON() ([]byte, error) {
+func (s ThirdPartyLinkSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod ThirdPartyLinkSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ThirdPartyLinkStatus: The third-party link status object contains
@@ -7089,9 +7151,9 @@ type ThirdPartyLinkStatus struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ThirdPartyLinkStatus) MarshalJSON() ([]byte, error) {
+func (s ThirdPartyLinkStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod ThirdPartyLinkStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Thumbnail: A thumbnail is an image representing a YouTube resource.
@@ -7115,9 +7177,9 @@ type Thumbnail struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Thumbnail) MarshalJSON() ([]byte, error) {
+func (s Thumbnail) MarshalJSON() ([]byte, error) {
 	type NoMethod Thumbnail
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ThumbnailDetails: Internal representation of thumbnails for a YouTube
@@ -7146,9 +7208,9 @@ type ThumbnailDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ThumbnailDetails) MarshalJSON() ([]byte, error) {
+func (s ThumbnailDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod ThumbnailDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ThumbnailSetResponse struct {
@@ -7179,9 +7241,9 @@ type ThumbnailSetResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ThumbnailSetResponse) MarshalJSON() ([]byte, error) {
+func (s ThumbnailSetResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ThumbnailSetResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TokenPagination: Stub token pagination template to suppress results.
@@ -7217,7 +7279,8 @@ type Video struct {
 	Localizations map[string]VideoLocalization `json:"localizations,omitempty"`
 	// MonetizationDetails: The monetizationDetails object encapsulates information
 	// about the monetization status of the video.
-	MonetizationDetails *VideoMonetizationDetails `json:"monetizationDetails,omitempty"`
+	MonetizationDetails         *VideoMonetizationDetails         `json:"monetizationDetails,omitempty"`
+	PaidProductPlacementDetails *VideoPaidProductPlacementDetails `json:"paidProductPlacementDetails,omitempty"`
 	// Player: The player object contains information that you would use to play
 	// the video in an embedded player.
 	Player *VideoPlayer `json:"player,omitempty"`
@@ -7275,9 +7338,9 @@ type Video struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Video) MarshalJSON() ([]byte, error) {
+func (s Video) MarshalJSON() ([]byte, error) {
 	type NoMethod Video
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type VideoAbuseReport struct {
@@ -7307,9 +7370,9 @@ type VideoAbuseReport struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoAbuseReport) MarshalJSON() ([]byte, error) {
+func (s VideoAbuseReport) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoAbuseReport
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoAbuseReportReason: A `__videoAbuseReportReason__` resource identifies a
@@ -7339,9 +7402,9 @@ type VideoAbuseReportReason struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoAbuseReportReason) MarshalJSON() ([]byte, error) {
+func (s VideoAbuseReportReason) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoAbuseReportReason
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type VideoAbuseReportReasonListResponse struct {
@@ -7372,9 +7435,9 @@ type VideoAbuseReportReasonListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoAbuseReportReasonListResponse) MarshalJSON() ([]byte, error) {
+func (s VideoAbuseReportReasonListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoAbuseReportReasonListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoAbuseReportReasonSnippet: Basic details about a video category, such as
@@ -7398,9 +7461,9 @@ type VideoAbuseReportReasonSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoAbuseReportReasonSnippet) MarshalJSON() ([]byte, error) {
+func (s VideoAbuseReportReasonSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoAbuseReportReasonSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type VideoAbuseReportSecondaryReason struct {
@@ -7421,9 +7484,9 @@ type VideoAbuseReportSecondaryReason struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoAbuseReportSecondaryReason) MarshalJSON() ([]byte, error) {
+func (s VideoAbuseReportSecondaryReason) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoAbuseReportSecondaryReason
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type VideoAgeGating struct {
@@ -7457,9 +7520,9 @@ type VideoAgeGating struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoAgeGating) MarshalJSON() ([]byte, error) {
+func (s VideoAgeGating) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoAgeGating
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoCategory: A *videoCategory* resource identifies a category that has
@@ -7488,9 +7551,9 @@ type VideoCategory struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoCategory) MarshalJSON() ([]byte, error) {
+func (s VideoCategory) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoCategory
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type VideoCategoryListResponse struct {
@@ -7532,9 +7595,9 @@ type VideoCategoryListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoCategoryListResponse) MarshalJSON() ([]byte, error) {
+func (s VideoCategoryListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoCategoryListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoCategorySnippet: Basic details about a video category, such as its
@@ -7558,9 +7621,9 @@ type VideoCategorySnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoCategorySnippet) MarshalJSON() ([]byte, error) {
+func (s VideoCategorySnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoCategorySnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoContentDetails: Details about the content of a YouTube Video.
@@ -7627,9 +7690,9 @@ type VideoContentDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoContentDetails) MarshalJSON() ([]byte, error) {
+func (s VideoContentDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoContentDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoContentDetailsRegionRestriction: DEPRECATED Region restriction of the
@@ -7659,9 +7722,9 @@ type VideoContentDetailsRegionRestriction struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoContentDetailsRegionRestriction) MarshalJSON() ([]byte, error) {
+func (s VideoContentDetailsRegionRestriction) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoContentDetailsRegionRestriction
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoFileDetails: Describes original video file properties, including
@@ -7720,9 +7783,9 @@ type VideoFileDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoFileDetails) MarshalJSON() ([]byte, error) {
+func (s VideoFileDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoFileDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoFileDetailsAudioStream: Information about an audio stream.
@@ -7749,9 +7812,9 @@ type VideoFileDetailsAudioStream struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoFileDetailsAudioStream) MarshalJSON() ([]byte, error) {
+func (s VideoFileDetailsAudioStream) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoFileDetailsAudioStream
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoFileDetailsVideoStream: Information about a video stream.
@@ -7796,9 +7859,9 @@ type VideoFileDetailsVideoStream struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoFileDetailsVideoStream) MarshalJSON() ([]byte, error) {
+func (s VideoFileDetailsVideoStream) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoFileDetailsVideoStream
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 func (s *VideoFileDetailsVideoStream) UnmarshalJSON(data []byte) error {
@@ -7845,9 +7908,9 @@ type VideoGetRatingResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoGetRatingResponse) MarshalJSON() ([]byte, error) {
+func (s VideoGetRatingResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoGetRatingResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type VideoListResponse struct {
@@ -7886,9 +7949,9 @@ type VideoListResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoListResponse) MarshalJSON() ([]byte, error) {
+func (s VideoListResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoListResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoLiveStreamingDetails: Details about the live streaming metadata.
@@ -7916,7 +7979,7 @@ type VideoLiveStreamingDetails struct {
 	ConcurrentViewers uint64 `json:"concurrentViewers,omitempty,string"`
 	// ScheduledEndTime: The time that the broadcast is scheduled to end. If the
 	// value is empty or the property is not present, then the broadcast is
-	// scheduled to contiue indefinitely.
+	// scheduled to continue indefinitely.
 	ScheduledEndTime string `json:"scheduledEndTime,omitempty"`
 	// ScheduledStartTime: The time that the broadcast is scheduled to begin.
 	ScheduledStartTime string `json:"scheduledStartTime,omitempty"`
@@ -7933,9 +7996,9 @@ type VideoLiveStreamingDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoLiveStreamingDetails) MarshalJSON() ([]byte, error) {
+func (s VideoLiveStreamingDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoLiveStreamingDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoLocalization: Localized versions of certain video properties (e.g.
@@ -7958,9 +8021,9 @@ type VideoLocalization struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoLocalization) MarshalJSON() ([]byte, error) {
+func (s VideoLocalization) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoLocalization
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoMonetizationDetails: Details about monetization of a YouTube Video.
@@ -7981,9 +8044,36 @@ type VideoMonetizationDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoMonetizationDetails) MarshalJSON() ([]byte, error) {
+func (s VideoMonetizationDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoMonetizationDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// VideoPaidProductPlacementDetails: Details about paid content, such as paid
+// product placement, sponsorships or endorsement, contained in a YouTube video
+// and a method to inform viewers of paid promotion. This data can only be
+// retrieved by the video owner.
+type VideoPaidProductPlacementDetails struct {
+	// HasPaidProductPlacement: This boolean represents whether the video contains
+	// Paid Product Placement, Studio equivalent:
+	// https://screenshot.googleplex.com/4Me79DE6AfT2ktp.png
+	HasPaidProductPlacement bool `json:"hasPaidProductPlacement,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "HasPaidProductPlacement") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "HasPaidProductPlacement") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s VideoPaidProductPlacementDetails) MarshalJSON() ([]byte, error) {
+	type NoMethod VideoPaidProductPlacementDetails
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoPlayer: Player to be used for a video playback.
@@ -8006,9 +8096,9 @@ type VideoPlayer struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoPlayer) MarshalJSON() ([]byte, error) {
+func (s VideoPlayer) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoPlayer
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoProcessingDetails: Describes processing status and progress and
@@ -8076,9 +8166,9 @@ type VideoProcessingDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoProcessingDetails) MarshalJSON() ([]byte, error) {
+func (s VideoProcessingDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoProcessingDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoProcessingDetailsProcessingProgress: Video processing progress and
@@ -8112,9 +8202,9 @@ type VideoProcessingDetailsProcessingProgress struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoProcessingDetailsProcessingProgress) MarshalJSON() ([]byte, error) {
+func (s VideoProcessingDetailsProcessingProgress) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoProcessingDetailsProcessingProgress
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoProjectDetails: DEPRECATED. b/157517979: This part was never populated
@@ -8152,9 +8242,9 @@ type VideoRating struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoRating) MarshalJSON() ([]byte, error) {
+func (s VideoRating) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoRating
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoRecordingDetails: Recording information associated with the video.
@@ -8179,9 +8269,9 @@ type VideoRecordingDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoRecordingDetails) MarshalJSON() ([]byte, error) {
+func (s VideoRecordingDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoRecordingDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoSnippet: Basic details about a video, including title, description,
@@ -8241,9 +8331,9 @@ type VideoSnippet struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoSnippet) MarshalJSON() ([]byte, error) {
+func (s VideoSnippet) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoSnippet
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoStatistics: Statistics about the video, such as the number of times the
@@ -8275,14 +8365,17 @@ type VideoStatistics struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoStatistics) MarshalJSON() ([]byte, error) {
+func (s VideoStatistics) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoStatistics
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoStatus: Basic details about a video category, such as its localized
-// title. Next Id: 18
+// title. Next Id: 19
 type VideoStatus struct {
+	// ContainsSyntheticMedia: Indicates if the video contains altered or synthetic
+	// media.
+	ContainsSyntheticMedia bool `json:"containsSyntheticMedia,omitempty"`
 	// Embeddable: This value indicates if the video can be embedded on another
 	// website. @mutable youtube.videos.insert youtube.videos.update
 	Embeddable bool `json:"embeddable,omitempty"`
@@ -8347,22 +8440,22 @@ type VideoStatus struct {
 	//   "rejected" - Video has been rejected. See RejectionReason.
 	//   "deleted" - Video has been deleted.
 	UploadStatus string `json:"uploadStatus,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "Embeddable") to
+	// ForceSendFields is a list of field names (e.g. "ContainsSyntheticMedia") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Embeddable") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "ContainsSyntheticMedia") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoStatus) MarshalJSON() ([]byte, error) {
+func (s VideoStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoSuggestions: Specifies suggestions on how to improve video content,
@@ -8452,12 +8545,12 @@ type VideoSuggestions struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoSuggestions) MarshalJSON() ([]byte, error) {
+func (s VideoSuggestions) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoSuggestions
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// VideoSuggestionsTagSuggestion: A single tag suggestion with it's relevance
+// VideoSuggestionsTagSuggestion: A single tag suggestion with its relevance
 // information.
 type VideoSuggestionsTagSuggestion struct {
 	// CategoryRestricts: A set of video categories for which the tag is relevant.
@@ -8481,9 +8574,9 @@ type VideoSuggestionsTagSuggestion struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoSuggestionsTagSuggestion) MarshalJSON() ([]byte, error) {
+func (s VideoSuggestionsTagSuggestion) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoSuggestionsTagSuggestion
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // VideoTopicDetails: Freebase topic information related to the video.
@@ -8515,9 +8608,42 @@ type VideoTopicDetails struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *VideoTopicDetails) MarshalJSON() ([]byte, error) {
+func (s VideoTopicDetails) MarshalJSON() ([]byte, error) {
 	type NoMethod VideoTopicDetails
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// VideoTrainability: Specifies who is allowed to train on the video.
+type VideoTrainability struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+	// Kind: Identifies what kind of resource this is. Value: the fixed string
+	// "youtube#videoTrainability".
+	Kind string `json:"kind,omitempty"`
+	// Permitted: Specifies who is allowed to train on the video. Valid values are:
+	// - a single string "all" - a single string "none" - a list of allowed parties
+	Permitted []string `json:"permitted,omitempty"`
+	// VideoId: The ID of the video.
+	VideoId string `json:"videoId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "Etag") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Etag") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s VideoTrainability) MarshalJSON() ([]byte, error) {
+	type NoMethod VideoTrainability
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // WatchSettings: Branding properties for the watch. All deprecated.
@@ -8542,9 +8668,9 @@ type WatchSettings struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *WatchSettings) MarshalJSON() ([]byte, error) {
+func (s WatchSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod WatchSettings
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type AbuseReportsInsertCall struct {
@@ -8592,8 +8718,7 @@ func (c *AbuseReportsInsertCall) Header() http.Header {
 
 func (c *AbuseReportsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.abusereport)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.abusereport)
 	if err != nil {
 		return nil, err
 	}
@@ -8606,6 +8731,7 @@ func (c *AbuseReportsInsertCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.abuseReports.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -8640,9 +8766,11 @@ func (c *AbuseReportsInsertCall) Do(opts ...googleapi.CallOption) (*AbuseReport,
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.abuseReports.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -8759,16 +8887,16 @@ func (c *ActivitiesListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/activities")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.activities.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -8804,9 +8932,11 @@ func (c *ActivitiesListCall) Do(opts ...googleapi.CallOption) (*ActivityListResp
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.activities.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -8895,16 +9025,16 @@ func (c *CaptionsDeleteCall) Header() http.Header {
 
 func (c *CaptionsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/captions")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.captions.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -8919,6 +9049,7 @@ func (c *CaptionsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.captions.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -9013,12 +9144,11 @@ func (c *CaptionsDownloadCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/captions/{id}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -9026,6 +9156,7 @@ func (c *CaptionsDownloadCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"id": c.id,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.captions.download", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -9056,6 +9187,7 @@ func (c *CaptionsDownloadCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.captions.download", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -9172,8 +9304,7 @@ func (c *CaptionsInsertCall) Header() http.Header {
 
 func (c *CaptionsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.caption)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.caption)
 	if err != nil {
 		return nil, err
 	}
@@ -9184,19 +9315,16 @@ func (c *CaptionsInsertCall) doRequest(alt string) (*http.Response, error) {
 		urls = googleapi.ResolveRelative(c.s.BasePath, "/upload/youtube/v3/captions")
 		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	if body == nil {
-		body = new(bytes.Buffer)
-		reqHeaders.Set("Content-Type", "application/json")
-	}
-	body, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	newBody, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
 	defer cleanup()
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, newBody)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
 	req.GetBody = getBody
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.captions.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -9248,9 +9376,11 @@ func (c *CaptionsInsertCall) Do(opts ...googleapi.CallOption) (*Caption, error) 
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.captions.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -9341,16 +9471,16 @@ func (c *CaptionsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/captions")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.captions.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -9386,9 +9516,11 @@ func (c *CaptionsListCall) Do(opts ...googleapi.CallOption) (*CaptionListRespons
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.captions.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -9506,8 +9638,7 @@ func (c *CaptionsUpdateCall) Header() http.Header {
 
 func (c *CaptionsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.caption)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.caption)
 	if err != nil {
 		return nil, err
 	}
@@ -9518,19 +9649,16 @@ func (c *CaptionsUpdateCall) doRequest(alt string) (*http.Response, error) {
 		urls = googleapi.ResolveRelative(c.s.BasePath, "/upload/youtube/v3/captions")
 		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	if body == nil {
-		body = new(bytes.Buffer)
-		reqHeaders.Set("Content-Type", "application/json")
-	}
-	body, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	newBody, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
 	defer cleanup()
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, newBody)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
 	req.GetBody = getBody
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.captions.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -9582,9 +9710,11 @@ func (c *CaptionsUpdateCall) Do(opts ...googleapi.CallOption) (*Caption, error) 
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.captions.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -9712,8 +9842,7 @@ func (c *ChannelBannersInsertCall) Header() http.Header {
 
 func (c *ChannelBannersInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channelbannerresource)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.channelbannerresource)
 	if err != nil {
 		return nil, err
 	}
@@ -9724,19 +9853,16 @@ func (c *ChannelBannersInsertCall) doRequest(alt string) (*http.Response, error)
 		urls = googleapi.ResolveRelative(c.s.BasePath, "/upload/youtube/v3/channelBanners/insert")
 		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	if body == nil {
-		body = new(bytes.Buffer)
-		reqHeaders.Set("Content-Type", "application/json")
-	}
-	body, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	newBody, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
 	defer cleanup()
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, newBody)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
 	req.GetBody = getBody
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.channelBanners.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -9789,9 +9915,11 @@ func (c *ChannelBannersInsertCall) Do(opts ...googleapi.CallOption) (*ChannelBan
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.channelBanners.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -9852,16 +9980,16 @@ func (c *ChannelSectionsDeleteCall) Header() http.Header {
 
 func (c *ChannelSectionsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/channelSections")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.channelSections.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -9876,6 +10004,7 @@ func (c *ChannelSectionsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.channelSections.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -9963,8 +10092,7 @@ func (c *ChannelSectionsInsertCall) Header() http.Header {
 
 func (c *ChannelSectionsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channelsection)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.channelsection)
 	if err != nil {
 		return nil, err
 	}
@@ -9977,6 +10105,7 @@ func (c *ChannelSectionsInsertCall) doRequest(alt string) (*http.Response, error
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.channelSections.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -10011,9 +10140,11 @@ func (c *ChannelSectionsInsertCall) Do(opts ...googleapi.CallOption) (*ChannelSe
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.channelSections.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -10121,16 +10252,16 @@ func (c *ChannelSectionsListCall) doRequest(alt string) (*http.Response, error) 
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/channelSections")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.channelSections.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -10166,9 +10297,11 @@ func (c *ChannelSectionsListCall) Do(opts ...googleapi.CallOption) (*ChannelSect
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.channelSections.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -10234,8 +10367,7 @@ func (c *ChannelSectionsUpdateCall) Header() http.Header {
 
 func (c *ChannelSectionsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channelsection)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.channelsection)
 	if err != nil {
 		return nil, err
 	}
@@ -10248,6 +10380,7 @@ func (c *ChannelSectionsUpdateCall) doRequest(alt string) (*http.Response, error
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.channelSections.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -10282,9 +10415,11 @@ func (c *ChannelSectionsUpdateCall) Do(opts ...googleapi.CallOption) (*ChannelSe
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.channelSections.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -10440,16 +10575,16 @@ func (c *ChannelsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/channels")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.channels.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -10485,9 +10620,11 @@ func (c *ChannelsListCall) Do(opts ...googleapi.CallOption) (*ChannelListRespons
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.channels.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -10576,8 +10713,7 @@ func (c *ChannelsUpdateCall) Header() http.Header {
 
 func (c *ChannelsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channel)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.channel)
 	if err != nil {
 		return nil, err
 	}
@@ -10590,6 +10726,7 @@ func (c *ChannelsUpdateCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.channels.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -10624,9 +10761,11 @@ func (c *ChannelsUpdateCall) Do(opts ...googleapi.CallOption) (*Channel, error) 
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.channels.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -10675,8 +10814,7 @@ func (c *CommentThreadsInsertCall) Header() http.Header {
 
 func (c *CommentThreadsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.commentthread)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.commentthread)
 	if err != nil {
 		return nil, err
 	}
@@ -10689,6 +10827,7 @@ func (c *CommentThreadsInsertCall) doRequest(alt string) (*http.Response, error)
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.commentThreads.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -10723,9 +10862,11 @@ func (c *CommentThreadsInsertCall) Do(opts ...googleapi.CallOption) (*CommentThr
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.commentThreads.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -10882,16 +11023,16 @@ func (c *CommentThreadsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/commentThreads")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.commentThreads.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -10927,9 +11068,11 @@ func (c *CommentThreadsListCall) Do(opts ...googleapi.CallOption) (*CommentThrea
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.commentThreads.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -10995,16 +11138,16 @@ func (c *CommentsDeleteCall) Header() http.Header {
 
 func (c *CommentsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/comments")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.comments.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -11019,6 +11162,7 @@ func (c *CommentsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.comments.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -11067,8 +11211,7 @@ func (c *CommentsInsertCall) Header() http.Header {
 
 func (c *CommentsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.comment)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.comment)
 	if err != nil {
 		return nil, err
 	}
@@ -11081,6 +11224,7 @@ func (c *CommentsInsertCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.comments.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -11115,9 +11259,11 @@ func (c *CommentsInsertCall) Do(opts ...googleapi.CallOption) (*Comment, error) 
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.comments.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -11224,16 +11370,16 @@ func (c *CommentsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/comments")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.comments.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -11269,9 +11415,11 @@ func (c *CommentsListCall) Do(opts ...googleapi.CallOption) (*CommentListRespons
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.comments.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -11338,16 +11486,16 @@ func (c *CommentsMarkAsSpamCall) Header() http.Header {
 
 func (c *CommentsMarkAsSpamCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/comments/markAsSpam")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.comments.markAsSpam", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -11362,6 +11510,7 @@ func (c *CommentsMarkAsSpamCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.comments.markAsSpam", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -11420,16 +11569,16 @@ func (c *CommentsSetModerationStatusCall) Header() http.Header {
 
 func (c *CommentsSetModerationStatusCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/comments/setModerationStatus")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.comments.setModerationStatus", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -11444,6 +11593,7 @@ func (c *CommentsSetModerationStatusCall) Do(opts ...googleapi.CallOption) error
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.comments.setModerationStatus", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -11493,8 +11643,7 @@ func (c *CommentsUpdateCall) Header() http.Header {
 
 func (c *CommentsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.comment)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.comment)
 	if err != nil {
 		return nil, err
 	}
@@ -11507,6 +11656,7 @@ func (c *CommentsUpdateCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.comments.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -11541,9 +11691,11 @@ func (c *CommentsUpdateCall) Do(opts ...googleapi.CallOption) (*Comment, error) 
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.comments.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -11607,16 +11759,16 @@ func (c *I18nLanguagesListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/i18nLanguages")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.i18nLanguages.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -11652,9 +11804,11 @@ func (c *I18nLanguagesListCall) Do(opts ...googleapi.CallOption) (*I18nLanguageL
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.i18nLanguages.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -11718,16 +11872,16 @@ func (c *I18nRegionsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/i18nRegions")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.i18nRegions.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -11763,9 +11917,11 @@ func (c *I18nRegionsListCall) Do(opts ...googleapi.CallOption) (*I18nRegionListR
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.i18nRegions.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -11860,16 +12016,16 @@ func (c *LiveBroadcastsBindCall) Header() http.Header {
 
 func (c *LiveBroadcastsBindCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveBroadcasts/bind")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.bind", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -11904,9 +12060,11 @@ func (c *LiveBroadcastsBindCall) Do(opts ...googleapi.CallOption) (*LiveBroadcas
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.bind", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -11989,16 +12147,16 @@ func (c *LiveBroadcastsDeleteCall) Header() http.Header {
 
 func (c *LiveBroadcastsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveBroadcasts")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -12013,6 +12171,7 @@ func (c *LiveBroadcastsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -12101,8 +12260,7 @@ func (c *LiveBroadcastsInsertCall) Header() http.Header {
 
 func (c *LiveBroadcastsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livebroadcast)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.livebroadcast)
 	if err != nil {
 		return nil, err
 	}
@@ -12115,6 +12273,7 @@ func (c *LiveBroadcastsInsertCall) doRequest(alt string) (*http.Response, error)
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -12149,9 +12308,11 @@ func (c *LiveBroadcastsInsertCall) Do(opts ...googleapi.CallOption) (*LiveBroadc
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -12249,8 +12410,7 @@ func (c *LiveBroadcastsInsertCuepointCall) Header() http.Header {
 
 func (c *LiveBroadcastsInsertCuepointCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.cuepoint)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.cuepoint)
 	if err != nil {
 		return nil, err
 	}
@@ -12263,6 +12423,7 @@ func (c *LiveBroadcastsInsertCuepointCall) doRequest(alt string) (*http.Response
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.insertCuepoint", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -12297,9 +12458,11 @@ func (c *LiveBroadcastsInsertCuepointCall) Do(opts ...googleapi.CallOption) (*Cu
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.insertCuepoint", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -12456,16 +12619,16 @@ func (c *LiveBroadcastsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveBroadcasts")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -12501,9 +12664,11 @@ func (c *LiveBroadcastsListCall) Do(opts ...googleapi.CallOption) (*LiveBroadcas
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -12614,16 +12779,16 @@ func (c *LiveBroadcastsTransitionCall) Header() http.Header {
 
 func (c *LiveBroadcastsTransitionCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveBroadcasts/transition")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.transition", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -12658,9 +12823,11 @@ func (c *LiveBroadcastsTransitionCall) Do(opts ...googleapi.CallOption) (*LiveBr
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.transition", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -12757,8 +12924,7 @@ func (c *LiveBroadcastsUpdateCall) Header() http.Header {
 
 func (c *LiveBroadcastsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livebroadcast)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.livebroadcast)
 	if err != nil {
 		return nil, err
 	}
@@ -12771,6 +12937,7 @@ func (c *LiveBroadcastsUpdateCall) doRequest(alt string) (*http.Response, error)
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -12805,9 +12972,11 @@ func (c *LiveBroadcastsUpdateCall) Do(opts ...googleapi.CallOption) (*LiveBroadc
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveBroadcasts.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -12852,16 +13021,16 @@ func (c *LiveChatBansDeleteCall) Header() http.Header {
 
 func (c *LiveChatBansDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveChat/bans")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveChatBans.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -12876,6 +13045,7 @@ func (c *LiveChatBansDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveChatBans.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -12925,8 +13095,7 @@ func (c *LiveChatBansInsertCall) Header() http.Header {
 
 func (c *LiveChatBansInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livechatban)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.livechatban)
 	if err != nil {
 		return nil, err
 	}
@@ -12939,6 +13108,7 @@ func (c *LiveChatBansInsertCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveChatBans.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -12973,9 +13143,11 @@ func (c *LiveChatBansInsertCall) Do(opts ...googleapi.CallOption) (*LiveChatBan,
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveChatBans.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -13020,16 +13192,16 @@ func (c *LiveChatMessagesDeleteCall) Header() http.Header {
 
 func (c *LiveChatMessagesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveChat/messages")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveChatMessages.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -13044,6 +13216,7 @@ func (c *LiveChatMessagesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveChatMessages.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -13092,8 +13265,7 @@ func (c *LiveChatMessagesInsertCall) Header() http.Header {
 
 func (c *LiveChatMessagesInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livechatmessage)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.livechatmessage)
 	if err != nil {
 		return nil, err
 	}
@@ -13106,6 +13278,7 @@ func (c *LiveChatMessagesInsertCall) doRequest(alt string) (*http.Response, erro
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveChatMessages.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -13141,9 +13314,11 @@ func (c *LiveChatMessagesInsertCall) Do(opts ...googleapi.CallOption) (*LiveChat
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveChatMessages.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -13159,7 +13334,8 @@ type LiveChatMessagesListCall struct {
 //
 //   - liveChatId: The id of the live chat for which comments should be returned.
 //   - part: The *part* parameter specifies the liveChatComment resource parts
-//     that the API response will include. Supported values are id and snippet.
+//     that the API response will include. Supported values are id, snippet, and
+//     authorDetails.
 func (r *LiveChatMessagesService) List(liveChatId string, part []string) *LiveChatMessagesListCall {
 	c := &LiveChatMessagesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.urlParams_.Set("liveChatId", liveChatId)
@@ -13176,7 +13352,7 @@ func (c *LiveChatMessagesListCall) Hl(hl string) *LiveChatMessagesListCall {
 
 // MaxResults sets the optional parameter "maxResults": The *maxResults*
 // parameter specifies the maximum number of items that should be returned in
-// the result set.
+// the result set. Not used in the streaming RPC.
 func (c *LiveChatMessagesListCall) MaxResults(maxResults int64) *LiveChatMessagesListCall {
 	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
@@ -13234,16 +13410,16 @@ func (c *LiveChatMessagesListCall) doRequest(alt string) (*http.Response, error)
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveChat/messages")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveChatMessages.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -13279,9 +13455,11 @@ func (c *LiveChatMessagesListCall) Do(opts ...googleapi.CallOption) (*LiveChatMe
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveChatMessages.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -13363,16 +13541,16 @@ func (c *LiveChatMessagesTransitionCall) Header() http.Header {
 
 func (c *LiveChatMessagesTransitionCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveChat/messages/transition")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveChatMessages.transition", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -13408,9 +13586,11 @@ func (c *LiveChatMessagesTransitionCall) Do(opts ...googleapi.CallOption) (*Live
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveChatMessages.transition", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -13455,16 +13635,16 @@ func (c *LiveChatModeratorsDeleteCall) Header() http.Header {
 
 func (c *LiveChatModeratorsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveChat/moderators")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveChatModerators.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -13479,6 +13659,7 @@ func (c *LiveChatModeratorsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveChatModerators.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -13528,8 +13709,7 @@ func (c *LiveChatModeratorsInsertCall) Header() http.Header {
 
 func (c *LiveChatModeratorsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livechatmoderator)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.livechatmoderator)
 	if err != nil {
 		return nil, err
 	}
@@ -13542,6 +13722,7 @@ func (c *LiveChatModeratorsInsertCall) doRequest(alt string) (*http.Response, er
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveChatModerators.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -13577,9 +13758,11 @@ func (c *LiveChatModeratorsInsertCall) Do(opts ...googleapi.CallOption) (*LiveCh
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveChatModerators.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -13657,16 +13840,16 @@ func (c *LiveChatModeratorsListCall) doRequest(alt string) (*http.Response, erro
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveChat/moderators")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveChatModerators.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -13702,9 +13885,11 @@ func (c *LiveChatModeratorsListCall) Do(opts ...googleapi.CallOption) (*LiveChat
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveChatModerators.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -13808,16 +13993,16 @@ func (c *LiveStreamsDeleteCall) Header() http.Header {
 
 func (c *LiveStreamsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveStreams")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveStreams.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -13832,6 +14017,7 @@ func (c *LiveStreamsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveStreams.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -13920,8 +14106,7 @@ func (c *LiveStreamsInsertCall) Header() http.Header {
 
 func (c *LiveStreamsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livestream)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.livestream)
 	if err != nil {
 		return nil, err
 	}
@@ -13934,6 +14119,7 @@ func (c *LiveStreamsInsertCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveStreams.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -13968,9 +14154,11 @@ func (c *LiveStreamsInsertCall) Do(opts ...googleapi.CallOption) (*LiveStream, e
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveStreams.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -14098,16 +14286,16 @@ func (c *LiveStreamsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveStreams")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveStreams.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -14143,9 +14331,11 @@ func (c *LiveStreamsListCall) Do(opts ...googleapi.CallOption) (*LiveStreamListR
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveStreams.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -14258,8 +14448,7 @@ func (c *LiveStreamsUpdateCall) Header() http.Header {
 
 func (c *LiveStreamsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livestream)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.livestream)
 	if err != nil {
 		return nil, err
 	}
@@ -14272,6 +14461,7 @@ func (c *LiveStreamsUpdateCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.liveStreams.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -14306,9 +14496,11 @@ func (c *LiveStreamsUpdateCall) Do(opts ...googleapi.CallOption) (*LiveStream, e
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.liveStreams.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -14417,16 +14609,16 @@ func (c *MembersListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/members")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.members.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -14462,9 +14654,11 @@ func (c *MembersListCall) Do(opts ...googleapi.CallOption) (*MemberListResponse,
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.members.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -14544,16 +14738,16 @@ func (c *MembershipsLevelsListCall) doRequest(alt string) (*http.Response, error
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/membershipsLevels")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.membershipsLevels.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -14589,9 +14783,11 @@ func (c *MembershipsLevelsListCall) Do(opts ...googleapi.CallOption) (*Membershi
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.membershipsLevels.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -14656,16 +14852,16 @@ func (c *PlaylistImagesDeleteCall) Header() http.Header {
 
 func (c *PlaylistImagesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/playlistImages")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlistImages.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -14680,6 +14876,7 @@ func (c *PlaylistImagesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlistImages.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -14807,8 +15004,7 @@ func (c *PlaylistImagesInsertCall) Header() http.Header {
 
 func (c *PlaylistImagesInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlistimage)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.playlistimage)
 	if err != nil {
 		return nil, err
 	}
@@ -14819,19 +15015,16 @@ func (c *PlaylistImagesInsertCall) doRequest(alt string) (*http.Response, error)
 		urls = googleapi.ResolveRelative(c.s.BasePath, "/upload/youtube/v3/playlistImages")
 		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	if body == nil {
-		body = new(bytes.Buffer)
-		reqHeaders.Set("Content-Type", "application/json")
-	}
-	body, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	newBody, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
 	defer cleanup()
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, newBody)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
 	req.GetBody = getBody
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlistImages.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -14883,9 +15076,11 @@ func (c *PlaylistImagesInsertCall) Do(opts ...googleapi.CallOption) (*PlaylistIm
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlistImages.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -15011,16 +15206,16 @@ func (c *PlaylistImagesListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/playlistImages")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlistImages.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -15056,9 +15251,11 @@ func (c *PlaylistImagesListCall) Do(opts ...googleapi.CallOption) (*PlaylistImag
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlistImages.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -15185,8 +15382,7 @@ func (c *PlaylistImagesUpdateCall) Header() http.Header {
 
 func (c *PlaylistImagesUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlistimage)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.playlistimage)
 	if err != nil {
 		return nil, err
 	}
@@ -15197,19 +15393,16 @@ func (c *PlaylistImagesUpdateCall) doRequest(alt string) (*http.Response, error)
 		urls = googleapi.ResolveRelative(c.s.BasePath, "/upload/youtube/v3/playlistImages")
 		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	if body == nil {
-		body = new(bytes.Buffer)
-		reqHeaders.Set("Content-Type", "application/json")
-	}
-	body, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	newBody, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
 	defer cleanup()
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("PUT", urls, body)
+	req, err := http.NewRequest("PUT", urls, newBody)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
 	req.GetBody = getBody
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlistImages.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -15261,9 +15454,11 @@ func (c *PlaylistImagesUpdateCall) Do(opts ...googleapi.CallOption) (*PlaylistIm
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlistImages.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -15324,16 +15519,16 @@ func (c *PlaylistItemsDeleteCall) Header() http.Header {
 
 func (c *PlaylistItemsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/playlistItems")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlistItems.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -15348,6 +15543,7 @@ func (c *PlaylistItemsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlistItems.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -15412,8 +15608,7 @@ func (c *PlaylistItemsInsertCall) Header() http.Header {
 
 func (c *PlaylistItemsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlistitem)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.playlistitem)
 	if err != nil {
 		return nil, err
 	}
@@ -15426,6 +15621,7 @@ func (c *PlaylistItemsInsertCall) doRequest(alt string) (*http.Response, error) 
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlistItems.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -15460,9 +15656,11 @@ func (c *PlaylistItemsInsertCall) Do(opts ...googleapi.CallOption) (*PlaylistIte
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlistItems.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -15579,16 +15777,16 @@ func (c *PlaylistItemsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/playlistItems")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlistItems.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -15624,9 +15822,11 @@ func (c *PlaylistItemsListCall) Do(opts ...googleapi.CallOption) (*PlaylistItemL
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlistItems.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -15722,8 +15922,7 @@ func (c *PlaylistItemsUpdateCall) Header() http.Header {
 
 func (c *PlaylistItemsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlistitem)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.playlistitem)
 	if err != nil {
 		return nil, err
 	}
@@ -15736,6 +15935,7 @@ func (c *PlaylistItemsUpdateCall) doRequest(alt string) (*http.Response, error) 
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlistItems.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -15770,9 +15970,11 @@ func (c *PlaylistItemsUpdateCall) Do(opts ...googleapi.CallOption) (*PlaylistIte
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlistItems.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -15833,16 +16035,16 @@ func (c *PlaylistsDeleteCall) Header() http.Header {
 
 func (c *PlaylistsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/playlists")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlists.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -15857,6 +16059,7 @@ func (c *PlaylistsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlists.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -15943,8 +16146,7 @@ func (c *PlaylistsInsertCall) Header() http.Header {
 
 func (c *PlaylistsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlist)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.playlist)
 	if err != nil {
 		return nil, err
 	}
@@ -15957,6 +16159,7 @@ func (c *PlaylistsInsertCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlists.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -15991,9 +16194,11 @@ func (c *PlaylistsInsertCall) Do(opts ...googleapi.CallOption) (*Playlist, error
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlists.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -16138,16 +16343,16 @@ func (c *PlaylistsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/playlists")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlists.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -16183,9 +16388,11 @@ func (c *PlaylistsListCall) Do(opts ...googleapi.CallOption) (*PlaylistListRespo
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlists.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -16277,8 +16484,7 @@ func (c *PlaylistsUpdateCall) Header() http.Header {
 
 func (c *PlaylistsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlist)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.playlist)
 	if err != nil {
 		return nil, err
 	}
@@ -16291,6 +16497,7 @@ func (c *PlaylistsUpdateCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.playlists.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -16325,9 +16532,11 @@ func (c *PlaylistsUpdateCall) Do(opts ...googleapi.CallOption) (*Playlist, error
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.playlists.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -16727,16 +16936,16 @@ func (c *SearchListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/search")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.search.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -16772,9 +16981,11 @@ func (c *SearchListCall) Do(opts ...googleapi.CallOption) (*SearchListResponse, 
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.search.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -16840,16 +17051,16 @@ func (c *SubscriptionsDeleteCall) Header() http.Header {
 
 func (c *SubscriptionsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/subscriptions")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.subscriptions.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -16864,6 +17075,7 @@ func (c *SubscriptionsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.subscriptions.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -16912,8 +17124,7 @@ func (c *SubscriptionsInsertCall) Header() http.Header {
 
 func (c *SubscriptionsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.subscription)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.subscription)
 	if err != nil {
 		return nil, err
 	}
@@ -16926,6 +17137,7 @@ func (c *SubscriptionsInsertCall) doRequest(alt string) (*http.Response, error) 
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.subscriptions.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -16960,9 +17172,11 @@ func (c *SubscriptionsInsertCall) Do(opts ...googleapi.CallOption) (*Subscriptio
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.subscriptions.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -17136,16 +17350,16 @@ func (c *SubscriptionsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/subscriptions")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.subscriptions.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -17181,9 +17395,11 @@ func (c *SubscriptionsListCall) Do(opts ...googleapi.CallOption) (*SubscriptionL
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.subscriptions.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -17287,16 +17503,16 @@ func (c *SuperChatEventsListCall) doRequest(alt string) (*http.Response, error) 
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/superChatEvents")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.superChatEvents.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -17332,9 +17548,11 @@ func (c *SuperChatEventsListCall) Do(opts ...googleapi.CallOption) (*SuperChatEv
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.superChatEvents.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -17408,8 +17626,7 @@ func (c *TestsInsertCall) Header() http.Header {
 
 func (c *TestsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.testitem)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.testitem)
 	if err != nil {
 		return nil, err
 	}
@@ -17422,6 +17639,7 @@ func (c *TestsInsertCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.tests.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -17456,9 +17674,11 @@ func (c *TestsInsertCall) Do(opts ...googleapi.CallOption) (*TestItem, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.tests.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -17519,16 +17739,16 @@ func (c *ThirdPartyLinksDeleteCall) Header() http.Header {
 
 func (c *ThirdPartyLinksDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/thirdPartyLinks")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.thirdPartyLinks.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -17543,6 +17763,7 @@ func (c *ThirdPartyLinksDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.thirdPartyLinks.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -17598,8 +17819,7 @@ func (c *ThirdPartyLinksInsertCall) Header() http.Header {
 
 func (c *ThirdPartyLinksInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.thirdpartylink)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.thirdpartylink)
 	if err != nil {
 		return nil, err
 	}
@@ -17612,6 +17832,7 @@ func (c *ThirdPartyLinksInsertCall) doRequest(alt string) (*http.Response, error
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.thirdPartyLinks.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -17646,9 +17867,11 @@ func (c *ThirdPartyLinksInsertCall) Do(opts ...googleapi.CallOption) (*ThirdPart
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.thirdPartyLinks.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -17736,16 +17959,16 @@ func (c *ThirdPartyLinksListCall) doRequest(alt string) (*http.Response, error) 
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/thirdPartyLinks")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.thirdPartyLinks.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -17781,9 +18004,11 @@ func (c *ThirdPartyLinksListCall) Do(opts ...googleapi.CallOption) (*ThirdPartyL
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.thirdPartyLinks.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -17839,8 +18064,7 @@ func (c *ThirdPartyLinksUpdateCall) Header() http.Header {
 
 func (c *ThirdPartyLinksUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.thirdpartylink)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.thirdpartylink)
 	if err != nil {
 		return nil, err
 	}
@@ -17853,6 +18077,7 @@ func (c *ThirdPartyLinksUpdateCall) doRequest(alt string) (*http.Response, error
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.thirdPartyLinks.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -17887,9 +18112,11 @@ func (c *ThirdPartyLinksUpdateCall) Do(opts ...googleapi.CallOption) (*ThirdPart
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.thirdPartyLinks.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -17991,8 +18218,7 @@ func (c *ThumbnailsSetCall) Header() http.Header {
 }
 
 func (c *ThumbnailsSetCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/thumbnails/set")
@@ -18000,19 +18226,16 @@ func (c *ThumbnailsSetCall) doRequest(alt string) (*http.Response, error) {
 		urls = googleapi.ResolveRelative(c.s.BasePath, "/upload/youtube/v3/thumbnails/set")
 		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	if body == nil {
-		body = new(bytes.Buffer)
-		reqHeaders.Set("Content-Type", "application/json")
-	}
-	body, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	newBody, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, nil)
 	defer cleanup()
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, newBody)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
 	req.GetBody = getBody
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.thumbnails.set", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -18065,9 +18288,11 @@ func (c *ThumbnailsSetCall) Do(opts ...googleapi.CallOption) (*ThumbnailSetRespo
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.thumbnails.set", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -18131,16 +18356,16 @@ func (c *VideoAbuseReportReasonsListCall) doRequest(alt string) (*http.Response,
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/videoAbuseReportReasons")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videoAbuseReportReasons.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -18176,9 +18401,11 @@ func (c *VideoAbuseReportReasonsListCall) Do(opts ...googleapi.CallOption) (*Vid
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videoAbuseReportReasons.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -18255,16 +18482,16 @@ func (c *VideoCategoriesListCall) doRequest(alt string) (*http.Response, error) 
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/videoCategories")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videoCategories.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -18300,9 +18527,120 @@ func (c *VideoCategoriesListCall) Do(opts ...googleapi.CallOption) (*VideoCatego
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videoCategories.list", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type VideoTrainabilityGetCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Returns the trainability status of a video.
+func (r *VideoTrainabilityService) Get() *VideoTrainabilityGetCall {
+	c := &VideoTrainabilityGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	return c
+}
+
+// Id sets the optional parameter "id": The ID of the video to retrieve.
+func (c *VideoTrainabilityGetCall) Id(id string) *VideoTrainabilityGetCall {
+	c.urlParams_.Set("id", id)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *VideoTrainabilityGetCall) Fields(s ...googleapi.Field) *VideoTrainabilityGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *VideoTrainabilityGetCall) IfNoneMatch(entityTag string) *VideoTrainabilityGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *VideoTrainabilityGetCall) Context(ctx context.Context) *VideoTrainabilityGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *VideoTrainabilityGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VideoTrainabilityGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/videoTrainability")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videoTrainability.get", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videoTrainability.get" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *VideoTrainability.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *VideoTrainabilityGetCall) Do(opts ...googleapi.CallOption) (*VideoTrainability, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &VideoTrainability{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videoTrainability.get", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -18363,16 +18701,16 @@ func (c *VideosDeleteCall) Header() http.Header {
 
 func (c *VideosDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/videos")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videos.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -18387,6 +18725,7 @@ func (c *VideosDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videos.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -18460,16 +18799,16 @@ func (c *VideosGetRatingCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/videos/getRating")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videos.getRating", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -18505,9 +18844,11 @@ func (c *VideosGetRatingCall) Do(opts ...googleapi.CallOption) (*VideoGetRatingR
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videos.getRating", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -18660,8 +19001,7 @@ func (c *VideosInsertCall) Header() http.Header {
 
 func (c *VideosInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.video)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.video)
 	if err != nil {
 		return nil, err
 	}
@@ -18672,19 +19012,16 @@ func (c *VideosInsertCall) doRequest(alt string) (*http.Response, error) {
 		urls = googleapi.ResolveRelative(c.s.BasePath, "/upload/youtube/v3/videos")
 		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	if body == nil {
-		body = new(bytes.Buffer)
-		reqHeaders.Set("Content-Type", "application/json")
-	}
-	body, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	newBody, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
 	defer cleanup()
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, newBody)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
 	req.GetBody = getBody
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videos.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -18736,9 +19073,11 @@ func (c *VideosInsertCall) Do(opts ...googleapi.CallOption) (*Video, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videos.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -18916,16 +19255,16 @@ func (c *VideosListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/videos")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videos.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -18961,9 +19300,11 @@ func (c *VideosListCall) Do(opts ...googleapi.CallOption) (*VideoListResponse, e
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videos.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -19032,16 +19373,16 @@ func (c *VideosRateCall) Header() http.Header {
 
 func (c *VideosRateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/videos/rate")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videos.rate", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -19056,6 +19397,7 @@ func (c *VideosRateCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videos.rate", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -19115,8 +19457,7 @@ func (c *VideosReportAbuseCall) Header() http.Header {
 
 func (c *VideosReportAbuseCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.videoabusereport)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.videoabusereport)
 	if err != nil {
 		return nil, err
 	}
@@ -19129,6 +19470,7 @@ func (c *VideosReportAbuseCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videos.reportAbuse", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -19143,6 +19485,7 @@ func (c *VideosReportAbuseCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videos.reportAbuse", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -19221,8 +19564,7 @@ func (c *VideosUpdateCall) Header() http.Header {
 
 func (c *VideosUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.video)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.video)
 	if err != nil {
 		return nil, err
 	}
@@ -19235,6 +19577,7 @@ func (c *VideosUpdateCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.videos.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -19269,9 +19612,11 @@ func (c *VideosUpdateCall) Do(opts ...googleapi.CallOption) (*Video, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.videos.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -19373,8 +19718,7 @@ func (c *WatermarksSetCall) Header() http.Header {
 
 func (c *WatermarksSetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.invideobranding)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.invideobranding)
 	if err != nil {
 		return nil, err
 	}
@@ -19385,19 +19729,16 @@ func (c *WatermarksSetCall) doRequest(alt string) (*http.Response, error) {
 		urls = googleapi.ResolveRelative(c.s.BasePath, "/upload/youtube/v3/watermarks/set")
 		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	if body == nil {
-		body = new(bytes.Buffer)
-		reqHeaders.Set("Content-Type", "application/json")
-	}
-	body, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	newBody, getBody, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
 	defer cleanup()
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, newBody)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
 	req.GetBody = getBody
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.watermarks.set", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -19429,6 +19770,7 @@ func (c *WatermarksSetCall) Do(opts ...googleapi.CallOption) error {
 			return gensupport.WrapError(err)
 		}
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.watermarks.set", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -19489,16 +19831,16 @@ func (c *WatermarksUnsetCall) Header() http.Header {
 
 func (c *WatermarksUnsetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/watermarks/unset")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.watermarks.unset", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -19513,6 +19855,7 @@ func (c *WatermarksUnsetCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.watermarks.unset", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -19566,8 +19909,7 @@ func (c *YoutubeV3UpdateCommentThreadsCall) Header() http.Header {
 
 func (c *YoutubeV3UpdateCommentThreadsCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.commentthread)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.commentthread)
 	if err != nil {
 		return nil, err
 	}
@@ -19580,6 +19922,7 @@ func (c *YoutubeV3UpdateCommentThreadsCall) doRequest(alt string) (*http.Respons
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.youtube.v3.updateCommentThreads", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -19614,8 +19957,10 @@ func (c *YoutubeV3UpdateCommentThreadsCall) Do(opts ...googleapi.CallOption) (*C
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.youtube.v3.updateCommentThreads", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }

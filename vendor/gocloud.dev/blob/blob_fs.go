@@ -16,17 +16,21 @@ package blob
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"io/fs"
 	"path/filepath"
 	"time"
 
+	"gocloud.dev/gcerrors"
 	"gocloud.dev/internal/gcerr"
 )
 
 // Ensure that Bucket implements various io/fs interfaces.
-var _ = fs.FS(&Bucket{})
-var _ = fs.SubFS(&Bucket{})
+var (
+	_ = fs.FS(&Bucket{})
+	_ = fs.SubFS(&Bucket{})
+)
 
 // iofsFileInfo describes a single file in an io/fs.FS.
 // It implements fs.FileInfo and fs.DirEntry.
@@ -40,7 +44,7 @@ func (f *iofsFileInfo) Size() int64                { return f.lo.Size }
 func (f *iofsFileInfo) Mode() fs.FileMode          { return fs.ModeIrregular }
 func (f *iofsFileInfo) ModTime() time.Time         { return f.lo.ModTime }
 func (f *iofsFileInfo) IsDir() bool                { return false }
-func (f *iofsFileInfo) Sys() interface{}           { return f.lo }
+func (f *iofsFileInfo) Sys() any                   { return f.lo }
 func (f *iofsFileInfo) Info() (fs.FileInfo, error) { return f, nil }
 func (f *iofsFileInfo) Type() fs.FileMode          { return fs.ModeIrregular }
 
@@ -54,7 +58,7 @@ type iofsOpenFile struct {
 func (f *iofsOpenFile) Name() string               { return f.name }
 func (f *iofsOpenFile) Mode() fs.FileMode          { return fs.ModeIrregular }
 func (f *iofsOpenFile) IsDir() bool                { return false }
-func (f *iofsOpenFile) Sys() interface{}           { return f.r }
+func (f *iofsOpenFile) Sys() any                   { return f.r }
 func (f *iofsOpenFile) Stat() (fs.FileInfo, error) { return f, nil }
 
 // iofsDir describes a single directory in an io/fs.FS.
@@ -79,7 +83,7 @@ func (d *iofsDir) Mode() fs.FileMode          { return fs.ModeDir }
 func (d *iofsDir) Type() fs.FileMode          { return fs.ModeDir }
 func (d *iofsDir) ModTime() time.Time         { return time.Time{} }
 func (d *iofsDir) IsDir() bool                { return true }
-func (d *iofsDir) Sys() interface{}           { return d }
+func (d *iofsDir) Sys() any                   { return d }
 func (d *iofsDir) Info() (fs.FileInfo, error) { return d, nil }
 func (d *iofsDir) Stat() (fs.FileInfo, error) { return d, nil }
 func (d *iofsDir) Read([]byte) (int, error) {
@@ -154,17 +158,15 @@ func (d *iofsDir) openOnce() error {
 //
 // fn should return a context.Context and *ReaderOptions that can be used in
 // calls to List and NewReader on b. It may be called more than once.
+//
+// If SetIOFSCallback is never called, io.FS functions will use context.Background
+// and a default ReaderOptions.
 func (b *Bucket) SetIOFSCallback(fn func() (context.Context, *ReaderOptions)) {
 	b.ioFSCallback = fn
 }
 
 // Open implements fs.FS.Open (https://pkg.go.dev/io/fs#FS).
-//
-// SetIOFSCallback must be called prior to calling this function.
 func (b *Bucket) Open(path string) (fs.File, error) {
-	if b.ioFSCallback == nil {
-		return nil, gcerr.Newf(gcerr.InvalidArgument, nil, "blob: Open -- SetIOFSCallback must be called before Open")
-	}
 	if !fs.ValidPath(path) {
 		return nil, &fs.PathError{Op: "open", Path: path, Err: fs.ErrInvalid}
 	}
@@ -201,6 +203,13 @@ func (b *Bucket) Open(path string) (fs.File, error) {
 	// It's a file; open it and return a wrapper.
 	r, err := b.NewReader(ctx, path, readerOpts)
 	if err != nil {
+		code := gcerrors.Code(err)
+		switch code {
+		case gcerrors.NotFound:
+			err = fmt.Errorf("%w: %w", err, fs.ErrNotExist)
+		case gcerrors.PermissionDenied:
+			err = fmt.Errorf("%w: %w", err, fs.ErrPermission)
+		}
 		return nil, &fs.PathError{Op: "open", Path: path, Err: err}
 	}
 	return &iofsOpenFile{r, filepath.Base(path)}, nil
