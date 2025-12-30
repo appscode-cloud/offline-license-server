@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC.
+// Copyright 2025 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -62,11 +62,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/googleapis/gax-go/v2/internallog"
 	googleapi "google.golang.org/api/googleapi"
 	internal "google.golang.org/api/internal"
 	gensupport "google.golang.org/api/internal/gensupport"
@@ -90,6 +92,7 @@ var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
 var _ = internal.Version
+var _ = internallog.New
 
 const apiId = "calendar:v3"
 const apiName = "calendar"
@@ -103,11 +106,50 @@ const (
 	// using Google Calendar
 	CalendarScope = "https://www.googleapis.com/auth/calendar"
 
+	// See and change the sharing permissions of Google calendars you own
+	CalendarAclsScope = "https://www.googleapis.com/auth/calendar.acls"
+
+	// See the sharing permissions of Google calendars you own
+	CalendarAclsReadonlyScope = "https://www.googleapis.com/auth/calendar.acls.readonly"
+
+	// Make secondary Google calendars, and see, create, change, and delete events
+	// on them
+	CalendarAppCreatedScope = "https://www.googleapis.com/auth/calendar.app.created"
+
+	// See, add, and remove Google calendars you’re subscribed to
+	CalendarCalendarlistScope = "https://www.googleapis.com/auth/calendar.calendarlist"
+
+	// See the list of Google calendars you’re subscribed to
+	CalendarCalendarlistReadonlyScope = "https://www.googleapis.com/auth/calendar.calendarlist.readonly"
+
+	// See and change the properties of Google calendars you have access to, and
+	// create secondary calendars
+	CalendarCalendarsScope = "https://www.googleapis.com/auth/calendar.calendars"
+
+	// See the title, description, default time zone, and other properties of
+	// Google calendars you have access to
+	CalendarCalendarsReadonlyScope = "https://www.googleapis.com/auth/calendar.calendars.readonly"
+
 	// View and edit events on all your calendars
 	CalendarEventsScope = "https://www.googleapis.com/auth/calendar.events"
 
+	// See the availability on Google calendars you have access to
+	CalendarEventsFreebusyScope = "https://www.googleapis.com/auth/calendar.events.freebusy"
+
+	// See, create, change, and delete events on Google calendars you own
+	CalendarEventsOwnedScope = "https://www.googleapis.com/auth/calendar.events.owned"
+
+	// See the events on Google calendars you own
+	CalendarEventsOwnedReadonlyScope = "https://www.googleapis.com/auth/calendar.events.owned.readonly"
+
+	// See the events on public calendars
+	CalendarEventsPublicReadonlyScope = "https://www.googleapis.com/auth/calendar.events.public.readonly"
+
 	// View events on all your calendars
 	CalendarEventsReadonlyScope = "https://www.googleapis.com/auth/calendar.events.readonly"
+
+	// View your availability in your calendars
+	CalendarFreebusyScope = "https://www.googleapis.com/auth/calendar.freebusy"
 
 	// See and download any calendar you can access using your Google Calendar
 	CalendarReadonlyScope = "https://www.googleapis.com/auth/calendar.readonly"
@@ -120,8 +162,20 @@ const (
 func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, error) {
 	scopesOption := internaloption.WithDefaultScopes(
 		"https://www.googleapis.com/auth/calendar",
+		"https://www.googleapis.com/auth/calendar.acls",
+		"https://www.googleapis.com/auth/calendar.acls.readonly",
+		"https://www.googleapis.com/auth/calendar.app.created",
+		"https://www.googleapis.com/auth/calendar.calendarlist",
+		"https://www.googleapis.com/auth/calendar.calendarlist.readonly",
+		"https://www.googleapis.com/auth/calendar.calendars",
+		"https://www.googleapis.com/auth/calendar.calendars.readonly",
 		"https://www.googleapis.com/auth/calendar.events",
+		"https://www.googleapis.com/auth/calendar.events.freebusy",
+		"https://www.googleapis.com/auth/calendar.events.owned",
+		"https://www.googleapis.com/auth/calendar.events.owned.readonly",
+		"https://www.googleapis.com/auth/calendar.events.public.readonly",
 		"https://www.googleapis.com/auth/calendar.events.readonly",
+		"https://www.googleapis.com/auth/calendar.freebusy",
 		"https://www.googleapis.com/auth/calendar.readonly",
 		"https://www.googleapis.com/auth/calendar.settings.readonly",
 	)
@@ -134,7 +188,15 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	if err != nil {
 		return nil, err
 	}
-	s, err := New(client)
+	s := &Service{client: client, BasePath: basePath, logger: internaloption.GetLogger(opts)}
+	s.Acl = NewAclService(s)
+	s.CalendarList = NewCalendarListService(s)
+	s.Calendars = NewCalendarsService(s)
+	s.Channels = NewChannelsService(s)
+	s.Colors = NewColorsService(s)
+	s.Events = NewEventsService(s)
+	s.Freebusy = NewFreebusyService(s)
+	s.Settings = NewSettingsService(s)
 	if err != nil {
 		return nil, err
 	}
@@ -153,20 +215,12 @@ func New(client *http.Client) (*Service, error) {
 	if client == nil {
 		return nil, errors.New("client is nil")
 	}
-	s := &Service{client: client, BasePath: basePath}
-	s.Acl = NewAclService(s)
-	s.CalendarList = NewCalendarListService(s)
-	s.Calendars = NewCalendarsService(s)
-	s.Channels = NewChannelsService(s)
-	s.Colors = NewColorsService(s)
-	s.Events = NewEventsService(s)
-	s.Freebusy = NewFreebusyService(s)
-	s.Settings = NewSettingsService(s)
-	return s, nil
+	return NewService(context.TODO(), option.WithHTTPClient(client))
 }
 
 type Service struct {
 	client    *http.Client
+	logger    *slog.Logger
 	BasePath  string // API endpoint base URL
 	UserAgent string // optional additional User-Agent fragment
 
@@ -296,9 +350,9 @@ type Acl struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Acl) MarshalJSON() ([]byte, error) {
+func (s Acl) MarshalJSON() ([]byte, error) {
 	type NoMethod Acl
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type AclRule struct {
@@ -315,10 +369,10 @@ type AclRule struct {
 	// appear to users with reader access, but event details will be hidden.
 	// - "writer" - Provides read and write access to the calendar. Private events
 	// will appear to users with writer access, and event details will be visible.
-	//
+	// Provides read access to the calendar's ACLs.
 	// - "owner" - Provides ownership of the calendar. This role has all of the
-	// permissions of the writer role with the additional ability to see and
-	// manipulate ACLs.
+	// permissions of the writer role with the additional ability to manipulate
+	// ACLs.
 	Role string `json:"role,omitempty"`
 	// Scope: The extent to which calendar access is granted by this ACL rule.
 	Scope *AclRuleScope `json:"scope,omitempty"`
@@ -338,9 +392,9 @@ type AclRule struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *AclRule) MarshalJSON() ([]byte, error) {
+func (s AclRule) MarshalJSON() ([]byte, error) {
 	type NoMethod AclRule
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // AclRuleScope: The extent to which calendar access is granted by this ACL
@@ -369,9 +423,9 @@ type AclRuleScope struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *AclRuleScope) MarshalJSON() ([]byte, error) {
+func (s AclRuleScope) MarshalJSON() ([]byte, error) {
 	type NoMethod AclRuleScope
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Calendar struct {
@@ -410,9 +464,9 @@ type Calendar struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Calendar) MarshalJSON() ([]byte, error) {
+func (s Calendar) MarshalJSON() ([]byte, error) {
 	type NoMethod Calendar
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type CalendarList struct {
@@ -445,9 +499,9 @@ type CalendarList struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CalendarList) MarshalJSON() ([]byte, error) {
+func (s CalendarList) MarshalJSON() ([]byte, error) {
 	type NoMethod CalendarList
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type CalendarListEntry struct {
@@ -534,9 +588,9 @@ type CalendarListEntry struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CalendarListEntry) MarshalJSON() ([]byte, error) {
+func (s CalendarListEntry) MarshalJSON() ([]byte, error) {
 	type NoMethod CalendarListEntry
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CalendarListEntryNotificationSettings: The notifications that the
@@ -557,9 +611,9 @@ type CalendarListEntryNotificationSettings struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CalendarListEntryNotificationSettings) MarshalJSON() ([]byte, error) {
+func (s CalendarListEntryNotificationSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod CalendarListEntryNotificationSettings
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type CalendarNotification struct {
@@ -592,9 +646,9 @@ type CalendarNotification struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CalendarNotification) MarshalJSON() ([]byte, error) {
+func (s CalendarNotification) MarshalJSON() ([]byte, error) {
 	type NoMethod CalendarNotification
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Channel struct {
@@ -641,9 +695,9 @@ type Channel struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Channel) MarshalJSON() ([]byte, error) {
+func (s Channel) MarshalJSON() ([]byte, error) {
 	type NoMethod Channel
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ColorDefinition struct {
@@ -665,9 +719,9 @@ type ColorDefinition struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ColorDefinition) MarshalJSON() ([]byte, error) {
+func (s ColorDefinition) MarshalJSON() ([]byte, error) {
 	type NoMethod ColorDefinition
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Colors struct {
@@ -700,9 +754,9 @@ type Colors struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Colors) MarshalJSON() ([]byte, error) {
+func (s Colors) MarshalJSON() ([]byte, error) {
 	type NoMethod Colors
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ConferenceData struct {
@@ -759,9 +813,9 @@ type ConferenceData struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ConferenceData) MarshalJSON() ([]byte, error) {
+func (s ConferenceData) MarshalJSON() ([]byte, error) {
 	type NoMethod ConferenceData
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ConferenceParameters struct {
@@ -780,9 +834,9 @@ type ConferenceParameters struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ConferenceParameters) MarshalJSON() ([]byte, error) {
+func (s ConferenceParameters) MarshalJSON() ([]byte, error) {
 	type NoMethod ConferenceParameters
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ConferenceParametersAddOnParameters struct {
@@ -800,9 +854,9 @@ type ConferenceParametersAddOnParameters struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ConferenceParametersAddOnParameters) MarshalJSON() ([]byte, error) {
+func (s ConferenceParametersAddOnParameters) MarshalJSON() ([]byte, error) {
 	type NoMethod ConferenceParametersAddOnParameters
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ConferenceProperties struct {
@@ -827,9 +881,9 @@ type ConferenceProperties struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ConferenceProperties) MarshalJSON() ([]byte, error) {
+func (s ConferenceProperties) MarshalJSON() ([]byte, error) {
 	type NoMethod ConferenceProperties
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ConferenceRequestStatus struct {
@@ -855,9 +909,9 @@ type ConferenceRequestStatus struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ConferenceRequestStatus) MarshalJSON() ([]byte, error) {
+func (s ConferenceRequestStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod ConferenceRequestStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ConferenceSolution struct {
@@ -881,9 +935,9 @@ type ConferenceSolution struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ConferenceSolution) MarshalJSON() ([]byte, error) {
+func (s ConferenceSolution) MarshalJSON() ([]byte, error) {
 	type NoMethod ConferenceSolution
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ConferenceSolutionKey struct {
@@ -912,9 +966,9 @@ type ConferenceSolutionKey struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ConferenceSolutionKey) MarshalJSON() ([]byte, error) {
+func (s ConferenceSolutionKey) MarshalJSON() ([]byte, error) {
 	type NoMethod ConferenceSolutionKey
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type CreateConferenceRequest struct {
@@ -940,9 +994,9 @@ type CreateConferenceRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CreateConferenceRequest) MarshalJSON() ([]byte, error) {
+func (s CreateConferenceRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod CreateConferenceRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type EntryPoint struct {
@@ -1035,9 +1089,9 @@ type EntryPoint struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EntryPoint) MarshalJSON() ([]byte, error) {
+func (s EntryPoint) MarshalJSON() ([]byte, error) {
 	type NoMethod EntryPoint
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Error struct {
@@ -1066,9 +1120,9 @@ type Error struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Error) MarshalJSON() ([]byte, error) {
+func (s Error) MarshalJSON() ([]byte, error) {
 	type NoMethod Error
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Event struct {
@@ -1091,6 +1145,9 @@ type Event struct {
 	// can be used to only update the participant's response. Optional. The default
 	// is False.
 	AttendeesOmitted bool `json:"attendeesOmitted,omitempty"`
+	// BirthdayProperties: Birthday or special event data. Used if eventType is
+	// "birthday". Immutable.
+	BirthdayProperties *EventBirthdayProperties `json:"birthdayProperties,omitempty"`
 	// ColorId: The color of the event. This is an ID referring to an entry in the
 	// event section of the colors definition (see the  colors endpoint). Optional.
 	ColorId string `json:"colorId,omitempty"`
@@ -1117,11 +1174,13 @@ type Event struct {
 	Etag string `json:"etag,omitempty"`
 	// EventType: Specific type of the event. This cannot be modified after the
 	// event is created. Possible values are:
+	// - "birthday" - A special all-day event with an annual recurrence.
 	// - "default" - A regular event or not further specified.
-	// - "outOfOffice" - An out-of-office event.
 	// - "focusTime" - A focus-time event.
-	// - "workingLocation" - A working location event.
 	// - "fromGmail" - An event from Gmail. This type of event cannot be created.
+	//
+	// - "outOfOffice" - An out-of-office event.
+	// - "workingLocation" - A working location event.
 	EventType string `json:"eventType,omitempty"`
 	// ExtendedProperties: Extended properties of the event.
 	ExtendedProperties *EventExtendedProperties `json:"extendedProperties,omitempty"`
@@ -1211,7 +1270,8 @@ type Event struct {
 	// the recurring event to which this instance belongs. Immutable.
 	RecurringEventId string `json:"recurringEventId,omitempty"`
 	// Reminders: Information about the event's reminders for the authenticated
-	// user.
+	// user. Note that changing reminders does not also change the updated property
+	// of the enclosing event.
 	Reminders *EventReminders `json:"reminders,omitempty"`
 	// Sequence: Sequence number as per iCalendar.
 	Sequence int64 `json:"sequence,omitempty"`
@@ -1259,7 +1319,8 @@ type Event struct {
 	// - "transparent" - The event does not block time on the calendar. This is
 	// equivalent to setting Show me as to Available in the Calendar UI.
 	Transparency string `json:"transparency,omitempty"`
-	// Updated: Last modification time of the event (as a RFC3339 timestamp).
+	// Updated: Last modification time of the main event data (as a RFC3339
+	// timestamp). Updating event reminders will not cause this to change.
 	// Read-only.
 	Updated string `json:"updated,omitempty"`
 	// Visibility: Visibility of the event. Optional. Possible values are:
@@ -1290,9 +1351,9 @@ type Event struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Event) MarshalJSON() ([]byte, error) {
+func (s Event) MarshalJSON() ([]byte, error) {
 	type NoMethod Event
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EventCreator: The creator of the event. Read-only.
@@ -1319,9 +1380,9 @@ type EventCreator struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventCreator) MarshalJSON() ([]byte, error) {
+func (s EventCreator) MarshalJSON() ([]byte, error) {
 	type NoMethod EventCreator
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EventExtendedProperties: Extended properties of the event.
@@ -1345,9 +1406,9 @@ type EventExtendedProperties struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventExtendedProperties) MarshalJSON() ([]byte, error) {
+func (s EventExtendedProperties) MarshalJSON() ([]byte, error) {
 	type NoMethod EventExtendedProperties
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EventGadget: A gadget that extends this event. Gadgets are deprecated; this
@@ -1387,9 +1448,9 @@ type EventGadget struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventGadget) MarshalJSON() ([]byte, error) {
+func (s EventGadget) MarshalJSON() ([]byte, error) {
 	type NoMethod EventGadget
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EventOrganizer: The organizer of the event. If the organizer is also an
@@ -1420,13 +1481,14 @@ type EventOrganizer struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventOrganizer) MarshalJSON() ([]byte, error) {
+func (s EventOrganizer) MarshalJSON() ([]byte, error) {
 	type NoMethod EventOrganizer
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EventReminders: Information about the event's reminders for the
-// authenticated user.
+// authenticated user. Note that changing reminders does not also change the
+// updated property of the enclosing event.
 type EventReminders struct {
 	// Overrides: If the event doesn't use the default reminders, this lists the
 	// reminders specific to the event, or, if not set, indicates that no reminders
@@ -1448,9 +1510,9 @@ type EventReminders struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventReminders) MarshalJSON() ([]byte, error) {
+func (s EventReminders) MarshalJSON() ([]byte, error) {
 	type NoMethod EventReminders
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EventSource: Source from which the event was created. For example, a web
@@ -1476,9 +1538,9 @@ type EventSource struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventSource) MarshalJSON() ([]byte, error) {
+func (s EventSource) MarshalJSON() ([]byte, error) {
 	type NoMethod EventSource
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type EventAttachment struct {
@@ -1511,9 +1573,9 @@ type EventAttachment struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventAttachment) MarshalJSON() ([]byte, error) {
+func (s EventAttachment) MarshalJSON() ([]byte, error) {
 	type NoMethod EventAttachment
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type EventAttendee struct {
@@ -1548,8 +1610,11 @@ type EventAttendee struct {
 	// - "accepted" - The attendee has accepted the invitation.  Warning: If you
 	// add an event using the values declined, tentative, or accepted, attendees
 	// with the "Add invitations to my calendar" setting set to "When I respond to
-	// invitation in email" won't see an event on their calendar unless they choose
-	// to change their invitation response in the event invitation email.
+	// invitation in email" or "Only if the sender is known" might have their
+	// response reset to needsAction and won't see an event in their calendar
+	// unless they change their response in the event invitation email.
+	// Furthermore, if more than 200 guests are invited to the event, response
+	// status is not propagated to the guests.
 	ResponseStatus string `json:"responseStatus,omitempty"`
 	// Self: Whether this entry represents the calendar on which this copy of the
 	// event appears. Read-only. The default is False.
@@ -1567,9 +1632,47 @@ type EventAttendee struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventAttendee) MarshalJSON() ([]byte, error) {
+func (s EventAttendee) MarshalJSON() ([]byte, error) {
 	type NoMethod EventAttendee
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+type EventBirthdayProperties struct {
+	// Contact: Resource name of the contact this birthday event is linked to. This
+	// can be used to fetch contact details from People API. Format:
+	// "people/c12345". Read-only.
+	Contact string `json:"contact,omitempty"`
+	// CustomTypeName: Custom type label specified for this event. This is
+	// populated if birthdayProperties.type is set to "custom". Read-only.
+	CustomTypeName string `json:"customTypeName,omitempty"`
+	// Type: Type of birthday or special event. Possible values are:
+	// - "anniversary" - An anniversary other than birthday. Always has a contact.
+	//
+	// - "birthday" - A birthday event. This is the default value.
+	// - "custom" - A special date whose label is further specified in the
+	// customTypeName field. Always has a contact.
+	// - "other" - A special date which does not fall into the other categories,
+	// and does not have a custom label. Always has a contact.
+	// - "self" - Calendar owner's own birthday. Cannot have a contact.  The
+	// Calendar API only supports creating events with the type "birthday". The
+	// type cannot be changed after the event is created.
+	Type string `json:"type,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Contact") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Contact") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s EventBirthdayProperties) MarshalJSON() ([]byte, error) {
+	type NoMethod EventBirthdayProperties
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type EventDateTime struct {
@@ -1598,9 +1701,9 @@ type EventDateTime struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventDateTime) MarshalJSON() ([]byte, error) {
+func (s EventDateTime) MarshalJSON() ([]byte, error) {
 	type NoMethod EventDateTime
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type EventFocusTimeProperties struct {
@@ -1631,9 +1734,9 @@ type EventFocusTimeProperties struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventFocusTimeProperties) MarshalJSON() ([]byte, error) {
+func (s EventFocusTimeProperties) MarshalJSON() ([]byte, error) {
 	type NoMethod EventFocusTimeProperties
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type EventOutOfOfficeProperties struct {
@@ -1661,9 +1764,9 @@ type EventOutOfOfficeProperties struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventOutOfOfficeProperties) MarshalJSON() ([]byte, error) {
+func (s EventOutOfOfficeProperties) MarshalJSON() ([]byte, error) {
 	type NoMethod EventOutOfOfficeProperties
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type EventReminder struct {
@@ -1690,9 +1793,9 @@ type EventReminder struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventReminder) MarshalJSON() ([]byte, error) {
+func (s EventReminder) MarshalJSON() ([]byte, error) {
 	type NoMethod EventReminder
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type EventWorkingLocationProperties struct {
@@ -1725,9 +1828,9 @@ type EventWorkingLocationProperties struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventWorkingLocationProperties) MarshalJSON() ([]byte, error) {
+func (s EventWorkingLocationProperties) MarshalJSON() ([]byte, error) {
 	type NoMethod EventWorkingLocationProperties
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EventWorkingLocationPropertiesCustomLocation: If present, specifies that the
@@ -1748,9 +1851,9 @@ type EventWorkingLocationPropertiesCustomLocation struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventWorkingLocationPropertiesCustomLocation) MarshalJSON() ([]byte, error) {
+func (s EventWorkingLocationPropertiesCustomLocation) MarshalJSON() ([]byte, error) {
 	type NoMethod EventWorkingLocationPropertiesCustomLocation
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EventWorkingLocationPropertiesOfficeLocation: If present, specifies that the
@@ -1782,9 +1885,9 @@ type EventWorkingLocationPropertiesOfficeLocation struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EventWorkingLocationPropertiesOfficeLocation) MarshalJSON() ([]byte, error) {
+func (s EventWorkingLocationPropertiesOfficeLocation) MarshalJSON() ([]byte, error) {
 	type NoMethod EventWorkingLocationPropertiesOfficeLocation
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Events struct {
@@ -1844,9 +1947,9 @@ type Events struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Events) MarshalJSON() ([]byte, error) {
+func (s Events) MarshalJSON() ([]byte, error) {
 	type NoMethod Events
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type FreeBusyCalendar struct {
@@ -1868,9 +1971,9 @@ type FreeBusyCalendar struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *FreeBusyCalendar) MarshalJSON() ([]byte, error) {
+func (s FreeBusyCalendar) MarshalJSON() ([]byte, error) {
 	type NoMethod FreeBusyCalendar
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type FreeBusyGroup struct {
@@ -1891,9 +1994,9 @@ type FreeBusyGroup struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *FreeBusyGroup) MarshalJSON() ([]byte, error) {
+func (s FreeBusyGroup) MarshalJSON() ([]byte, error) {
 	type NoMethod FreeBusyGroup
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type FreeBusyRequest struct {
@@ -1925,9 +2028,9 @@ type FreeBusyRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *FreeBusyRequest) MarshalJSON() ([]byte, error) {
+func (s FreeBusyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod FreeBusyRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type FreeBusyRequestItem struct {
@@ -1946,9 +2049,9 @@ type FreeBusyRequestItem struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *FreeBusyRequestItem) MarshalJSON() ([]byte, error) {
+func (s FreeBusyRequestItem) MarshalJSON() ([]byte, error) {
 	type NoMethod FreeBusyRequestItem
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type FreeBusyResponse struct {
@@ -1978,9 +2081,9 @@ type FreeBusyResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *FreeBusyResponse) MarshalJSON() ([]byte, error) {
+func (s FreeBusyResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod FreeBusyResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Setting struct {
@@ -2010,9 +2113,9 @@ type Setting struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Setting) MarshalJSON() ([]byte, error) {
+func (s Setting) MarshalJSON() ([]byte, error) {
 	type NoMethod Setting
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Settings struct {
@@ -2045,9 +2148,9 @@ type Settings struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Settings) MarshalJSON() ([]byte, error) {
+func (s Settings) MarshalJSON() ([]byte, error) {
 	type NoMethod Settings
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type TimePeriod struct {
@@ -2068,9 +2171,9 @@ type TimePeriod struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TimePeriod) MarshalJSON() ([]byte, error) {
+func (s TimePeriod) MarshalJSON() ([]byte, error) {
 	type NoMethod TimePeriod
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type AclDeleteCall struct {
@@ -2120,12 +2223,11 @@ func (c *AclDeleteCall) Header() http.Header {
 
 func (c *AclDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl/{ruleId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -2134,6 +2236,7 @@ func (c *AclDeleteCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"ruleId":     c.ruleId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.acl.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -2148,6 +2251,7 @@ func (c *AclDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.acl.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -2210,12 +2314,11 @@ func (c *AclGetCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl/{ruleId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -2224,6 +2327,7 @@ func (c *AclGetCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"ruleId":     c.ruleId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.acl.get", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -2258,9 +2362,11 @@ func (c *AclGetCall) Do(opts ...googleapi.CallOption) (*AclRule, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.acl.get", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -2318,8 +2424,7 @@ func (c *AclInsertCall) Header() http.Header {
 
 func (c *AclInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.aclrule)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.aclrule)
 	if err != nil {
 		return nil, err
 	}
@@ -2335,6 +2440,7 @@ func (c *AclInsertCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.acl.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -2369,9 +2475,11 @@ func (c *AclInsertCall) Do(opts ...googleapi.CallOption) (*AclRule, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.acl.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -2472,12 +2580,11 @@ func (c *AclListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/acl")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -2485,6 +2592,7 @@ func (c *AclListCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.acl.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -2519,9 +2627,11 @@ func (c *AclListCall) Do(opts ...googleapi.CallOption) (*Acl, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.acl.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -2603,8 +2713,7 @@ func (c *AclPatchCall) Header() http.Header {
 
 func (c *AclPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.aclrule)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.aclrule)
 	if err != nil {
 		return nil, err
 	}
@@ -2621,6 +2730,7 @@ func (c *AclPatchCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"ruleId":     c.ruleId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.acl.patch", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -2655,9 +2765,11 @@ func (c *AclPatchCall) Do(opts ...googleapi.CallOption) (*AclRule, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.acl.patch", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -2718,8 +2830,7 @@ func (c *AclUpdateCall) Header() http.Header {
 
 func (c *AclUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.aclrule)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.aclrule)
 	if err != nil {
 		return nil, err
 	}
@@ -2736,6 +2847,7 @@ func (c *AclUpdateCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"ruleId":     c.ruleId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.acl.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -2770,9 +2882,11 @@ func (c *AclUpdateCall) Do(opts ...googleapi.CallOption) (*AclRule, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.acl.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -2863,8 +2977,7 @@ func (c *AclWatchCall) Header() http.Header {
 
 func (c *AclWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channel)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.channel)
 	if err != nil {
 		return nil, err
 	}
@@ -2880,6 +2993,7 @@ func (c *AclWatchCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.acl.watch", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -2914,9 +3028,11 @@ func (c *AclWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.acl.watch", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -2964,12 +3080,11 @@ func (c *CalendarListDeleteCall) Header() http.Header {
 
 func (c *CalendarListDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -2977,6 +3092,7 @@ func (c *CalendarListDeleteCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendarList.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -2991,6 +3107,7 @@ func (c *CalendarListDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendarList.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -3050,12 +3167,11 @@ func (c *CalendarListGetCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -3063,6 +3179,7 @@ func (c *CalendarListGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendarList.get", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -3098,9 +3215,11 @@ func (c *CalendarListGetCall) Do(opts ...googleapi.CallOption) (*CalendarListEnt
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendarList.get", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -3153,8 +3272,7 @@ func (c *CalendarListInsertCall) Header() http.Header {
 
 func (c *CalendarListInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.calendarlistentry)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.calendarlistentry)
 	if err != nil {
 		return nil, err
 	}
@@ -3167,6 +3285,7 @@ func (c *CalendarListInsertCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendarList.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -3202,9 +3321,11 @@ func (c *CalendarListInsertCall) Do(opts ...googleapi.CallOption) (*CalendarList
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendarList.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -3323,16 +3444,16 @@ func (c *CalendarListListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/calendarList")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendarList.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -3367,9 +3488,11 @@ func (c *CalendarListListCall) Do(opts ...googleapi.CallOption) (*CalendarList, 
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendarList.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -3450,8 +3573,7 @@ func (c *CalendarListPatchCall) Header() http.Header {
 
 func (c *CalendarListPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.calendarlistentry)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.calendarlistentry)
 	if err != nil {
 		return nil, err
 	}
@@ -3467,6 +3589,7 @@ func (c *CalendarListPatchCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendarList.patch", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -3502,9 +3625,11 @@ func (c *CalendarListPatchCall) Do(opts ...googleapi.CallOption) (*CalendarListE
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendarList.patch", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -3563,8 +3688,7 @@ func (c *CalendarListUpdateCall) Header() http.Header {
 
 func (c *CalendarListUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.calendarlistentry)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.calendarlistentry)
 	if err != nil {
 		return nil, err
 	}
@@ -3580,6 +3704,7 @@ func (c *CalendarListUpdateCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendarList.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -3615,9 +3740,11 @@ func (c *CalendarListUpdateCall) Do(opts ...googleapi.CallOption) (*CalendarList
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendarList.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -3726,8 +3853,7 @@ func (c *CalendarListWatchCall) Header() http.Header {
 
 func (c *CalendarListWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channel)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.channel)
 	if err != nil {
 		return nil, err
 	}
@@ -3740,6 +3866,7 @@ func (c *CalendarListWatchCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendarList.watch", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -3774,9 +3901,11 @@ func (c *CalendarListWatchCall) Do(opts ...googleapi.CallOption) (*Channel, erro
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendarList.watch", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -3825,12 +3954,11 @@ func (c *CalendarsClearCall) Header() http.Header {
 
 func (c *CalendarsClearCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/clear")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -3838,6 +3966,7 @@ func (c *CalendarsClearCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendars.clear", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -3852,6 +3981,7 @@ func (c *CalendarsClearCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendars.clear", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -3900,12 +4030,11 @@ func (c *CalendarsDeleteCall) Header() http.Header {
 
 func (c *CalendarsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -3913,6 +4042,7 @@ func (c *CalendarsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendars.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -3927,6 +4057,7 @@ func (c *CalendarsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendars.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -3986,12 +4117,11 @@ func (c *CalendarsGetCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -3999,6 +4129,7 @@ func (c *CalendarsGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendars.get", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -4033,9 +4164,11 @@ func (c *CalendarsGetCall) Do(opts ...googleapi.CallOption) (*Calendar, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendars.get", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -4079,8 +4212,7 @@ func (c *CalendarsInsertCall) Header() http.Header {
 
 func (c *CalendarsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.calendar)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.calendar)
 	if err != nil {
 		return nil, err
 	}
@@ -4093,6 +4225,7 @@ func (c *CalendarsInsertCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendars.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -4127,9 +4260,11 @@ func (c *CalendarsInsertCall) Do(opts ...googleapi.CallOption) (*Calendar, error
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendars.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -4180,8 +4315,7 @@ func (c *CalendarsPatchCall) Header() http.Header {
 
 func (c *CalendarsPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.calendar)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.calendar)
 	if err != nil {
 		return nil, err
 	}
@@ -4197,6 +4331,7 @@ func (c *CalendarsPatchCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendars.patch", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -4231,9 +4366,11 @@ func (c *CalendarsPatchCall) Do(opts ...googleapi.CallOption) (*Calendar, error)
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendars.patch", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -4283,8 +4420,7 @@ func (c *CalendarsUpdateCall) Header() http.Header {
 
 func (c *CalendarsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.calendar)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.calendar)
 	if err != nil {
 		return nil, err
 	}
@@ -4300,6 +4436,7 @@ func (c *CalendarsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.calendars.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -4334,9 +4471,11 @@ func (c *CalendarsUpdateCall) Do(opts ...googleapi.CallOption) (*Calendar, error
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.calendars.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -4380,8 +4519,7 @@ func (c *ChannelsStopCall) Header() http.Header {
 
 func (c *ChannelsStopCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channel)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.channel)
 	if err != nil {
 		return nil, err
 	}
@@ -4394,6 +4532,7 @@ func (c *ChannelsStopCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.channels.stop", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -4408,6 +4547,7 @@ func (c *ChannelsStopCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.channels.stop", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -4461,16 +4601,16 @@ func (c *ColorsGetCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "colors")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.colors.get", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -4505,9 +4645,11 @@ func (c *ColorsGetCall) Do(opts ...googleapi.CallOption) (*Colors, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.colors.get", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -4587,12 +4729,11 @@ func (c *EventsDeleteCall) Header() http.Header {
 
 func (c *EventsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("DELETE", urls, body)
+	req, err := http.NewRequest("DELETE", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -4601,6 +4742,7 @@ func (c *EventsDeleteCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"eventId":    c.eventId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.delete", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -4615,6 +4757,7 @@ func (c *EventsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return gensupport.WrapError(err)
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.delete", "response", internallog.HTTPResponse(res, nil))
 	return nil
 }
 
@@ -4703,12 +4846,11 @@ func (c *EventsGetCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -4717,6 +4859,7 @@ func (c *EventsGetCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"eventId":    c.eventId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.get", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -4751,9 +4894,11 @@ func (c *EventsGetCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.get", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -4827,8 +4972,7 @@ func (c *EventsImportCall) Header() http.Header {
 
 func (c *EventsImportCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.event)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.event)
 	if err != nil {
 		return nil, err
 	}
@@ -4844,6 +4988,7 @@ func (c *EventsImportCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.import", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -4878,9 +5023,11 @@ func (c *EventsImportCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.import", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -4989,8 +5136,7 @@ func (c *EventsInsertCall) Header() http.Header {
 
 func (c *EventsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.event)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.event)
 	if err != nil {
 		return nil, err
 	}
@@ -5006,6 +5152,7 @@ func (c *EventsInsertCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.insert", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -5040,9 +5187,11 @@ func (c *EventsInsertCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.insert", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -5176,12 +5325,11 @@ func (c *EventsInstancesCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}/instances")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5190,6 +5338,7 @@ func (c *EventsInstancesCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"eventId":    c.eventId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.instances", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -5224,9 +5373,11 @@ func (c *EventsInstancesCall) Do(opts ...googleapi.CallOption) (*Events, error) 
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.instances", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -5284,6 +5435,7 @@ func (c *EventsListCall) AlwaysIncludeEmail(alwaysIncludeEmail bool) *EventsList
 //
 // Possible values:
 //
+//	"birthday" - Special all-day events with an annual recurrence.
 //	"default" - Regular events.
 //	"focusTime" - Focus time events.
 //	"fromGmail" - Events from Gmail.
@@ -5519,12 +5671,11 @@ func (c *EventsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5532,6 +5683,7 @@ func (c *EventsListCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -5566,9 +5718,11 @@ func (c *EventsListCall) Do(opts ...googleapi.CallOption) (*Events, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -5603,8 +5757,8 @@ type EventsMoveCall struct {
 }
 
 // Move: Moves an event to another calendar, i.e. changes an event's organizer.
-// Note that only default events can be moved; outOfOffice, focusTime,
-// workingLocation and fromGmail events cannot be moved.
+// Note that only default events can be moved; birthday, focusTime, fromGmail,
+// outOfOffice and workingLocation events cannot be moved.
 //
 //   - calendarId: Calendar identifier of the source calendar where the event
 //     currently is on.
@@ -5673,12 +5827,11 @@ func (c *EventsMoveCall) Header() http.Header {
 
 func (c *EventsMoveCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/{eventId}/move")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5687,6 +5840,7 @@ func (c *EventsMoveCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"eventId":    c.eventId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.move", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -5721,9 +5875,11 @@ func (c *EventsMoveCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.move", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -5842,8 +5998,7 @@ func (c *EventsPatchCall) Header() http.Header {
 
 func (c *EventsPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.event)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.event)
 	if err != nil {
 		return nil, err
 	}
@@ -5860,6 +6015,7 @@ func (c *EventsPatchCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"eventId":    c.eventId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.patch", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -5894,9 +6050,11 @@ func (c *EventsPatchCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.patch", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -5975,12 +6133,11 @@ func (c *EventsQuickAddCall) Header() http.Header {
 
 func (c *EventsQuickAddCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "calendars/{calendarId}/events/quickAdd")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
+	req, err := http.NewRequest("POST", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5988,6 +6145,7 @@ func (c *EventsQuickAddCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.quickAdd", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -6022,9 +6180,11 @@ func (c *EventsQuickAddCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.quickAdd", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -6143,8 +6303,7 @@ func (c *EventsUpdateCall) Header() http.Header {
 
 func (c *EventsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.event)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.event)
 	if err != nil {
 		return nil, err
 	}
@@ -6161,6 +6320,7 @@ func (c *EventsUpdateCall) doRequest(alt string) (*http.Response, error) {
 		"calendarId": c.calendarId,
 		"eventId":    c.eventId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.update", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -6195,9 +6355,11 @@ func (c *EventsUpdateCall) Do(opts ...googleapi.CallOption) (*Event, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.update", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -6235,6 +6397,7 @@ func (c *EventsWatchCall) AlwaysIncludeEmail(alwaysIncludeEmail bool) *EventsWat
 //
 // Possible values:
 //
+//	"birthday" - Special all-day events with an annual recurrence.
 //	"default" - Regular events.
 //	"focusTime" - Focus time events.
 //	"fromGmail" - Events from Gmail.
@@ -6459,8 +6622,7 @@ func (c *EventsWatchCall) Header() http.Header {
 
 func (c *EventsWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channel)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.channel)
 	if err != nil {
 		return nil, err
 	}
@@ -6476,6 +6638,7 @@ func (c *EventsWatchCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"calendarId": c.calendarId,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.events.watch", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -6510,9 +6673,11 @@ func (c *EventsWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.events.watch", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -6556,8 +6721,7 @@ func (c *FreebusyQueryCall) Header() http.Header {
 
 func (c *FreebusyQueryCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.freebusyrequest)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.freebusyrequest)
 	if err != nil {
 		return nil, err
 	}
@@ -6570,6 +6734,7 @@ func (c *FreebusyQueryCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.freebusy.query", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -6605,9 +6770,11 @@ func (c *FreebusyQueryCall) Do(opts ...googleapi.CallOption) (*FreeBusyResponse,
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.freebusy.query", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -6665,12 +6832,11 @@ func (c *SettingsGetCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/settings/{setting}")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -6678,6 +6844,7 @@ func (c *SettingsGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"setting": c.setting,
 	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.settings.get", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -6712,9 +6879,11 @@ func (c *SettingsGetCall) Do(opts ...googleapi.CallOption) (*Setting, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.settings.get", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -6798,16 +6967,16 @@ func (c *SettingsListCall) doRequest(alt string) (*http.Response, error) {
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
 	}
-	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
 	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/me/settings")
 	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, body)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.settings.list", "request", internallog.HTTPRequest(req, nil))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -6842,9 +7011,11 @@ func (c *SettingsListCall) Do(opts ...googleapi.CallOption) (*Settings, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.settings.list", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -6939,8 +7110,7 @@ func (c *SettingsWatchCall) Header() http.Header {
 
 func (c *SettingsWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channel)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.channel)
 	if err != nil {
 		return nil, err
 	}
@@ -6953,6 +7123,7 @@ func (c *SettingsWatchCall) doRequest(alt string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "calendar.settings.watch", "request", internallog.HTTPRequest(req, body.Bytes()))
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
@@ -6987,8 +7158,10 @@ func (c *SettingsWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 		},
 	}
 	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
 		return nil, err
 	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "calendar.settings.watch", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }

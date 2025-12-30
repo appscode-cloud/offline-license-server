@@ -870,7 +870,7 @@
       }
     }
   },
-  "revision": "20240514",
+  "revision": "20250211",
   "rootUrl": "https://sheets.googleapis.com/",
   "schemas": {
     "AddBandingRequest": {
@@ -934,7 +934,7 @@
       "type": "object"
     },
     "AddDataSourceRequest": {
-      "description": "Adds a data source. After the data source is added successfully, an associated DATA_SOURCE sheet is created and an execution is triggered to refresh the sheet to read data from the data source. The request requires an additional `bigquery.readonly` OAuth scope.",
+      "description": "Adds a data source. After the data source is added successfully, an associated DATA_SOURCE sheet is created and an execution is triggered to refresh the sheet to read data from the data source. The request requires an additional `bigquery.readonly` OAuth scope if you are adding a BigQuery data source.",
       "id": "AddDataSourceRequest",
       "properties": {
         "dataSource": {
@@ -2330,7 +2330,7 @@
       "type": "object"
     },
     "CancelDataSourceRefreshRequest": {
-      "description": "Cancels one or multiple refreshes of data source objects in the spreadsheet by the specified references.",
+      "description": "Cancels one or multiple refreshes of data source objects in the spreadsheet by the specified references. The request requires an additional `bigquery.readonly` OAuth scope if you are cancelling a refresh on a BigQuery data source.",
       "id": "CancelDataSourceRefreshRequest",
       "properties": {
         "dataSourceId": {
@@ -3699,6 +3699,10 @@
           "$ref": "BigQueryDataSourceSpec",
           "description": "A BigQueryDataSourceSpec."
         },
+        "looker": {
+          "$ref": "LookerDataSourceSpec",
+          "description": "A LookerDatasourceSpec."
+        },
         "parameters": {
           "description": "The parameters of the data source, used when querying the data source.",
           "items": {
@@ -3937,7 +3941,7 @@
       "type": "object"
     },
     "DeleteDimensionRequest": {
-      "description": "Deletes the dimensions from the sheet.",
+      "description": " Deletes the dimensions from the sheet.",
       "id": "DeleteDimensionRequest",
       "properties": {
         "range": {
@@ -4191,7 +4195,7 @@
           "type": "string"
         },
         "visibility": {
-          "description": "Limits the selected developer metadata to that which has a matching DeveloperMetadata.visibility. If left unspecified, all developer metadata visibile to the requesting project is considered.",
+          "description": "Limits the selected developer metadata to that which has a matching DeveloperMetadata.visibility. If left unspecified, all developer metadata visible to the requesting project is considered.",
           "enum": [
             "DEVELOPER_METADATA_VISIBILITY_UNSPECIFIED",
             "DOCUMENT",
@@ -4966,7 +4970,7 @@
       "properties": {
         "range": {
           "$ref": "GridRange",
-          "description": "The range to insert new cells into."
+          "description": "The range to insert new cells into. The range is constrained to the current sheet boundaries."
         },
         "shiftDimension": {
           "description": "The dimension which will be shifted when inserting cells. If ROWS, existing cells will be shifted down. If COLUMNS, existing cells will be shifted right.",
@@ -5118,6 +5122,25 @@
       "properties": {
         "uri": {
           "description": "The link identifier.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "LookerDataSourceSpec": {
+      "description": "The specification of a Looker data source.",
+      "id": "LookerDataSourceSpec",
+      "properties": {
+        "explore": {
+          "description": "Name of a Looker model explore.",
+          "type": "string"
+        },
+        "instanceUri": {
+          "description": "A Looker instance URL.",
+          "type": "string"
+        },
+        "model": {
+          "description": "Name of a Looker model.",
           "type": "string"
         }
       },
@@ -5960,7 +5983,7 @@
       "type": "object"
     },
     "RefreshDataSourceRequest": {
-      "description": "Refreshes one or multiple data source objects in the spreadsheet by the specified references. The request requires an additional `bigquery.readonly` OAuth scope. If there are multiple refresh requests referencing the same data source objects in one batch, only the last refresh request is processed, and all those requests will have the same response accordingly.",
+      "description": "Refreshes one or multiple data source objects in the spreadsheet by the specified references. The request requires an additional `bigquery.readonly` OAuth scope if you are refreshing a BigQuery data source. If there are multiple refresh requests referencing the same data source objects in one batch, only the last refresh request is processed, and all those requests will have the same response accordingly.",
       "id": "RefreshDataSourceRequest",
       "properties": {
         "dataSourceId": {
@@ -6515,6 +6538,10 @@
       "description": "Sets a data validation rule to every cell in the range. To clear validation in a range, call this with no rule specified.",
       "id": "SetDataValidationRequest",
       "properties": {
+        "filteredRowsIncluded": {
+          "description": "Optional. If true, the data validation rule will be applied to the filtered rows as well.",
+          "type": "boolean"
+        },
         "range": {
           "$ref": "GridRange",
           "description": "The range the data validation rule should apply to."
@@ -6934,7 +6961,7 @@
           "description": "The default format of all cells in the spreadsheet. CellData.effectiveFormat will not be set if the cell's format is equal to this default format. This field is read-only."
         },
         "importFunctionsExternalUrlAccessAllowed": {
-          "description": "Whether to allow external URL access for image and import functions. Read only when true. When false, you can set to true.",
+          "description": "Whether to allow external URL access for image and import functions. Read only when true. When false, you can set to true. This value will be bypassed and always return true if the admin has enabled the [allowlisting feature](https://support.google.com/a?p=url_allowlist).",
           "type": "boolean"
         },
         "iterativeCalculationSettings": {
@@ -7159,22 +7186,22 @@
       "id": "TimeOfDay",
       "properties": {
         "hours": {
-          "description": "Hours of day in 24 hour format. Should be from 0 to 23. An API may choose to allow the value \"24:00:00\" for scenarios like business closing time.",
+          "description": "Hours of a day in 24 hour format. Must be greater than or equal to 0 and typically must be less than or equal to 23. An API may choose to allow the value \"24:00:00\" for scenarios like business closing time.",
           "format": "int32",
           "type": "integer"
         },
         "minutes": {
-          "description": "Minutes of hour of day. Must be from 0 to 59.",
+          "description": "Minutes of an hour. Must be greater than or equal to 0 and less than or equal to 59.",
           "format": "int32",
           "type": "integer"
         },
         "nanos": {
-          "description": "Fractions of seconds in nanoseconds. Must be from 0 to 999,999,999.",
+          "description": "Fractions of seconds, in nanoseconds. Must be greater than or equal to 0 and less than or equal to 999,999,999.",
           "format": "int32",
           "type": "integer"
         },
         "seconds": {
-          "description": "Seconds of minutes of the time. Must normally be from 0 to 59. An API may allow the value 60 if it allows leap-seconds.",
+          "description": "Seconds of a minute. Must be greater than or equal to 0 and typically must be less than or equal to 59. An API may allow the value 60 if it allows leap-seconds.",
           "format": "int32",
           "type": "integer"
         }
@@ -7468,7 +7495,7 @@
       "type": "object"
     },
     "UpdateDataSourceRequest": {
-      "description": "Updates a data source. After the data source is updated successfully, an execution is triggered to refresh the associated DATA_SOURCE sheet to read data from the updated data source. The request requires an additional `bigquery.readonly` OAuth scope.",
+      "description": "Updates a data source. After the data source is updated successfully, an execution is triggered to refresh the associated DATA_SOURCE sheet to read data from the updated data source. The request requires an additional `bigquery.readonly` OAuth scope if you are updating a BigQuery data source.",
       "id": "UpdateDataSourceRequest",
       "properties": {
         "dataSource": {
