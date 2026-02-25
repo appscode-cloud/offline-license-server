@@ -718,8 +718,8 @@ gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f h1:hTyhR4r+tj1Uq7/PpFxLTz
 gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f/go.mod h1:K3m7N+nBOlf91/tpv8REUGwsAgaKFwElQCuiLhm12AQ=
 gomodules.xyz/email v0.1.0 h1:Zm/SkyaOmuxzvAitwRdxC0YOszUO0gkudzZwvNA86Iw=
 gomodules.xyz/email v0.1.0/go.mod h1:F2bjw5yfu3tcEFuC7qFbakPqTVs2Z/GTOb1ITtdXFok=
-gomodules.xyz/email-providers v0.1.4 h1:kcFyxaLGvW7DBr87DDZ5xVeM1iE/gJBkrgqUihV90js=
-gomodules.xyz/email-providers v0.1.4/go.mod h1:EqvSNJ9PZ2oEdgmYOiw5YhMoUwJaKQZGanirI77rCxA=
+gomodules.xyz/email-providers v0.1.5 h1:YYmtsjIhZ3w8dd4bFPigRybWgvMT4mAMsb+QhYHfQKI=
+gomodules.xyz/email-providers v0.1.5/go.mod h1:EqvSNJ9PZ2oEdgmYOiw5YhMoUwJaKQZGanirI77rCxA=
 gomodules.xyz/encoding v0.0.8 h1:r2Koq0BJ4HQCCjPTHuti0ItJDXqWJoLRHcm14Ayyp10=
 gomodules.xyz/encoding v0.0.8/go.mod h1:tn9zeeM1vHMxwVIwJQo7gGfJSCOklnU11tZ+3gSbj08=
 gomodules.xyz/flags v0.1.3 h1:jQ06+EfmoMv5NvjXvJon03dOhLU+FF0TQMWN7I6qpzs=
