@@ -757,7 +757,7 @@ gomodules.xyz/clock
 # gomodules.xyz/email v0.1.0
 ## explicit; go 1.18
 gomodules.xyz/email
-# gomodules.xyz/email-providers v0.1.4
+# gomodules.xyz/email-providers v0.1.5
 ## explicit; go 1.14
 gomodules.xyz/email-providers
 # gomodules.xyz/encoding v0.0.8

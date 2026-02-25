@@ -22,8 +22,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"path"
-	"reflect"
 	"strings"
 	"time"
 
@@ -104,7 +104,7 @@ func IssueEnterpriseLicense(fs blobfs.Interface, certs *certstore.CertStore, inf
 			}
 
 			if !certs[0].NotAfter.Before(license.Agreement.ExpiryDate.Time) &&
-				reflect.DeepEqual(existingFeatureFlags, ff) {
+				maps.Equal(existingFeatureFlags, ff) {
 
 				// Original license is sufficiently valid. Keep using that.
 				crtLicense = cert.EncodeCertPEM(certs[0])
