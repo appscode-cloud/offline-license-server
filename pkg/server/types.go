@@ -57,7 +57,7 @@ type LicenseForm struct {
 }
 
 type LicenseMailData struct {
-	LicenseForm `json:",inline,omitempty"`
+	LicenseForm `json:",inline"`
 	License     string
 }
 
@@ -87,8 +87,8 @@ func (form LicenseForm) Validate() error {
 }
 
 type LogEntry struct {
-	LicenseForm `json:",inline,omitempty"`
-	GeoLocation `json:",inline,omitempty"`
+	LicenseForm `json:",inline"`
+	GeoLocation `json:",inline"`
 	Timestamp   string              `json:"timestamp,omitempty"`
 	UA          *uasurfer.UserAgent `json:"-"`
 }

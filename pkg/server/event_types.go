@@ -22,7 +22,7 @@ import (
 )
 
 type EventQuotationGenerated struct {
-	freshsalesclient.BaseNoteDescription `json:",inline,omitempty"`
+	freshsalesclient.BaseNoteDescription `json:",inline"`
 
 	Quotation     string `json:"quotation"`
 	TemplateDoc   string `json:"template_doc"`
@@ -30,7 +30,7 @@ type EventQuotationGenerated struct {
 }
 
 type EventLicenseIssued struct {
-	freshsalesclient.BaseNoteDescription `json:",inline,omitempty"`
+	freshsalesclient.BaseNoteDescription `json:",inline"`
 
 	License LicenseRef `json:"license"`
 }
@@ -41,9 +41,9 @@ type LicenseRef struct {
 }
 
 type EventMailgun struct {
-	freshsalesclient.BaseNoteDescription `json:",inline,omitempty"`
+	freshsalesclient.BaseNoteDescription `json:",inline"`
 
-	Message Message `json:"message,omitempty"`
+	Message Message `json:"message"`
 }
 
 type Message struct {
@@ -53,9 +53,9 @@ type Message struct {
 }
 
 type EventWebinarRegistration struct {
-	freshsalesclient.BaseNoteDescription `json:",inline,omitempty"`
+	freshsalesclient.BaseNoteDescription `json:",inline"`
 
-	Webinar WebinarRecord `json:"webinar,omitempty"`
+	Webinar WebinarRecord `json:"webinar"`
 }
 
 type WebinarRecord struct {

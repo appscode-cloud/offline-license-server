@@ -388,7 +388,7 @@ func FixSpeakers(sch *WebinarSchedule) []SpeakerInfo {
 
 	n := min(len(names), min(len(titles), len(pics)))
 	out := make([]SpeakerInfo, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		out[i] = SpeakerInfo{
 			Name:     names[i],
 			JobTitle: titles[i],
@@ -405,13 +405,6 @@ func FixSpeakers(sch *WebinarSchedule) []SpeakerInfo {
 	}
 
 	return out
-}
-
-func min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
 }
 
 func (s *Server) RegisterForWebinar(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) error {
