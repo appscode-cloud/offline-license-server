@@ -19,6 +19,7 @@ package server
 import (
 	"time"
 
+	"gomodules.xyz/blobfs"
 	"gomodules.xyz/sets"
 )
 
@@ -38,7 +39,6 @@ const (
 	DefaultTTLForCommunityProduct      = 365 * 24 * time.Hour
 
 	LicenseIssuerName = "AppsCode Inc."
-	LicenseBucket     = "licenses.appscode.com"
 
 	WebinarSpreadsheetId    = "1VW9K1yRLw6IFnr4o9ZJqaEamBahfqnjfl79EHeAZBzg"
 	WebinarScheduleSheet    = "Schedule"
@@ -60,6 +60,13 @@ const (
 var (
 	knowTestEmails   = sets.NewString("1gtm@appscode.com")
 	skipEmailDomains = sets.NewString("appscode.com")
+	LicenseBucket    = func() string {
+		return blobfs.CreateBucketURL(
+			"s3://licenses-appscode-com",
+			"https://a46f9a02578d51f3e8e135a14de082a0.r2.cloudflarestorage.com",
+			"us-east-1",
+		)
+	}()
 )
 
 type PlanInfo struct {

@@ -92,7 +92,7 @@ type Server struct {
 }
 
 func New(opts *Options) (*Server, error) {
-	fs := blobfs.New("gs://" + opts.LicenseBucket)
+	fs := blobfs.New(opts.LicenseBucket)
 
 	certs, err := GetCertStore(fs, opts.Issuer)
 	if err != nil {
