@@ -95,7 +95,7 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 
 	fs.StringVar(&s.TaskDir, "scheduler.db-dir", s.TaskDir, "Directory where task db files are stored")
 
-	fs.StringVar(&s.LicenseBucket, "bucket", s.LicenseBucket, "Name of GCS bucket used to store licenses")
+	fs.StringVar(&s.LicenseBucket, "bucket", s.LicenseBucket, "URL of S3/GCS bucket used to store licenses")
 	fs.StringVar(&s.LicenseSpreadsheetId, "spreadsheet-id", s.LicenseSpreadsheetId, "Google Spreadsheet Id used to store license issue log")
 
 	fs.StringVar(&s.SMTPAddress, "smtp.address", s.SMTPAddress, "SMTP server host:port")
