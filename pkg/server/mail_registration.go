@@ -29,7 +29,7 @@ Please let us know if you have any questions.
 Regards,
 Team AppsCode
 
-[![Website](https://cdn.appscode.com/images/website.png)](https://appscode.com) [![Linkedin](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/ln.png)](https://www.linkedin.com/company/appscode/) [![Twitter](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/tt.png)](https://twitter.com/AppsCodeHQ) [![Youtube](https://codetwocdn.azureedge.net/images/mail-signatures/generator-dm/pad-box/yt.png)](https://www.youtube.com/c/AppsCodeInc)
+[![Website](https://cdn.appscode.com/images/website.png)](https://appscode.com) [![Linkedin](https://cdn.appscode.com/images/ln.png)](https://www.linkedin.com/company/appscode/) [![X](https://cdn.appscode.com/images/tt.png)](https://x.com/AppsCodeHQ) [![Youtube](https://cdn.appscode.com/images/yt.png)](https://www.youtube.com/@appscode)
 `
 	return mailer.Mailer{
 		Sender:          MailLicenseSender,
