@@ -256,6 +256,7 @@ func (s *Server) Run() error {
 	m.Get("/_/pricing/", auth.Basic(os.Getenv("APPSCODE_SALES_USERNAME"), os.Getenv("APPSCODE_SALES_PASSWORD")), func(ctx *macaron.Context) {
 		product := ctx.Query("p")
 		if product != "" && IsPAYGProduct(product) {
+			klog.ErrorS(fmt.Errorf("unknown product: %s", product), "error serving pricing page", "product", product)
 			ctx.Error(http.StatusBadRequest, fmt.Sprintf("unknown product: %s", product))
 			return
 		}

@@ -27,6 +27,7 @@ import (
 	"github.com/go-macaron/cache"
 	"google.golang.org/api/youtube/v3"
 	"gopkg.in/macaron.v1"
+	"k8s.io/klog/v2"
 )
 
 const youtubeChannelID = "UCxObRDZ0DtaQe_cCP-dN-xg"
@@ -38,6 +39,7 @@ func (s *Server) RegisterYoutubeAPI(m *macaron.Macaron) {
 		if out == nil {
 			lists, err := s.ListPlaylists(youtubeChannelID)
 			if err != nil {
+				klog.ErrorS(err, "error listing playlists")
 				ctx.Error(http.StatusInternalServerError, err.Error())
 				return
 			}
@@ -56,6 +58,7 @@ func (s *Server) RegisterYoutubeAPI(m *macaron.Macaron) {
 			playlistID := ctx.Params("id")
 			items, err := s.ListPlaylistItems(playlistID)
 			if err != nil {
+				klog.ErrorS(err, "error listing playlist items", "playlistID", playlistID)
 				ctx.Error(http.StatusInternalServerError, err.Error())
 				return
 			}
