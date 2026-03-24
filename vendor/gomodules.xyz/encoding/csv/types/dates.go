@@ -52,7 +52,10 @@ func (date *Dates) UnmarshalCSV(csv string) (err error) {
 	for _, part := range parts {
 		d, err := time.Parse(TimestampFormat, part)
 		if err != nil {
-			return err
+			d, err = time.Parse(DateFormat, part)
+			if err != nil {
+				return err
+			}
 		}
 		dates = append(dates, d)
 	}

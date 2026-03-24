@@ -17,12 +17,13 @@ limitations under the License.
 package json
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/fatih/structs"
 )
 
-func ExtractTag(s interface{}, field string, jsonTag ...string) (tag string, inline, exists bool) {
+func ExtractTag(s any, field string, jsonTag ...string) (tag string, inline, exists bool) {
 	f, ok := structs.New(s).FieldOk(field)
 	if !ok {
 		return "", false, false
@@ -38,11 +39,8 @@ func ParseTag(in string) (tag string, inline, exists bool) {
 	exists = in != ""
 	parts := strings.Split(in, ",")
 	tag = parts[0]
-	for _, opt := range parts[1:] {
-		if opt == "inline" {
-			inline = true
-			break
-		}
+	if slices.Contains(parts[1:], "inline") {
+		inline = true
 	}
 	return
 }

@@ -20,22 +20,22 @@ import (
 	"fmt"
 )
 
-func Filter(obj map[string]interface{}, filter map[string]interface{}) (map[string]interface{}, error) {
+func Filter(obj map[string]any, filter map[string]any) (map[string]any, error) {
 	return applyFilter(obj, filter, "")
 }
 
-func applyFilter(obj map[string]interface{}, filter map[string]interface{}, path string) (map[string]interface{}, error) {
+func applyFilter(obj map[string]any, filter map[string]any, path string) (map[string]any, error) {
 	if obj == nil {
 		return nil, nil
 	}
 
-	out := make(map[string]interface{}, len(obj))
+	out := make(map[string]any, len(obj))
 	for k, subFilter := range filter {
 		v, ok := obj[k]
 		if !ok {
 			continue // ignore missing key or throw error
 		}
-		sf, ok := subFilter.(map[string]interface{})
+		sf, ok := subFilter.(map[string]any)
 		if !ok {
 			out[k] = v // just keep it as is
 		} else {
@@ -45,15 +45,15 @@ func applyFilter(obj map[string]interface{}, filter map[string]interface{}, path
 			// else, throw an error (filter is trying to apply to non objects)
 
 			switch u := v.(type) {
-			case map[string]interface{}:
+			case map[string]any:
 				subOut, err := applyFilter(u, sf, path+k+".")
 				if err != nil {
 					return nil, err
 				}
 				out[k] = subOut
-			case []interface{}:
+			case []any:
 				for i := range u {
-					entry, ok := u[i].(map[string]interface{})
+					entry, ok := u[i].(map[string]any)
 					if !ok {
 						return nil, fmt.Errorf("can't apply filter %s on %s%s[%d]: %v", toJson(sf), path, k, i, u[i]) // report the path to v
 					}
@@ -72,7 +72,7 @@ func applyFilter(obj map[string]interface{}, filter map[string]interface{}, path
 	return out, nil
 }
 
-func toJson(v interface{}) string {
+func toJson(v any) string {
 	str, err := Marshal(v)
 	if err != nil {
 		return fmt.Sprintf("%q", v)

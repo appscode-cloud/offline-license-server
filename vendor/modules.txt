@@ -760,7 +760,7 @@ gomodules.xyz/email
 # gomodules.xyz/email-providers v0.1.5
 ## explicit; go 1.14
 gomodules.xyz/email-providers
-# gomodules.xyz/encoding v0.0.8
+# gomodules.xyz/encoding v0.0.9
 ## explicit; go 1.22.1
 gomodules.xyz/encoding/csv/types
 gomodules.xyz/encoding/json

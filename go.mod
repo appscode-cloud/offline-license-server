@@ -31,7 +31,7 @@ require (
 	gomodules.xyz/blobfs v0.2.2
 	gomodules.xyz/cert v1.6.0
 	gomodules.xyz/email-providers v0.1.5
-	gomodules.xyz/encoding v0.0.8
+	gomodules.xyz/encoding v0.0.9
 	gomodules.xyz/freshsales-client-go v0.1.1
 	gomodules.xyz/gdrive-utils v0.0.9
 	gomodules.xyz/homedir v0.1.0

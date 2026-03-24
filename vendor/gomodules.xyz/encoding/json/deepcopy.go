@@ -24,31 +24,31 @@ import (
 // DeepCopyJSON deep copies the passed value, assuming it is a valid JSON representation i.e. only contains
 // types produced by json.Unmarshal() and also int64.
 // bool, int64, float64, string, []interface{}, map[string]interface{}, json.Number and nil
-func DeepCopyJSON(x map[string]interface{}) map[string]interface{} {
-	return DeepCopyJSONValue(x).(map[string]interface{})
+func DeepCopyJSON(x map[string]any) map[string]any {
+	return DeepCopyJSONValue(x).(map[string]any)
 }
 
 // DeepCopyJSONValue deep copies the passed value, assuming it is a valid JSON representation i.e. only contains
 // types produced by json.Unmarshal() and also int64.
 // bool, int64, float64, string, []interface{}, map[string]interface{}, json.Number and nil
-func DeepCopyJSONValue(x interface{}) interface{} {
+func DeepCopyJSONValue(x any) any {
 	switch x := x.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		if x == nil {
 			// Typed nil - an interface{} that contains a type map[string]interface{} with a value of nil
 			return x
 		}
-		clone := make(map[string]interface{}, len(x))
+		clone := make(map[string]any, len(x))
 		for k, v := range x {
 			clone[k] = DeepCopyJSONValue(v)
 		}
 		return clone
-	case []interface{}:
+	case []any:
 		if x == nil {
 			// Typed nil - an interface{} that contains a type []interface{} with a value of nil
 			return x
 		}
-		clone := make([]interface{}, len(x))
+		clone := make([]any, len(x))
 		for i, v := range x {
 			clone[i] = DeepCopyJSONValue(v)
 		}
