@@ -40,6 +40,7 @@ import (
 	listmonkclient "gomodules.xyz/listmonk-client-go"
 	"gomodules.xyz/sets"
 	"gopkg.in/macaron.v1"
+	"k8s.io/klog/v2"
 )
 
 type SpeakerInfo struct {
@@ -98,6 +99,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 		if out == nil {
 			schedule, err := s.NextWebinarSchedule()
 			if err != nil {
+				klog.ErrorS(err, "error getting next schedule")
 				ctx.Error(http.StatusInternalServerError, err.Error())
 				return
 			}
@@ -115,6 +117,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 		if out == nil {
 			schedule, err := s.UpcomingWebinarSchedules()
 			if err != nil {
+				klog.ErrorS(err, "error getting upcoming schedule")
 				ctx.Error(http.StatusInternalServerError, err.Error())
 				return
 			}
@@ -132,6 +135,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 		if out == nil {
 			schedule, err := s.PastWebinarSchedules()
 			if err != nil {
+				klog.ErrorS(err, "error getting past schedules")
 				ctx.Error(http.StatusInternalServerError, err.Error())
 				return
 			}
@@ -146,6 +150,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 	m.Post("/_/webinars/register", binding.Bind(WebinarRegistrationForm{}), func(ctx *macaron.Context, form WebinarRegistrationForm, log *log.Logger) {
 		err := s.RegisterForWebinar(ctx, form, log)
 		if err != nil {
+			klog.ErrorS(err, "error registering for webinar", "email", form.WorkEmail)
 			ctx.Error(http.StatusInternalServerError, err.Error())
 			return
 		}
@@ -158,6 +163,7 @@ func (s *Server) RegisterWebinarAPI(m *macaron.Macaron) {
 		date := ctx.Params("date")
 		attendees, err := s.ListWebinarAttendees(date)
 		if err != nil {
+			klog.ErrorS(err, "error listing webinar attendees", "date", date)
 			ctx.Error(http.StatusInternalServerError, err.Error())
 			return
 		}

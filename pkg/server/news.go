@@ -30,6 +30,7 @@ import (
 	gdrive "gomodules.xyz/gdrive-utils"
 	"gomodules.xyz/sets"
 	"gopkg.in/macaron.v1"
+	"k8s.io/klog/v2"
 )
 
 type NewsSnippet struct {
@@ -51,6 +52,7 @@ func (s *Server) RegisterNewsAPI(m *macaron.Macaron) {
 			}
 			news, err := s.TimelyNextNewsSnippet(p)
 			if err != nil {
+				klog.ErrorS(err, "error getting news snippet", "product", p)
 				ctx.Error(http.StatusInternalServerError, err.Error())
 				return
 			}
