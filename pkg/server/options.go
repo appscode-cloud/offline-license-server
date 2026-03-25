@@ -56,6 +56,8 @@ type Options struct {
 	EnableDripCampaign bool
 
 	Coupons string
+
+	RecaptchaSiteKey string
 }
 
 func NewOptions() *Options {
@@ -79,6 +81,7 @@ func NewOptions() *Options {
 		GoogleCredentialDir:  cwd,
 		EnableDripCampaign:   true,
 		Coupons:              os.Getenv("COUPONS"),
+		RecaptchaSiteKey:     os.Getenv("RECAPTCHA_SITE_KEY"),
 	}
 }
 
@@ -115,4 +118,6 @@ func (s *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&s.EnableDripCampaign, "drip-campaign", s.EnableDripCampaign, "Set true to enable drip campaign runner")
 
 	fs.StringVar(&s.Coupons, "coupons", s.Coupons, "Coupon codes")
+
+	fs.StringVar(&s.RecaptchaSiteKey, "recaptcha.site-key", s.RecaptchaSiteKey, "Google reCAPTCHA v2 site key")
 }

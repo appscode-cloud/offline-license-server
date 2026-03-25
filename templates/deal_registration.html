@@ -9,6 +9,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
     />
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   </head>
   <body>
     <section class="section has-text-centered">
@@ -399,9 +400,15 @@
                 </div>
               </div>
 
+              {{if .RecaptchaSiteKey}}
+              <div class="field">
+                <div class="g-recaptcha" data-sitekey="{{.RecaptchaSiteKey}}" data-callback="onRecaptchaSuccess" data-expired-callback="onRecaptchaExpired"></div>
+              </div>
+              {{end}}
+
               <div class="field is-grouped">
                 <div class="control">
-                  <button class="button is-link" type="submit">Submit Deal Registration</button>
+                  <button id="submit-btn" class="button is-link" type="submit">Submit</button>
                 </div>
               </div>
             </form>
@@ -409,5 +416,16 @@
         </div>
       </div>
     </section>
+    {{if .RecaptchaSiteKey}}
+    <script>
+      document.getElementById('submit-btn').disabled = true;
+      function onRecaptchaSuccess() {
+        document.getElementById('submit-btn').disabled = false;
+      }
+      function onRecaptchaExpired() {
+        document.getElementById('submit-btn').disabled = true;
+      }
+    </script>
+    {{end}}
   </body>
 </html>
