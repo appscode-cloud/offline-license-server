@@ -302,10 +302,10 @@ func (s *Server) Run() error {
 		ctx.Redirect(fmt.Sprintf("https://drive.google.com/drive/folders/%s", folderId))
 	})
 
-	m.Get("/_/deal-registration/", auth.Basic(os.Getenv("APPSCODE_SALES_USERNAME"), os.Getenv("APPSCODE_SALES_PASSWORD")), func(ctx *macaron.Context) {
+	m.Get("/_/deal_registration/", auth.Basic(os.Getenv("APPSCODE_SALES_USERNAME"), os.Getenv("APPSCODE_SALES_PASSWORD")), func(ctx *macaron.Context) {
 		ctx.HTML(200, "deal_registration") // 200 is the response code.
 	})
-	m.Post("/_/deal-registration/", binding.Bind(DealRegistrationInfo{}), func(ctx *macaron.Context, form DealRegistrationInfo) {
+	m.Post("/_/deal_registration/", binding.Bind(DealRegistrationInfo{}), func(ctx *macaron.Context, form DealRegistrationInfo) {
 		form.Complete()
 		if err := form.Validate(); err != nil {
 			ctx.WriteHeader(http.StatusBadRequest)
