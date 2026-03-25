@@ -46,11 +46,15 @@ type DealRegistrationInfo struct {
 	CustomerCountry string `form:"customer-country" binding:"Required" json:"customer-country" csv:"customer-country"`
 
 	// Deal Information
-	Product           string `form:"product" binding:"Required" json:"product" csv:"product"`
-	EstimatedDealSize string `form:"estimated-deal-size" json:"estimated-deal-size" csv:"estimated-deal-size"`
-	ProjectTimeline   string `form:"project-timeline" json:"project-timeline" csv:"project-timeline"`
-	CompetitorProduct string `form:"competitor-product" json:"competitor-product" csv:"competitor-product"`
-	Notes             string `form:"notes" json:"notes" csv:"notes"`
+	Product                     string `form:"product" binding:"Required" json:"product" csv:"product"`
+	KubernetesSetup             string `form:"kubernetes-setup" json:"kubernetes-setup" csv:"kubernetes-setup"`
+	EstimatedDealSize           string `form:"estimated-deal-size" json:"estimated-deal-size" csv:"estimated-deal-size"`
+	EstimatedDatabaseMemory     string `form:"estimated-database-memory" json:"estimated-database-memory" csv:"estimated-database-memory"`
+	EstimatedKubernetesNodes    string `form:"estimated-kubernetes-nodes" json:"estimated-kubernetes-nodes" csv:"estimated-kubernetes-nodes"`
+	EstimatedKubernetesClusters string `form:"estimated-kubernetes-clusters" json:"estimated-kubernetes-clusters" csv:"estimated-kubernetes-clusters"`
+	ProjectTimeline             string `form:"project-timeline" json:"project-timeline" csv:"project-timeline"`
+	CompetitorProduct           string `form:"competitor-product" json:"competitor-product" csv:"competitor-product"`
+	Notes                       string `form:"notes" json:"notes" csv:"notes"`
 
 	// Internal fields
 	RegisteredOn OfferDate `form:"-" json:"-" csv:"registered-on"`

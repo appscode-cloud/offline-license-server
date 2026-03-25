@@ -330,12 +330,73 @@
                       <div class="select is-fullwidth">
                         <select name="product" required>
                           <option value="">-- Select Product --</option>
-                          <option value="KubeDB Enterprise">KubeDB Enterprise</option>
-                          <option value="Stash Enterprise">Stash Enterprise</option>
-                          <option value="KubeVault Enterprise">KubeVault Enterprise</option>
-                          <option value="Voyager Enterprise">Voyager Enterprise</option>
-                          <option value="Platform Enterprise">Platform Enterprise</option>
-                          <option value="Config Syncer Enterprise">Config Syncer Enterprise</option>
+                          <option value="kubedb-enterprise" {{ if eq .Product "kubedb-enterprise" }}selected{{ end }}>KubeDB</option>
+                          <option value="stash-enterprise" {{ if eq .Product "stash-enterprise" }}selected{{ end }}>Stash</option>
+                          <option value="kubevault-enterprise" {{ if eq .Product "kubevault-enterprise" }}selected{{ end }}>KubeVault</option>
+                          <option value="voyager-enterprise" {{ if eq .Product "voyager-enterprise" }}selected{{ end }}>Voyager</option>
+                          <option value="config-syncer-enterprise" {{ if eq .Product "config-syncer-enterprise" }}selected{{ end }}>Config Syncer (Kubed)</option>
+                          <option value="platform-enterprise" {{ if eq .Product "platform-enterprise" }}selected{{ end }}>ACE Platform</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div id="field-database-memory" class="field" {{ if ne .Product "kubedb-enterprise" }}style="display:none"{{ end }}>
+                    <label class="label">Estimated Database Memory (GB)</label>
+                    <div class="control">
+                      <input
+                        name="estimated-database-memory"
+                        class="input"
+                        type="text"
+                        placeholder=""
+                      />
+                    </div>
+                  </div>
+                  <div id="field-kubernetes-nodes" class="field" {{ if not (or (eq .Product "stash-enterprise") (eq .Product "kubevault-enterprise")) }}style="display:none"{{ end }}>
+                    <label class="label">Estimated Kubernetes Nodes</label>
+                    <div class="control">
+                      <input
+                        name="estimated-kubernetes-nodes"
+                        class="input"
+                        type="text"
+                        placeholder=""
+                      />
+                    </div>
+                  </div>
+                  <div id="field-kubernetes-clusters" class="field" {{ if or (eq .Product "kubedb-enterprise") (eq .Product "stash-enterprise") (eq .Product "kubevault-enterprise") }}style="display:none"{{ end }}>
+                    <label class="label">Estimated Number of Kubernetes Clusters</label>
+                    <div class="control">
+                      <input
+                        name="estimated-kubernetes-clusters"
+                        class="input"
+                        type="text"
+                        placeholder=""
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <label class="label">Kubernetes Setup</label>
+                    <div class="control">
+                      <div class="select is-fullwidth">
+                        <select name="kubernetes-setup">
+                          <option value="">-- Select Setup --</option>
+                          <option value="Red Hat OpenShift">Red Hat OpenShift</option>
+                          <option value="Rancher by SUSE">Rancher by SUSE</option>
+                          <option value="Kubernetes on OpenStack">Kubernetes on OpenStack</option>
+                          <option value="Nutanix Kubernetes Platform (NKP)">Nutanix Kubernetes Platform (NKP)</option>
+                          <option value="Mirantis Kubernetes Engine">Mirantis Kubernetes Engine</option>
+                          <option value="VMware Tanzu Kubernetes Grid (TKG)">VMware Tanzu Kubernetes Grid (TKG)</option>
+                          <option value="Amazon EKS">Amazon EKS</option>
+                          <option value="Azure AKS">Azure AKS</option>
+                          <option value="Google GKE">Google GKE</option>
+                          <option value="Other Kubernetes Distribution">Other Kubernetes Distribution</option>
+                          <option value="Not using Kubernetes Yet">Not using Kubernetes Yet</option>
                         </select>
                       </div>
                     </div>
@@ -416,6 +477,29 @@
         </div>
       </div>
     </section>
+    <script>
+      (function() {
+        var productSelect = document.querySelector('select[name="product"]');
+        var fields = {
+          'kubedb-enterprise': document.getElementById('field-database-memory'),
+          'stash-enterprise': document.getElementById('field-kubernetes-nodes'),
+          'kubevault-enterprise': document.getElementById('field-kubernetes-nodes')
+        };
+        var defaultField = document.getElementById('field-kubernetes-clusters');
+
+        productSelect.addEventListener('change', function() {
+          var val = this.value;
+          document.getElementById('field-database-memory').style.display = 'none';
+          document.getElementById('field-kubernetes-nodes').style.display = 'none';
+          document.getElementById('field-kubernetes-clusters').style.display = 'none';
+          if (fields[val]) {
+            fields[val].style.display = '';
+          } else {
+            defaultField.style.display = '';
+          }
+        });
+      })();
+    </script>
     {{if .RecaptchaSiteKey}}
     <script>
       document.getElementById('submit-btn').disabled = true;

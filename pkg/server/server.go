@@ -305,6 +305,7 @@ func (s *Server) Run() error {
 
 	m.Get("/_/deal_registration/", func(ctx *macaron.Context) {
 		ctx.Data["RecaptchaSiteKey"] = s.opts.RecaptchaSiteKey
+		ctx.Data["Product"] = productAliases[ctx.Query("p")]
 		ctx.HTML(200, "deal_registration") // 200 is the response code.
 	})
 	m.Post("/_/deal_registration/", binding.Bind(DealRegistrationInfo{}), func(ctx *macaron.Context, form DealRegistrationInfo) {
