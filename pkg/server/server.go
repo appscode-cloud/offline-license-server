@@ -223,6 +223,7 @@ func (s *Server) Run() error {
 	})
 	m.Get("/issue-license", func(ctx *macaron.Context) {
 		ctx.Data["Product"] = productAliases[ctx.Query("p")]
+		ctx.Data["RecaptchaSiteKey"] = s.opts.RecaptchaSiteKey
 		ctx.HTML(200, "index") // 200 is the response code.
 	})
 
@@ -303,6 +304,7 @@ func (s *Server) Run() error {
 	})
 
 	m.Get("/_/deal_registration/", auth.Basic(os.Getenv("APPSCODE_SALES_USERNAME"), os.Getenv("APPSCODE_SALES_PASSWORD")), func(ctx *macaron.Context) {
+		ctx.Data["RecaptchaSiteKey"] = s.opts.RecaptchaSiteKey
 		ctx.HTML(200, "deal_registration") // 200 is the response code.
 	})
 	m.Post("/_/deal_registration/", binding.Bind(DealRegistrationInfo{}), func(ctx *macaron.Context, form DealRegistrationInfo) {

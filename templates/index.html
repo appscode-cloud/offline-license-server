@@ -16,6 +16,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
     />
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
@@ -94,12 +95,14 @@
                   >
                 </p>
               </div>
+              <!--
               <div class="field">
                 <label class="label">Coupon (if any)</label>
                 <div class="control">
                   <input name="coupon" class="input" type="text" placeholder="" />
                 </div>
               </div>
+              -->
               <div class="field">
                 <div class="control">
                   <label class="checkbox">
@@ -111,9 +114,14 @@
                   </label>
                 </div>
               </div>
+              {{if .RecaptchaSiteKey}}
+              <div class="field">
+                <div class="g-recaptcha" data-sitekey="{{.RecaptchaSiteKey}}" data-callback="onRecaptchaSuccess" data-expired-callback="onRecaptchaExpired"></div>
+              </div>
+              {{end}}
               <div class="field is-grouped">
                 <div class="control">
-                  <button class="button is-link">Submit</button>
+                  <button id="submit-btn" class="button is-link">Submit</button>
                 </div>
               </div>
             </form>
@@ -134,5 +142,16 @@
     })();
     </script>
     <!--End of Tawk.to Script-->
+    {{if .RecaptchaSiteKey}}
+    <script>
+      document.getElementById('submit-btn').disabled = true;
+      function onRecaptchaSuccess() {
+        document.getElementById('submit-btn').disabled = false;
+      }
+      function onRecaptchaExpired() {
+        document.getElementById('submit-btn').disabled = true;
+      }
+    </script>
+    {{end}}
   </body>
 </html>
