@@ -207,7 +207,7 @@ func (form ProductQuotation) Replacements() map[string]string {
 
 	now := time.Now()
 	replacements["{{prep-date}}"] = now.Format("Jan 2, 2006")
-	replacements["{{expiry-date}}"] = now.Add(30 * 24 * time.Hour).Format("Jan 2, 2006")
+	replacements["{{expiry-date}}"] = now.Add(3 * 30 * 24 * time.Hour).Format("Jan 2, 2006")
 
 	return replacements
 }
