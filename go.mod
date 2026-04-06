@@ -32,7 +32,7 @@ require (
 	gomodules.xyz/cert v1.6.0
 	gomodules.xyz/email-providers v0.1.5
 	gomodules.xyz/encoding v0.0.9
-	gomodules.xyz/freshsales-client-go v0.1.1
+	gomodules.xyz/freshsales-client-go v0.1.2-0.20260406172435-c51feb728fd6
 	gomodules.xyz/gdrive-utils v0.0.9
 	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/listmonk-client-go v0.0.3
@@ -100,7 +100,7 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191 // indirect
-	github.com/go-resty/resty/v2 v2.7.0 // indirect
+	github.com/go-resty/resty/v2 v2.17.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/golang/snappy v0.0.4 // indirect

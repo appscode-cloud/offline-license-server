@@ -368,9 +368,10 @@ github.com/go-macaron/cors
 # github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191
 ## explicit
 github.com/go-macaron/inject
-# github.com/go-resty/resty/v2 v2.7.0
-## explicit; go 1.11
+# github.com/go-resty/resty/v2 v2.17.2
+## explicit; go 1.23.0
 github.com/go-resty/resty/v2
+github.com/go-resty/resty/v2/shellescape
 # github.com/gobuffalo/flect v1.0.3
 ## explicit; go 1.16
 github.com/gobuffalo/flect
@@ -762,8 +763,8 @@ gomodules.xyz/encoding/json
 # gomodules.xyz/flags v0.1.3
 ## explicit; go 1.16
 gomodules.xyz/flags
-# gomodules.xyz/freshsales-client-go v0.1.1
-## explicit; go 1.20
+# gomodules.xyz/freshsales-client-go v0.1.2-0.20260406172435-c51feb728fd6
+## explicit; go 1.24.0
 gomodules.xyz/freshsales-client-go
 # gomodules.xyz/gdrive-utils v0.0.9
 ## explicit; go 1.21.5
