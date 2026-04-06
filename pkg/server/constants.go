@@ -26,6 +26,7 @@ import (
 const (
 	AccountFolderId      = "1RBXgSR0jud5cpCqeC90fAdyb0Oaz7EIc"
 	LicenseSpreadsheetId = "1evwv2ON94R38M-Lkrw8b6dpVSkRYHUWsNOuI7X0_-zA"
+	DealSpreadsheetId    = "1y-ZfOzZAMUv4kkbEWJi8O1CcN-c9fQdkvH4wmv2yG7c"
 	DripSpreadsheetId    = "10Jx3-1Ww2UQ7xNjs9-CRvJX4iIA22EDu-EsLKoHp1hc"
 
 	MailLicenseSender  = "license-issuer@appscode.com"

@@ -49,16 +49,57 @@ type Currency struct {
 }
 
 type Deal struct {
-	ID                 int64       `json:"id,omitempty"`
-	Name               string      `json:"name,omitempty"`
-	Amount             float64     `json:"amount,omitempty"`
-	CurrencyID         int64       `json:"currency_id,omitempty"`
-	BaseCurrencyAmount float64     `json:"base_currency_amount,omitempty"`
-	ExpectedClose      *time.Time  `json:"expected_close,omitempty"`
-	DealProductID      int64       `json:"deal_product_id,omitempty"`
-	DealProduct        interface{} `json:"deal_product,omitempty"`
-	Currency           Currency    `json:"currency,omitempty"`
-	ProductID          int         `json:"product_id,omitempty"`
+	ID                  int64       `json:"id,omitempty"`
+	Name                string      `json:"name,omitempty"`
+	Amount              float64     `json:"amount,omitempty"`
+	CurrencyID          int64       `json:"currency_id,omitempty"`
+	BaseCurrencyAmount  float64     `json:"base_currency_amount,omitempty"`
+	SalesAccountID      int64       `json:"sales_account_id,omitempty"`
+	DealStageID         int64       `json:"deal_stage_id,omitempty"`
+	DealReasonID        int64       `json:"deal_reason_id,omitempty"`
+	DealTypeID          int64       `json:"deal_type_id,omitempty"`
+	OwnerID             int64       `json:"owner_id,omitempty"`
+	ExpectedClose       *time.Time  `json:"expected_close,omitempty"`
+	ClosedDate          *time.Time  `json:"closed_date,omitempty"`
+	LeadSourceID        int64       `json:"lead_source_id,omitempty"`
+	CampaignID          int64       `json:"campaign_id,omitempty"`
+	DealProductID       int64       `json:"deal_product_id,omitempty"`
+	DealPaymentStatusID int64       `json:"deal_payment_status_id,omitempty"`
+	Probability         int         `json:"probability,omitempty"`
+	TerritoryID         int64       `json:"territory_id,omitempty"`
+	DealPipelineID      int64       `json:"deal_pipeline_id,omitempty"`
+	DealProduct         interface{} `json:"deal_product,omitempty"`
+	Currency            Currency    `json:"currency,omitempty"`
+	ProductID           int         `json:"product_id,omitempty"`
+	StageUpdatedTime    time.Time   `json:"stage_updated_time,omitempty"`
+	CustomField         interface{} `json:"custom_field,omitempty"`
+	Age                 int         `json:"age,omitempty"`
+	CreaterID           int64       `json:"creater_id,omitempty"`
+	CreatedAt           time.Time   `json:"created_at,omitempty"`
+	UpdatedAt           time.Time   `json:"updated_at,omitempty"`
+}
+
+type DealFilters struct {
+	Filters []DealView `json:"filters"`
+}
+
+type DealView struct {
+	ID             int    `json:"id"`
+	Name           string `json:"name"`
+	ModelClassName string `json:"model_class_name"`
+	UserID         int    `json:"user_id"`
+	IsDefault      bool   `json:"is_default"`
+	IsPublic       bool   `json:"is_public"`
+	UpdatedAt      string `json:"updated_at"`
+}
+
+type DealListResponse struct {
+	Deals []Deal   `json:"deals"`
+	Meta  ListMeta `json:"meta"`
+}
+
+type DealObject struct {
+	Deal *Deal `json:"deal,omitempty"`
 }
 
 type Links struct {
@@ -89,80 +130,136 @@ type CustomFields struct {
 }
 
 type Contact struct {
-	ID                             int64        `json:"id"`
-	FirstName                      string       `json:"first_name"`
-	LastName                       string       `json:"last_name"`
-	DisplayName                    string       `json:"display_name"`
-	Avatar                         string       `json:"avatar"`
-	JobTitle                       string       `json:"job_title"`
-	City                           string       `json:"city"`
-	State                          string       `json:"state"`
-	Zipcode                        string       `json:"zipcode"`
-	Country                        string       `json:"country"`
-	Email                          string       `json:"email"`
-	Emails                         []EmailInfo  `json:"emails"`
-	TimeZone                       string       `json:"time_zone"`
-	WorkNumber                     string       `json:"work_number"`
-	MobileNumber                   string       `json:"mobile_number"`
-	Address                        string       `json:"address"`
-	LastSeen                       string       `json:"last_seen"`
-	LeadScore                      int          `json:"lead_score"`
-	LastContacted                  time.Time    `json:"last_contacted"`
-	OpenDealsAmount                string       `json:"open_deals_amount"`
-	WonDealsAmount                 string       `json:"won_deals_amount"`
-	Links                          Links        `json:"links"`
-	LastContactedSalesActivityMode string       `json:"last_contacted_sales_activity_mode"`
-	CustomField                    CustomFields `json:"custom_field"`
-	CreatedAt                      time.Time    `json:"created_at"`
-	UpdatedAt                      time.Time    `json:"updated_at"`
-	Keyword                        string       `json:"keyword"`
-	Medium                         string       `json:"medium"`
-	LastContactedMode              string       `json:"last_contacted_mode"`
-	RecentNote                     string       `json:"recent_note"`
-	WonDealsCount                  int          `json:"won_deals_count"`
-	LastContactedViaSalesActivity  time.Time    `json:"last_contacted_via_sales_activity"`
-	CompletedSalesSequences        string       `json:"completed_sales_sequences"`
-	ActiveSalesSequences           string       `json:"active_sales_sequences"`
-	WebFormIds                     string       `json:"web_form_ids"`
-	OpenDealsCount                 int          `json:"open_deals_count"`
-	LastAssignedAt                 *time.Time   `json:"last_assigned_at"`
-	Facebook                       string       `json:"facebook"`
-	Twitter                        string       `json:"twitter"`
-	Linkedin                       string       `json:"linkedin"`
-	IsDeleted                      bool         `json:"is_deleted"`
-	TeamUserIds                    string       `json:"team_user_ids"`
-	ExternalId                     string       `json:"external_id"`
-	WorkEmail                      string       `json:"work_email"`
-	SubscriptionStatus             int          `json:"subscription_status"`
-	SubscriptionTypes              string       `json:"subscription_types"`
-	UnsubscriptionReason           string       `json:"unsubscription_reason"`
-	OtherUnsubscriptionReason      string       `json:"other_unsubscription_reason"`
-	CustomerFit                    int          `json:"customer_fit"`
-	WhatsappSubscriptionStatus     int          `json:"whatsapp_subscription_status"`
-	SmsSubscriptionStatus          int          `json:"sms_subscription_status"`
-	LastSeenChat                   string       `json:"last_seen_chat"`
-	FirstSeenChat                  string       `json:"first_seen_chat"`
-	Locale                         string       `json:"locale"`
-	TotalSessions                  string       `json:"total_sessions"`
-	SystemTags                     []string     `json:"system_tags"`
-	FirstCampaign                  string       `json:"first_campaign"`
-	FirstMedium                    string       `json:"first_medium"`
-	FirstSource                    string       `json:"first_source"`
-	LastCampaign                   string       `json:"last_campaign"`
-	LastMedium                     string       `json:"last_medium"`
-	LastSource                     string       `json:"last_source"`
-	LatestCampaign                 string       `json:"latest_campaign"`
-	LatestMedium                   string       `json:"latest_medium"`
-	LatestSource                   string       `json:"latest_source"`
-	McrId                          int64        `json:"mcr_id"`
-	PhoneNumbers                   []string     `json:"phone_numbers"`
-	Tags                           []string     `json:"tags"`
+	ID                             int64          `json:"id"`
+	FirstName                      string         `json:"first_name"`
+	LastName                       string         `json:"last_name"`
+	DisplayName                    string         `json:"display_name"`
+	Avatar                         string         `json:"avatar"`
+	JobTitle                       string         `json:"job_title"`
+	City                           string         `json:"city"`
+	State                          string         `json:"state"`
+	Zipcode                        string         `json:"zipcode"`
+	Country                        string         `json:"country"`
+	Email                          string         `json:"email"`
+	Emails                         []EmailInfo    `json:"emails"`
+	TimeZone                       string         `json:"time_zone"`
+	WorkNumber                     string         `json:"work_number"`
+	MobileNumber                   string         `json:"mobile_number"`
+	Address                        string         `json:"address"`
+	LastSeen                       string         `json:"last_seen"`
+	LeadScore                      int            `json:"lead_score"`
+	LastContacted                  time.Time      `json:"last_contacted"`
+	OpenDealsAmount                string         `json:"open_deals_amount"`
+	WonDealsAmount                 string         `json:"won_deals_amount"`
+	Links                          Links          `json:"links"`
+	LastContactedSalesActivityMode string         `json:"last_contacted_sales_activity_mode"`
+	CustomField                    CustomFields   `json:"custom_field"`
+	CreatedAt                      time.Time      `json:"created_at"`
+	UpdatedAt                      time.Time      `json:"updated_at"`
+	Keyword                        string         `json:"keyword"`
+	Medium                         string         `json:"medium"`
+	LastContactedMode              string         `json:"last_contacted_mode"`
+	RecentNote                     string         `json:"recent_note"`
+	WonDealsCount                  int            `json:"won_deals_count"`
+	LastContactedViaSalesActivity  time.Time      `json:"last_contacted_via_sales_activity"`
+	CompletedSalesSequences        string         `json:"completed_sales_sequences"`
+	ActiveSalesSequences           string         `json:"active_sales_sequences"`
+	WebFormIds                     string         `json:"web_form_ids"`
+	OpenDealsCount                 int            `json:"open_deals_count"`
+	LastAssignedAt                 *time.Time     `json:"last_assigned_at"`
+	Facebook                       string         `json:"facebook"`
+	Twitter                        string         `json:"twitter"`
+	Linkedin                       string         `json:"linkedin"`
+	IsDeleted                      bool           `json:"is_deleted"`
+	TeamUserIds                    string         `json:"team_user_ids"`
+	ExternalId                     string         `json:"external_id"`
+	WorkEmail                      string         `json:"work_email"`
+	SubscriptionStatus             int            `json:"subscription_status"`
+	SubscriptionTypes              string         `json:"subscription_types"`
+	UnsubscriptionReason           string         `json:"unsubscription_reason"`
+	OtherUnsubscriptionReason      string         `json:"other_unsubscription_reason"`
+	CustomerFit                    int            `json:"customer_fit"`
+	WhatsappSubscriptionStatus     int            `json:"whatsapp_subscription_status"`
+	SmsSubscriptionStatus          int            `json:"sms_subscription_status"`
+	LastSeenChat                   string         `json:"last_seen_chat"`
+	FirstSeenChat                  string         `json:"first_seen_chat"`
+	Locale                         string         `json:"locale"`
+	TotalSessions                  string         `json:"total_sessions"`
+	SystemTags                     []string       `json:"system_tags"`
+	FirstCampaign                  string         `json:"first_campaign"`
+	FirstMedium                    string         `json:"first_medium"`
+	FirstSource                    string         `json:"first_source"`
+	LastCampaign                   string         `json:"last_campaign"`
+	LastMedium                     string         `json:"last_medium"`
+	LastSource                     string         `json:"last_source"`
+	LatestCampaign                 string         `json:"latest_campaign"`
+	LatestMedium                   string         `json:"latest_medium"`
+	LatestSource                   string         `json:"latest_source"`
+	McrId                          int64          `json:"mcr_id"`
+	PhoneNumbers                   []string       `json:"phone_numbers"`
+	Tags                           []string       `json:"tags"`
+	SalesAccounts                  []SalesAccount `json:"sales_accounts,omitempty"`
+	SalesAccountID                 int64          `json:"sales_account_id,omitempty"`
+	ContactStatusID                int64          `json:"contact_status_id,omitempty"`
+	LifecycleStageID               int64          `json:"lifecycle_stage_id,omitempty"`
+	TerritoryID                    int64          `json:"territory_id,omitempty"`
+	LeadSourceID                   int64          `json:"lead_source_id,omitempty"`
+	OwnerID                        int64          `json:"owner_id,omitempty"`
+	CampaignID                     int64          `json:"campaign_id,omitempty"`
+	StageUpdatedTime               time.Time      `json:"stage_updated_time,omitempty"`
 }
 
 type LookupResult struct {
 	Contacts struct {
 		Contacts []Contact `json:"contacts,omitempty"`
 	} `json:"contacts,omitempty"`
+}
+
+type SalesAccount struct {
+	ID                   int64     `json:"id,omitempty"`
+	Name                 string    `json:"name,omitempty"`
+	Address              string    `json:"address,omitempty"`
+	City                 string    `json:"city,omitempty"`
+	State                string    `json:"state,omitempty"`
+	Zipcode              string    `json:"zipcode,omitempty"`
+	Country              string    `json:"country,omitempty"`
+	NumberOfEmployees    int       `json:"number_of_employees,omitempty"`
+	AnnualRevenue        int       `json:"annual_revenue,omitempty"`
+	Website              string    `json:"website,omitempty"`
+	Phone                string    `json:"phone,omitempty"`
+	IndustryTypeID       int64     `json:"industry_type_id,omitempty"`
+	BusinessTypeID       int64     `json:"business_type_id,omitempty"`
+	OwnerID              int64     `json:"owner_id,omitempty"`
+	Facebook             string    `json:"facebook,omitempty"`
+	Twitter              string    `json:"twitter,omitempty"`
+	Linkedin             string    `json:"linkedin,omitempty"`
+	TerritoryID          int64     `json:"territory_id,omitempty"`
+	ParentSalesAccountID int64     `json:"parent_sales_account_id,omitempty"`
+	CreatedAt            time.Time `json:"created_at,omitempty"`
+	UpdatedAt            time.Time `json:"updated_at,omitempty"`
+}
+
+type AccountFilters struct {
+	Filters []AccountView `json:"filters"`
+}
+
+type AccountView struct {
+	ID             int    `json:"id"`
+	Name           string `json:"name"`
+	ModelClassName string `json:"model_class_name"`
+	UserID         int    `json:"user_id"`
+	IsDefault      bool   `json:"is_default"`
+	IsPublic       bool   `json:"is_public"`
+	UpdatedAt      string `json:"updated_at"`
+}
+
+type AccountListResponse struct {
+	SalesAccounts []SalesAccount `json:"sales_accounts"`
+	Meta          ListMeta       `json:"meta"`
+}
+
+type AccountObject struct {
+	SalesAccount *SalesAccount `json:"sales_account,omitempty"`
 }
 
 type Note struct {

@@ -29,17 +29,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-const (
-	MailIncomingDeals = "incoming-deals@appscode.com"
-)
-
-type DealRegistrationInfo struct {
-	// Partner Information
-	PartnerName    string `form:"partner-name" binding:"Required" json:"partner-name" csv:"partner-name"`
-	PartnerEmail   string `form:"partner-email" binding:"Required;Email" json:"partner-email" csv:"partner-email"`
-	PartnerCompany string `form:"partner-company" binding:"Required" json:"partner-company" csv:"partner-company"`
-	Region         string `form:"region" binding:"Required" json:"region" csv:"region"`
-
+type KubeDBInquiryInfo struct {
 	// Customer Information
 	CustomerName    string `form:"customer-name" binding:"Required" json:"customer-name" csv:"customer-name"`
 	CustomerEmail   string `form:"customer-email" binding:"Required;Email" json:"customer-email" csv:"customer-email"`
@@ -49,60 +39,51 @@ type DealRegistrationInfo struct {
 	CustomerCountry string `form:"customer-country" binding:"Required" json:"customer-country" csv:"customer-country"`
 
 	// Deal Information
-	Product                     string `form:"product" binding:"Required" json:"product" csv:"product"`
-	KubernetesSetup             string `form:"kubernetes-setup" json:"kubernetes-setup" csv:"kubernetes-setup"`
-	EstimatedDealSize           string `form:"estimated-deal-size" json:"estimated-deal-size" csv:"estimated-deal-size"`
-	EstimatedDatabaseMemory     string `form:"estimated-database-memory" json:"estimated-database-memory" csv:"estimated-database-memory"`
-	EstimatedKubernetesNodes    string `form:"estimated-kubernetes-nodes" json:"estimated-kubernetes-nodes" csv:"estimated-kubernetes-nodes"`
-	EstimatedKubernetesClusters string `form:"estimated-kubernetes-clusters" json:"estimated-kubernetes-clusters" csv:"estimated-kubernetes-clusters"`
-	ProjectTimeline             string `form:"project-timeline" json:"project-timeline" csv:"project-timeline"`
-	CompetitorProduct           string `form:"competitor-product" json:"competitor-product" csv:"competitor-product"`
-	Notes                       string `form:"notes" json:"notes" csv:"notes"`
+	EstimatedDatabaseMemory string `form:"estimated-database-memory" json:"estimated-database-memory" csv:"estimated-database-memory"`
+	KubernetesSetup         string `form:"kubernetes-setup" json:"kubernetes-setup" csv:"kubernetes-setup"`
+	SupportPlan             string `form:"support-plan" json:"support-plan" csv:"support-plan"`
+	ProjectTimeline         string `form:"project-timeline" json:"project-timeline" csv:"project-timeline"`
+	ProfessionalServices    string `form:"professional-services" json:"professional-services" csv:"professional-services"`
+	Notes                   string `form:"notes" json:"notes" csv:"notes"`
 
 	// Internal fields
 	RegisteredOn OfferDate `form:"-" json:"-" csv:"registered-on"`
 }
 
-func (form *DealRegistrationInfo) Complete() {
+func (form *KubeDBInquiryInfo) Complete() {
 	now := time.Now()
 	form.RegisteredOn = NewOfferOfferDate(now)
 
-	form.PartnerName = strings.TrimSpace(form.PartnerName)
-	form.PartnerEmail = strings.TrimSpace(form.PartnerEmail)
-	form.PartnerCompany = strings.TrimSpace(form.PartnerCompany)
 	form.CustomerName = strings.TrimSpace(form.CustomerName)
 	form.CustomerEmail = strings.TrimSpace(form.CustomerEmail)
 	form.CustomerCompany = strings.TrimSpace(form.CustomerCompany)
 }
 
-func (form DealRegistrationInfo) Validate() error {
-	if !strings.Contains(form.PartnerEmail, "@") {
-		return fmt.Errorf("invalid partner email: %s", form.PartnerEmail)
-	}
+func (form KubeDBInquiryInfo) Validate() error {
 	if !strings.Contains(form.CustomerEmail, "@") {
 		return fmt.Errorf("invalid customer email: %s", form.CustomerEmail)
 	}
 	return nil
 }
 
-func (s *Server) HandleDealRegistration(info *DealRegistrationInfo) error {
+func (s *Server) HandleKubeDBInquiry(info *KubeDBInquiryInfo) error {
 	go func() {
-		clients := []*DealRegistrationInfo{info}
-		writer := gdrive.NewWriter(s.srvSheets, DealSpreadsheetId, "Deal Registration")
+		clients := []*KubeDBInquiryInfo{info}
+		writer := gdrive.NewWriter(s.srvSheets, DealSpreadsheetId, "KubeDB Inquiry")
 		err := gocsv.MarshalCSV(clients, writer)
 		if err != nil {
 			klog.Warningln(err)
 			return
 		}
 
-		err = s.noteEventDealRegistration(info)
+		err = s.noteEventKubeDBInquiry(info)
 		if err != nil {
 			klog.Warningln(err)
 			return
 		}
 
-		mailer := NewDealRegistrationMailer(info)
-		fmt.Println("sending email for deal registration", info.CustomerCompany)
+		mailer := NewKubeDBInquiryMailer(info)
+		fmt.Println("sending email for kubedb inquiry", info.CustomerCompany)
 		err = mailer.SendMail(s.mg, MailIncomingDeals, "", nil)
 		if err != nil {
 			klog.Warningln(err)
@@ -113,12 +94,12 @@ func (s *Server) HandleDealRegistration(info *DealRegistrationInfo) error {
 	return nil
 }
 
-type EventDealRegistration struct {
+type EventKubeDBInquiry struct {
 	freshsalesclient.BaseNoteDescription `json:",inline"`
-	DealRegistrationInfo                 `json:",inline"`
+	KubeDBInquiryInfo                    `json:",inline"`
 }
 
-func (s *Server) noteEventDealRegistration(info *DealRegistrationInfo) error {
+func (s *Server) noteEventKubeDBInquiry(info *KubeDBInquiryInfo) error {
 	fields := strings.Fields(info.CustomerName)
 	var firstName, lastName string
 	if len(fields) > 0 {
@@ -195,25 +176,11 @@ func (s *Server) noteEventDealRegistration(info *DealRegistrationInfo) error {
 		}
 	}
 
-	deal := &freshsalesclient.Deal{
-		Name:           fmt.Sprintf("%s - %s", info.CustomerCompany, info.Product),
-		SalesAccountID: companyID,
-	}
-	if info.EstimatedDealSize != "" {
-		if amount, err := strconv.ParseFloat(info.EstimatedDealSize, 64); err == nil {
-			deal.Amount = amount
-		}
-	}
-	_, err = s.freshsales.CreateDeal(deal)
-	if err != nil {
-		klog.Warningln(err)
-	}
-
-	e := EventDealRegistration{
+	e := EventKubeDBInquiry{
 		BaseNoteDescription: freshsalesclient.BaseNoteDescription{
-			Event: "deal_registration",
+			Event: "kubedb_inquiry",
 		},
-		DealRegistrationInfo: *info,
+		KubeDBInquiryInfo: *info,
 	}
 	desc, err := yaml.Marshal(e)
 	if err != nil {
