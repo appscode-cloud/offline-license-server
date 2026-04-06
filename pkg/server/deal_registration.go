@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	MailIncomingDeals = "incoming-deals@appscode.com"
+	MailIncomingDeals = "incoming-deal-alerts@appscode.com"
 )
 
 type DealRegistrationInfo struct {
