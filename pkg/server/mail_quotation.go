@@ -38,7 +38,7 @@ Thanks for your interest in licensing {{.Offer}}.
 
 2. {{.Offer}} {{.Plan}} comes with a 30 day free trial. So, you don't need to purchase a license for ephemeral Kubernetes clusters (typically found in Dev or CI/CD environments).
 
-3. The various support options are detailed in the attached quotation. We offer a Basic support level for free with our {{.Plan}} license. For SLA bound tickets, we charge extra and offer Gold / Platinum plans.
+3. The various support options are detailed in the attached quotation. We offer Standard and Premium support plans with our {{.Plan}} license.
 
 If you have any questions or concerns, please do not hesitate to contact us. If you have any technical questions, someone from our product team will get back to you.
 

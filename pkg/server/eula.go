@@ -36,9 +36,8 @@ const (
 )
 
 const (
-	SupportPlanBasic    = "basic"
-	SupportPlanGold     = "gold"
-	SupportPlanPlatinum = "platinum"
+	SupportPlanStandard = "standard"
+	SupportPlanPremium  = "premium"
 )
 
 type EULAInfo struct {
@@ -87,8 +86,8 @@ func (form *EULAInfo) Complete() error {
 }
 
 func (form EULAInfo) Validate() error {
-	if form.PaymentTerm == PaymentTermPAYG && form.SupportPlan == SupportPlanPlatinum {
-		return errors.New("support plan Platinum is not offered with PAYG contract")
+	if form.PaymentTerm == PaymentTermPAYG && form.SupportPlan == SupportPlanPremium {
+		return errors.New("support plan Premium is not offered with PAYG contract")
 	}
 	return nil
 }
@@ -101,23 +100,15 @@ type EULATemplateKey struct {
 var eulaTemplates = map[EULATemplateKey]string{
 	{
 		PaymentTerm: "annual",
-		SupportPlan: "basic",
-	}: "1QBIjMA-hqfnm5H879Y9zSLGufVeQrHD3cLO0mVQNxPo",
-	{
-		PaymentTerm: "annual",
-		SupportPlan: "gold",
+		SupportPlan: "standard",
 	}: "16LawcDIbeNNIGJeS0pKmXYFukMQMw0olqL5gVWlmD3c",
 	{
 		PaymentTerm: "annual",
-		SupportPlan: "platinum",
+		SupportPlan: "premium",
 	}: "1bcMuWQBdDT8I4XMAdHyyYJSMjlEHjxuIWclvvF5vajQ",
 	{
 		PaymentTerm: "payg",
-		SupportPlan: "basic",
-	}: "16LB_aBLWn44MMn5gDyOTL7cehLpvsQAtVO71gDVY3Gs",
-	{
-		PaymentTerm: "payg",
-		SupportPlan: "gold",
+		SupportPlan: "standard",
 	}: "10_tM2wUTxWRKhyGIOLWK1TuZ2ivRFdCM69iRFU5FgNI",
 }
 
