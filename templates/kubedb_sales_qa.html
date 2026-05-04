@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KubeDB Sales Qualifying Questions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f8; color: #222; min-height: 100vh; }
+
+  /* Header */
+  .header { background: #4D4DCB; color: #fff; padding: 14px 28px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
+  .logo-img { height: 36px; width: auto; display: block; }
+  .header-text .title { font-size: 1rem; font-weight: 700; letter-spacing: 0.01em; }
+  .header-text .sub { font-size: 0.75rem; opacity: 0.75; margin-top: 1px; }
+
+  /* Distro selector screen */
+  #distro-screen { max-width: 760px; margin: 60px auto; padding: 0 20px; }
+  #distro-screen h2 { font-size: 1.4rem; color: #4D4DCB; margin-bottom: 8px; }
+  #distro-screen p { color: #555; margin-bottom: 32px; }
+  .distro-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .distro-card { background: #fff; border: 2px solid #e0e4f5; border-radius: 12px; padding: 24px 20px; cursor: pointer; transition: all 0.18s; text-align: center; }
+  .distro-card:hover { border-color: #4D4DCB; box-shadow: 0 4px 18px rgba(77,77,203,0.15); transform: translateY(-2px); }
+  .distro-card .icon { font-size: 2.2rem; margin-bottom: 10px; }
+  .card-logo { height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .card-logo img { max-height: 44px; max-width: 180px; width: auto; object-fit: contain; }
+  .distro-card .name { font-weight: 700; font-size: 0.95rem; color: #222; }
+  .distro-card .desc { font-size: 0.78rem; color: #777; margin-top: 4px; }
+
+  /* Guide screen — sidebar + content layout */
+  #guide-screen { display: none; }
+  .guide-layout { display: flex; align-items: stretch; min-height: calc(100vh - 64px); max-width: 1060px; margin: 0 auto; }
+
+  /* Vertical stepper sidebar */
+  .sidebar { width: 230px; flex-shrink: 0; background: #fff; border-right: 1px solid #e0e4f5; padding: 24px 0; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto; }
+  .sidebar-distro { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #4D4DCB; padding: 0 20px 16px; border-bottom: 1px solid #f0f2f8; }
+  .step-item { display: flex; align-items: flex-start; gap: 12px; padding: 11px 16px 11px 20px; cursor: pointer; transition: background 0.13s; position: relative; }
+  .step-item::before { content: ""; position: absolute; left: 29px; top: 38px; bottom: -11px; width: 2px; background: #e0e4f5; }
+  .step-item:last-child::before { display: none; }
+  .step-item:hover { background: #f5f6fd; }
+  .step-item.active { background: #f0f1fc; }
+  .step-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #d0d4ee; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #aaa; flex-shrink: 0; margin-top: 1px; transition: all 0.15s; }
+  .step-item.active .step-dot { border-color: #4D4DCB; background: #4D4DCB; color: #fff; }
+  .step-item.done .step-dot { border-color: #22b573; background: #22b573; color: #fff; }
+  .step-item.done .step-dot::after { content: "✓"; font-size: 0.7rem; }
+  .step-item.active .step-dot-num, .step-item:not(.done) .step-dot-num { }
+  .step-label { font-size: 0.8rem; font-weight: 600; color: #777; line-height: 1.35; }
+  .step-item.active .step-label { color: #4D4DCB; }
+  .step-item.done .step-label { color: #22b573; }
+  .step-summary { display: none; margin-top: 4px; font-size: 0.75rem; font-weight: 700; color: #aaa; }
+  .step-item.active .step-summary, .step-item.done .step-summary { display: block; }
+  .step-item.done .step-summary { color: #22b573; }
+  .sidebar-summary-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 16px 11px 20px; cursor: pointer; transition: background 0.13s; }
+  .sidebar-summary-item:hover { background: #f5f6fd; }
+  .sidebar-summary-item.active { background: #f0f1fc; }
+  .sidebar-summary-item .step-dot { border-color: #f5a623; }
+  .sidebar-summary-item.active .step-dot { background: #f5a623; border-color: #f5a623; color: #fff; }
+  .sidebar-summary-item .step-label { color: #888; }
+  .sidebar-summary-item.active .step-label { color: #c87b00; }
+  .sidebar-restart { margin: 20px 16px 0; padding: 8px 12px; background: #f0f2f8; border: none; border-radius: 7px; font-size: 0.76rem; font-weight: 700; color: #4D4DCB; cursor: pointer; width: calc(100% - 32px); transition: background 0.13s; }
+  .sidebar-restart:hover { background: #e0e4f5; }
+
+  /* Main content area */
+  .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  /* Progress bar (top of content, not sticky anymore — sidebar shows position) */
+  .progress-bar-wrap { background: #fff; border-bottom: 1px solid #e0e4f5; padding: 12px 28px; display: flex; align-items: center; gap: 16px; }
+  .progress-track { flex: 1; background: #e0e4f5; border-radius: 4px; height: 5px; }
+  .progress-fill { background: #4D4DCB; height: 5px; border-radius: 4px; transition: width 0.3s; }
+  .progress-text { font-size: 0.78rem; color: #888; white-space: nowrap; }
+
+  /* Section content */
+  .section-content { padding: 28px 32px; flex: 1; }
+  .section-title { font-size: 1.1rem; font-weight: 700; color: #4D4DCB; margin-bottom: 4px; }
+  .section-subtitle { font-size: 0.82rem; color: #888; margin-bottom: 24px; font-style: italic; }
+
+  /* Question card */
+  .q-card { background: #fff; border: 1px solid #e0e4f5; border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+  .q-header { padding: 14px 18px; display: flex; align-items: flex-start; gap: 14px; cursor: pointer; }
+  .q-num { background: #4D4DCB; color: #fff; font-size: 0.72rem; font-weight: 700; border-radius: 20px; padding: 3px 9px; flex-shrink: 0; margin-top: 2px; }
+  .q-text { font-size: 0.93rem; font-weight: 600; color: #222; flex: 1; line-height: 1.45; }
+  .q-expand { color: #aaa; font-size: 0.8rem; flex-shrink: 0; margin-top: 3px; transition: transform 0.2s; }
+  .q-card.open .q-expand { transform: rotate(180deg); }
+  .q-body { display: none; border-top: 1px solid #f0f2f8; padding: 0 18px 16px 18px; }
+  .q-card.open .q-body { display: block; }
+  .listen-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #4D4DCB; margin: 14px 0 6px 0; }
+  .listen-text { font-size: 0.85rem; color: #555; line-height: 1.55; }
+  .notes-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #888; margin: 12px 0 5px 0; }
+  textarea.notes { width: 100%; border: 1px solid #d8ddf0; border-radius: 6px; padding: 8px 10px; font-size: 0.83rem; font-family: inherit; color: #333; resize: vertical; min-height: 56px; outline: none; transition: border 0.15s; }
+  textarea.notes:focus { border-color: #4D4DCB; }
+  .signal-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .signal-btn { padding: 5px 14px; border-radius: 20px; border: 1.5px solid #d8ddf0; background: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s; color: #666; }
+  .signal-btn.hot { border-color: #e84c4c; color: #e84c4c; }
+  .signal-btn.hot.active { background: #e84c4c; color: #fff; }
+  .signal-btn.warm { border-color: #f5a623; color: #c87b00; }
+  .signal-btn.warm.active { background: #f5a623; color: #fff; }
+  .signal-btn.cold { border-color: #aaa; color: #888; }
+  .signal-btn.cold.active { background: #aaa; color: #fff; }
+
+  /* Nav buttons */
+  .nav-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; border-top: 1px solid #e0e4f5; background: #fff; }
+  .btn { padding: 10px 28px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-back { background: #f0f2f8; color: #555; }
+  .btn-back:hover { background: #e0e4f5; }
+  .btn-next { background: #4D4DCB; color: #fff; }
+  .btn-next:hover { background: #3b3ba8; }
+  .btn-finish { background: #22b573; color: #fff; }
+  .btn-finish:hover { background: #1a9060; }
+
+  /* Prospect info screen */
+  #prospect-screen { display: none; max-width: 680px; margin: 48px auto; padding: 0 20px; }
+  #prospect-screen h2 { font-size: 1.25rem; color: #4D4DCB; margin-bottom: 4px; }
+  #prospect-screen .screen-sub { font-size: 0.85rem; color: #777; margin-bottom: 28px; }
+  .prospect-form { background: #fff; border-radius: 12px; padding: 28px 32px; border: 1px solid #e0e4f5; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field.full-width { grid-column: 1 / -1; }
+  .form-field label { font-size: 0.8rem; font-weight: 700; color: #444; }
+  .form-field label .req { color: #e84c4c; margin-left: 2px; }
+  .form-field input, .form-field select { padding: 10px 13px; border: 1.5px solid #d8ddf0; border-radius: 8px; font-size: 0.88rem; font-family: inherit; color: #222; outline: none; transition: border 0.15s; background: #fff; }
+  .form-field input:focus, .form-field select:focus { border-color: #4D4DCB; }
+  .form-field input::placeholder { color: #bbb; }
+  .prospect-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; }
+  .distro-badge { display: flex; align-items: center; gap: 8px; background: #f0f1fc; border-radius: 8px; padding: 7px 14px; font-size: 0.8rem; font-weight: 700; color: #4D4DCB; }
+
+  /* Prospect info card in scoring */
+  .prospect-card { background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; border: 1px solid #e0e4f5; }
+  .prospect-card h3 { font-size: 0.85rem; font-weight: 700; color: #4D4DCB; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+  .prospect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
+  .prospect-field { font-size: 0.83rem; }
+  .prospect-field .pf-label { color: #999; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .prospect-field .pf-value { color: #222; font-weight: 600; }
+
+  /* Scoring screen */
+  #scoring-screen { display: none; max-width: 760px; margin: 0 auto; padding: 32px 20px; }
+  .score-header { text-align: center; margin-bottom: 32px; }
+  .score-header h2 { font-size: 1.4rem; color: #4D4DCB; margin-bottom: 8px; }
+  .score-header p { color: #666; }
+  .score-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+  .score-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center; border: 2px solid #e0e4f5; }
+  .score-card .count { font-size: 2.4rem; font-weight: 900; }
+  .score-card .label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  .score-card.hot .count { color: #e84c4c; }
+  .score-card.hot { border-color: #e84c4c; }
+  .score-card.warm .count { color: #f5a623; }
+  .score-card.warm { border-color: #f5a623; }
+  .score-card.cold .count { color: #aaa; }
+  .score-card.cold { border-color: #ddd; }
+  .verdict { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center; }
+  .verdict .rating { font-size: 1.8rem; font-weight: 900; margin-bottom: 8px; }
+  .verdict .guidance { font-size: 0.92rem; color: #555; line-height: 1.55; }
+  .notes-summary { background: #fff; border-radius: 12px; padding: 24px; }
+  .notes-summary h3 { font-size: 0.95rem; font-weight: 700; color: #4D4DCB; margin-bottom: 16px; }
+  .note-item { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #f0f2f8; }
+  .note-item:last-child { border-bottom: none; }
+  .note-q { font-size: 0.8rem; font-weight: 700; color: #555; margin-bottom: 4px; }
+  .note-t { font-size: 0.85rem; color: #333; white-space: pre-wrap; }
+  .action-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+  .btn-print { background: #4D4DCB; color: #fff; }
+  .btn-print:hover { background: #3b3ba8; }
+  .btn-submit { background: #22b573; color: #fff; }
+  .btn-submit:hover { background: #1a9060; }
+  .btn-restart { background: #f0f2f8; color: #4D4DCB; font-size: 0.8rem; padding: 7px 16px; }
+
+    @media print {
+    .header, .progress-bar-wrap, .section-tabs, .nav-bar, .action-row, .signal-row, #distro-screen, #prospect-screen { display: none !important; }
+    #guide-screen, #scoring-screen { display: block !important; max-width: 100%; padding: 0; }
+    .q-card.open .q-body, .q-body { display: block !important; }
+    .q-card { break-inside: avoid; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg class="logo-img" viewBox="90 200 230 245" xmlns="http://www.w3.org/2000/svg">
+    <path d="M301.68 256.216V385.841L199.933 429.056V371.902L257.077 348.208V274.339L301.68 256.216Z" fill="#7272E9"/>
+    <path d="M199.932 211.624L301.679 256.216L257.076 274.339L199.932 249.257L142.788 274.339L99.5732 256.216L199.932 211.624Z" fill="#7272E9"/>
+    <path d="M199.932 371.902V429.056L99.5732 385.841V256.216L142.788 274.339V348.208L199.932 371.902Z" fill="#7272E9"/>
+    <path d="M308.648 256.226V254.828V253.43L307.25 252.042L202.718 206.041C201.945 205.37 200.956 205 199.932 205C198.908 205 197.919 205.37 197.146 206.041L95.3994 249.257L94.0013 250.644V252.042V253.43V383.055C93.9745 384.491 94.3515 385.905 95.0894 387.138C95.8272 388.37 96.8962 389.37 98.1747 390.024L198.523 433.239H206.87L307.219 390.024C308.499 389.372 309.569 388.372 310.307 387.139C311.045 385.907 311.421 384.491 311.392 383.055L308.606 256.226H308.648ZM199.932 219.981L282.168 256.226L257.076 267.369L202.718 243.675C201.945 243.003 200.956 242.633 199.932 242.633C198.908 242.633 197.919 243.003 197.146 243.675L142.788 265.981H141.39L117.696 256.226L199.932 219.981ZM192.962 417.902L106.542 380.227V265.981L135.818 278.502V346.84C135.79 348.277 136.167 349.692 136.905 350.924C137.643 352.157 138.713 353.157 139.992 353.81L192.962 376.054V417.902ZM199.932 364.942L149.758 344.076V279.92L199.932 257.614L250.106 279.92V344.034L199.932 364.942ZM293.321 380.227L206.901 417.861V377.483L259.861 355.187C261.142 354.536 262.213 353.536 262.951 352.303C263.69 351.07 264.065 349.654 264.035 348.218V278.522L293.311 266.002L293.321 380.227Z" fill="white"/>
+    <path d="M257.077 348.207V274.339L199.933 249.257V323.126L257.077 348.207Z" fill="white"/>
+    <path d="M257.076 348.207L199.932 323.125L142.788 348.207L199.932 371.902L257.076 348.207Z" fill="white"/>
+    <path d="M199.932 323.126V249.257L142.788 274.339V348.207L199.932 323.126Z" fill="white"/>
+    <path d="M259.86 267.369L202.716 243.675H194.369L140.011 267.369C137.215 268.767 134.429 271.543 134.429 274.339V348.207C134.429 351.004 135.827 353.789 140.011 355.177L197.144 380.228C197.91 380.914 198.902 381.293 199.93 381.293C200.958 381.293 201.95 380.914 202.716 380.228L259.86 355.187C262.656 353.8 265.442 351.014 265.442 348.218V274.349C265.442 271.553 262.656 268.767 259.86 267.369ZM149.798 279.921L193.002 261.798V320.34L149.798 338.494V279.921ZM199.972 364.943L160.94 348.249L199.972 331.556L239.003 348.249L199.972 364.943ZM250.146 337.065L206.941 318.942V260.4L250.146 278.523V337.065Z" fill="#4949A3"/>
+  </svg>
+  <div class="header-text">
+    <div class="title">KubeDB Sales Qualifying Guide</div>
+    <div class="sub">Interactive discovery tool for sales reps</div>
+  </div>
+</div>
+
+<!-- DISTRO SELECTOR -->
+<div id="distro-screen">
+  <h2>Select the Kubernetes Distribution</h2>
+  <p>Choose the customer's platform to load the right qualifying questions and talk track.</p>
+  <div class="distro-grid">
+    <div class="distro-card" onclick="startGuide('any')">
+      <div class="card-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk1IiBoZWlnaHQ9IjExMCIgdmlld0JveD0iMCAwIDc5NSAxMTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik01Ni4yOTU4IDAuMDA2MjYxOEM1NS4yODE4IDAuMDY2MzEzNSA1NC4yOTAyIDAuMzI5MzQ5IDUzLjM3OTcgMC43Nzk3NzRMMTMuOTMwNiAxOS42MDcxQzEyLjkxMyAyMC4wOTE1IDEyLjAxOCAyMC43OTk1IDExLjMxMjIgMjEuNjc4MUMxMC42MDYzIDIyLjU1NjcgMTAuMTA3OSAyMy41ODMyIDkuODU0MTYgMjQuNjgxM0wwLjE5Mjk5MiA2Ni45NDZDLTAuMDM0OTM1MiA2Ny45MjYxIC0wLjA2MTI3MzIgNjguOTQyMyAwLjExNTU3NiA2OS45MzNDMC4yOTI0MjUgNzAuOTIzNiAwLjY2ODc3MiA3MS44Njc5IDEuMjIxNzYgNzIuNzA4N0MxLjM1NTg0IDcyLjkxNDkgMS40OTc2NSA3My4xMTM1IDEuNjQ3MTkgNzMuMzA0M0wyOC45MzY3IDEwNy4yMTVDMjkuNjQ3NCAxMDguMDg4IDMwLjU0NCAxMDguNzkgMzEuNTYxMSAxMDkuMjcyQzMyLjU3ODIgMTA5Ljc1NCAzMy42OSAxMTAuMDAzIDM0LjgxNTQgMTEwSDc4LjU2NTJDNzkuNjk1MSAxMTAuMDAyIDgwLjgxMTEgMTA5Ljc1MSA4MS44MzEyIDEwOS4yNjVDODIuODUxMiAxMDguNzc5IDgzLjc0OTMgMTA4LjA3MSA4NC40NTk0IDEwNy4xOTJMMTExLjcyNiA3My4yNjU2QzExMi40MzEgNzIuMzg5OSAxMTIuOTI5IDcxLjM2NTMgMTEzLjE4MSA3MC4yNjkzQzExMy40MzMgNjkuMTczMiAxMTMuNDMyIDY4LjAzNDIgMTEzLjE4IDY2LjkzODNMMTAzLjQ0OSAyNC42MjcxQzEwMy4xOTUgMjMuNTI5MSAxMDIuNjk3IDIyLjUwMjUgMTAxLjk5MSAyMS42MjM5QzEwMS4yODUgMjAuNzQ1MyAxMDAuMzkgMjAuMDM3NCA5OS4zNzI3IDE5LjU1MjlMNTkuOTU0NSAwLjc3OTc3NEM1OC44MTg2IDAuMjIwNzU1IDU3LjU2MDggLTAuMDQ1MTU3NSA1Ni4yOTU4IDAuMDA2MjYxOFoiIGZpbGw9IiMzMjZDRTUiLz4KPHBhdGggZD0iTTU2LjY5MDMgMTQuMzk0NUM1Ni4wMzcgMTQuNDQwMyA1NS40Mjc4IDE0Ljc0MDcgNTQuOTkzOCAxNS4yMzExQzU0LjU1OTggMTUuNzIxNSA1NC4zMzU3IDE2LjM2MjcgNTQuMzY5OCAxNy4wMTY3VjE3LjY4MkM1NC40MzQ5IDE4LjQzNTMgNTQuNTQzMyAxOS4xODQzIDU0LjY5NDYgMTkuOTI1MUM1NC45MTEyIDIxLjM0MjYgNTQuOTg4OSAyMi43Nzc4IDU0LjkyNjcgMjQuMjEwNEM1NC43OTA5IDI0LjY4MzMgNTQuNTIyNSAyNS4xMDc0IDU0LjE1MzIgMjUuNDMyNUw1NC4wOTkgMjYuNDM4MUM1Mi42NjQ3IDI2LjU1NzEgNTEuMjQwNSAyNi43NzY4IDQ5LjgzNyAyNy4wOTU2QzQzLjkzMjkgMjguNDI2IDM4LjU2MTYgMzEuNDkxNSAzNC40MTMyIDM1Ljg5ODJMMzMuNTYyMyAzNS4yOTQ4QzMzLjA5NTMgMzUuNDMzMSAzMi41OTI4IDM1LjM4MzEgMzIuMTYyMiAzNS4xNTU2QzMxLjAxMTggMzQuMzA0NSAyOS45NDcxIDMzLjM0MzQgMjguOTgzMSAzMi4yODU5QzI4LjQ5OTUgMzEuNzA3NSAyNy45ODI5IDMxLjE1NzQgMjcuNDM2MSAzMC42MzgzTDI2LjkxMDEgMzAuMjIwNkMyNi40NDM1IDI5Ljg0NDYgMjUuODY4OSAyOS42Mjc4IDI1LjI3MDIgMjkuNjAxOEMyNC45MTMzIDI5LjU4MzUgMjQuNTU3MiAyOS42NDk3IDI0LjIzMDYgMjkuNzk0OEMyMy45MDQgMjkuOTQgMjMuNjE2MiAzMC4xNiAyMy4zOTA2IDMwLjQzNzJDMjMuMDA2OCAzMC45NzYgMjIuODUyMyAzMS42NDUgMjIuOTYxMSAzMi4yOTc1QzIzLjA2OTggMzIuOTUgMjMuNDMyOSAzMy41MzI4IDIzLjk3MDcgMzMuOTE4TDI0LjQ1ODEgMzQuMzA0N0MyNS4wODc4IDM0LjcyMzcgMjUuNzQxMiAzNS4xMDU5IDI2LjQxNSAzNS40NDk1QzI3LjY3MDIgMzYuMTQ3MSAyOC44NTQyIDM2Ljk2NTggMjkuOTUgMzcuODkzOEMzMC4yMzEzIDM4LjI5NDcgMzAuMzk0OCAzOC43NjYzIDMwLjQyMTggMzkuMjU1MkwzMS4xOTUzIDM5LjkyODJDMjcuMDIzIDQ2LjE4ODQgMjUuMzA5NiA1My43NjkxIDI2LjM4NDEgNjEuMjE1MkwyNS4zOTQgNjEuNTAxNEMyNS4xMzYyIDYxLjkxMjcgMjQuNzkgNjIuMjYxNSAyNC4zODA3IDYyLjUyMjVDMjIuOTk2MyA2Mi44OTE1IDIxLjU3OTIgNjMuMTI0NyAyMC4xNDk2IDYzLjIxODZDMTkuMzkxMyA2My4yMzQzIDE4LjYzNDYgNjMuMjkzNyAxNy44ODMyIDYzLjM5NjVMMTcuMjY0NCA2My41NTEySDE3LjE4N0MxNi43NTA2IDYzLjYwOTMgMTYuMzM5IDYzLjc4OCAxNS45OTg1IDY0LjA2NzFDMTUuNjU4IDY0LjM0NjMgMTUuNDAyMiA2NC43MTQ5IDE1LjI1OTcgNjUuMTMxNUMxNS4xMTcyIDY1LjU0ODEgMTUuMDkzOCA2NS45OTYyIDE1LjE5MiA2Ni40MjU0QzE1LjI5MDIgNjYuODU0NiAxNS41MDYxIDY3LjI0NzkgMTUuODE1NiA2Ny41NjExQzE2LjEyNTEgNjcuODc0NCAxNi41MTYgNjguMDk1MSAxNi45NDQxIDY4LjE5ODRDMTcuMzcyMiA2OC4zMDE3IDE3LjgyMDcgNjguMjgzNSAxOC4yMzkgNjguMTQ1OUgxOC4yODU0TDE4LjkyNzQgNjguMDY4NUMxOS42NDgxIDY3Ljg1MTQgMjAuMzU1NyA2Ny41OTMxIDIxLjA0NjkgNjcuMjk1QzIyLjM3NjEgNjYuNzYwMSAyMy43NTQzIDY2LjM1NTkgMjUuMTYyIDY2LjA4ODNDMjUuNjQ5MiA2Ni4xMTgzIDI2LjExODIgNjYuMjg0NSAyNi41MTU2IDY2LjU2NzlMMjcuNTQ0NCA2Ni4zOUMyOS44NDY3IDczLjUzNTEgMzQuNjg3MSA3OS41ODkxIDQxLjE1MDQgODMuNDA3M0w0MC43MTczIDg0LjMxMjNDNDAuOTE2OSA4NC43MjU0IDQwLjk4OTYgODUuMTg4NCA0MC45MjYxIDg1LjY0MjdDNDAuMzQgODYuOTk3MyAzOS42MjUgODguMjkyNCAzOC43OTEyIDg5LjUxMDNDMzguMzMyNSA5MC4xMTQ1IDM3LjkwOSA5MC43NDQ3IDM3LjUyMjcgOTEuMzk3N0wzNy4yMTMzIDkyLjAzMTlDMzYuOTkxOCA5Mi40MTA3IDM2Ljg4IDkyLjg0MzUgMzYuODkwMyA5My4yODIxQzM2LjkwMDUgOTMuNzIwNyAzNy4wMzI1IDk0LjE0NzggMzcuMjcxNCA5NC41MTU3QzM3LjUxMDQgOTQuODgzNyAzNy44NDY5IDk1LjE3OCAzOC4yNDM0IDk1LjM2NThDMzguNjM5OCA5NS41NTM2IDM5LjA4MDcgOTUuNjI3NSAzOS41MTY4IDk1LjU3OTNDMzkuOTUyOCA5NS41MzEgNDAuMzY2OSA5NS4zNjI1IDQwLjcxMjcgOTUuMDkyN0M0MS4wNTg1IDk0LjgyMjggNDEuMzIyNiA5NC40NjIgNDEuNDc1MyA5NC4wNTA4TDQxLjc2OTMgOTMuNDQ3NUM0Mi4wMzc2IDkyLjczOTIgNDIuMjY0OSA5Mi4wMTYxIDQyLjQ0OTkgOTEuMjgxNkM0My4wNjg4IDg5LjczNDYgNDMuNDE2OCA4OC4wNzE2IDQ0LjI3NTQgODcuMDQyOEM0NC41NTU3IDg2Ljc3OTYgNDQuOTA4OSA4Ni42MDcgNDUuMjg4NyA4Ni41NDc3TDQ1LjgzMDIgODUuNTgwOUM1Mi44MzUgODguMjc0NSA2MC41ODY1IDg4LjI5MzggNjcuNjA0NiA4NS42MzVMNjguMDY4NyA4Ni41NEM2OC41NTA1IDg2LjYxNTIgNjguOTgzNyA4Ni44NzYyIDY5LjI3NTMgODcuMjY3MUM2OS45NDIgODguNTM0MSA3MC40ODM0IDg5Ljg2MzEgNzAuODkyIDkxLjIzNTJDNzEuMDc5NyA5MS45Njk4IDcxLjMwOTUgOTIuNjkyOSA3MS41ODA0IDkzLjQwMTFMNzEuODc0MyA5NC4wMDQ0QzcyLjAyNzEgOTQuNDE1NyA3Mi4yOTExIDk0Ljc3NjQgNzIuNjM3IDk1LjA0NjNDNzIuOTgyOSA5NS4zMTYyIDczLjM5NyA5NS40ODQ3IDczLjgzMyA5NS41MzI5Qzc0LjI2OTEgOTUuNTgxMSA3NC43MSA5NS41MDcyIDc1LjEwNjUgOTUuMzE5NEM3NS41MDMgOTUuMTMxNiA3NS44Mzk1IDk0LjgzNzIgNzYuMDc4NCA5NC40NjkzQzc2LjMxNzMgOTQuMTAxMyA3Ni40NDkyIDkzLjY3NDIgNzYuNDU5NSA5My4yMzU2Qzc2LjQ2OTcgOTIuNzk3IDc2LjM1NzkgOTIuMzY0MiA3Ni4xMzY0IDkxLjk4NTVMNzUuODI3IDkxLjM1MTNDNzUuNDQwNiA5MC43MDA4IDc1LjAxNzEgOTAuMDczMiA3NC41NTg0IDg5LjQ3MTZDNzMuNzQyMyA4OC4yOTQ1IDczLjA0MjggODcuMDQwNiA3Mi40Njk5IDg1LjcyNzhDNzIuNDEzNSA4NS40ODc4IDcyLjQwNTYgODUuMjM4OSA3Mi40NDY4IDg0Ljk5NThDNzIuNDg4IDg0Ljc1MjcgNzIuNTc3NCA4NC41MjAzIDcyLjcwOTcgODQuMzEyM0M3Mi41NTgyIDg0LjAwMzggNzIuNDI2NCA4My42ODYxIDcyLjMxNTIgODMuMzYwOUM3OC43NyA3OS41MTc2IDgzLjU5MTYgNzMuNDQxMSA4NS44NjcyIDY2LjI4MTdMODYuODcyNyA2Ni40NTk2Qzg3LjIzMjkgNjYuMTMwMyA4Ny43MDc4IDY1Ljk1NTQgODguMTk1NCA2NS45NzIzQzg5LjYwMzEgNjYuMjM5OSA5MC45ODEzIDY2LjY0NCA5Mi4zMTA1IDY3LjE3OUM5My4wMDA3IDY3LjQ5MjggOTMuNzA4MyA2Ny43NjY2IDk0LjQzIDY3Ljk5ODlDOTQuNjAwMSA2OC4wNDUzIDk0Ljg0NzYgNjguMDc2MyA5NS4wNDg4IDY4LjEzMDRIOTUuMDk1MkM5NS41MTM1IDY4LjI2ODEgOTUuOTYxOSA2OC4yODY0IDk2LjM5IDY4LjE4MzFDOTYuODE4MiA2OC4wNzk5IDk3LjIwOSA2Ny44NTkzIDk3LjUxODYgNjcuNTQ2MUM5Ny44MjgyIDY3LjIzMjkgOTguMDQ0MiA2Ni44Mzk1IDk4LjE0MjUgNjYuNDEwMkM5OC4yNDA3IDY1Ljk4MDkgOTguMjE3MyA2NS41MzI3IDk4LjA3NDcgNjUuMTE2Qzk3LjkzMTcgNjQuNjk4MyA5Ny42NzQ2IDY0LjMyOSA5Ny4zMzI2IDY0LjA0OTdDOTYuOTkwNiA2My43NzA1IDk2LjU3NzMgNjMuNTkyNCA5Ni4xMzk0IDYzLjUzNThMOTUuNDQzMyA2My4zODExQzk0LjY5MTggNjMuMjc4MyA5My45MzUxIDYzLjIxODkgOTMuMTc2OSA2My4yMDMxQzkxLjc0NzIgNjMuMTA5MyA5MC4zMzAxIDYyLjg3NjEgODguOTQ1OCA2Mi41MDdDODguNTE3MyA2Mi4yNjc5IDg4LjE2MzggNjEuOTE0NCA4Ny45MjQ3IDYxLjQ4NTlMODYuOTczMyA2MS4yMDc1Qzg3Ljk5MjkgNTMuNzY3MSA4Ni4yNDUgNDYuMjExMyA4Mi4wNjE1IDM5Ljk3NDZMODIuODk2OSAzOS4yMDExQzgyLjg2MzEgMzguNzE0NSA4My4wMjE0IDM4LjIzNDEgODMuMzM3OCAzNy44NjI5Qzg0LjQyNTIgMzYuOTI4IDg1LjYwMTQgMzYuMTAxNiA4Ni44NDk1IDM1LjM5NTRDODcuNTIzMyAzNS4wNTE2IDg4LjE3NjcgMzQuNjY5NCA4OC44MDY1IDM0LjI1MDZMODkuMzI0OCAzMy44MzI5Qzg5LjcwNTIgMzMuNTk2MiA5MC4wMTA4IDMzLjI1NjcgOTAuMjA2NSAzMi44NTM3QzkwLjQwMjEgMzIuNDUwNiA5MC40Nzk4IDMyLjAwMDQgOTAuNDMwNCAzMS41NTUxQzkwLjM4MTEgMzEuMTA5OCA5MC4yMDY4IDMwLjY4NzYgODkuOTI3NiAzMC4zMzcxQzg5LjY0ODUgMjkuOTg2NyA4OS4yNzU5IDI5LjcyMjQgODguODUyOSAyOS41NzQ3Qzg4LjQyOTkgMjkuNDI3IDg3Ljk3MzcgMjkuNDAyIDg3LjUzNzEgMjkuNTAyNkM4Ny4xMDA0IDI5LjYwMzMgODYuNzAxMiAyOS44MjUzIDg2LjM4NTQgMzAuMTQzMkw4NS44NTk0IDMwLjU2MDlDODUuMzEyNyAzMS4wODAxIDg0Ljc5NjIgMzEuNjMwMiA4NC4zMTI0IDMyLjIwODVDODMuMzc3MiAzMy4yNzc4IDgyLjM0MTEgMzQuMjU0MyA4MS4yMTg0IDM1LjEyNDdDODAuNzY1IDM1LjMwODMgODAuMjY5NSAzNS4zNjE5IDc5Ljc4NzQgMzUuMjc5NEw3OC44OTAxIDM1LjkyMTRDNzMuNzE1OCAzMC40OTY2IDY2Ljc0OCAyNy4xMzUgNTkuMjgxNiAyNi40NjEzQzU5LjI4MTYgMjYuMTUxOSA1OS4yMzUyIDI1LjU3OTUgNTkuMjI3NCAyNS40MDkzQzU4LjgyNTkgMjUuMTMzNiA1OC41NDgyIDI0LjcxMTUgNTguNDUzOSAyNC4yMzM2QzU4LjQwNTIgMjIuODAyNCA1OC40OTU5IDIxLjM2OTggNTguNzI0NiAxOS45NTYxQzU4Ljg3NTkgMTkuMjE1MiA1OC45ODQ0IDE4LjQ2NjIgNTkuMDQ5NSAxNy43MTI5VjE3LjAzOTlDNTkuMDgzNiAxNi4zODU5IDU4Ljg1OTUgMTUuNzQ0NyA1OC40MjU1IDE1LjI1NDNDNTcuOTkxNSAxNC43NjM5IDU3LjM4MjMgMTQuNDYzNSA1Ni43MjkgMTQuNDE3N0w1Ni42OTAzIDE0LjM5NDVaTTUzLjczNTUgMzIuNjk1OEw1My4wMzkzIDQ1LjA3Mkg1Mi45ODUyQzUyLjk2OTEgNDUuNDQ3OSA1Mi44NTEzIDQ1LjgxMjUgNTIuNjQ0NCA0Ni4xMjY4QzUyLjQzNzYgNDYuNDQxMSA1Mi4xNDk0IDQ2LjY5MzQgNTEuODEwNSA0Ni44NTY5QzUxLjQ3MTYgNDcuMDIwNCA1MS4wOTQ3IDQ3LjA4ODkgNTAuNzE5OSA0Ny4wNTUyQzUwLjM0NTIgNDcuMDIxNSA0OS45ODY2IDQ2Ljg4NjggNDkuNjgyMyA0Ni42NjU1TDM5LjUzMzggMzkuNDcxOEM0Mi43NjQ4IDM2LjI5ODMgNDYuODE4MyAzNC4wOTA3IDUxLjIzNyAzMy4wOTgxQzUyLjA2NSAzMi45MjE0IDUyLjkwMTUgMzIuNzg3MSA1My43NDMyIDMyLjY5NThINTMuNzM1NVpNNTkuNjQ1MSAzMi42OTU4QzY0Ljk3NTMgMzMuMzU3MiA2OS45NDA2IDM1Ljc1MTUgNzMuNzc3MiAzOS41MTA1TDYzLjcyMTUgNDYuNjU3N0M2My40MTc2IDQ2LjkwMDkgNjMuMDUxNSA0Ny4wNTM5IDYyLjY2NDkgNDcuMDk5NEM2Mi4yNzgzIDQ3LjE0NDggNjEuODg2NyA0Ny4wODA5IDYxLjUzNDYgNDYuOTE1QzYxLjE4MjUgNDYuNzQ5IDYwLjg4NCA0Ni40ODc2IDYwLjY3MyA0Ni4xNjA0QzYwLjQ2MjEgNDUuODMzMyA2MC4zNDcyIDQ1LjQ1MzUgNjAuMzQxMyA0NS4wNjQzTDU5LjY0NTEgMzIuNjk1OFpNMzUuODM2NCA0NC4xMzYxTDQ1LjExODYgNTIuNDEyN1Y1Mi40NjY4QzQ1LjQwMTggNTIuNzE0MyA0NS42MTI2IDUzLjAzNCA0NS43Mjg2IDUzLjM5MThDNDUuODQ0NiA1My43NDk2IDQ1Ljg2MTQgNTQuMTMyMiA0NS43NzczIDU0LjQ5ODhDNDUuNjkzMiA1NC44NjU0IDQ1LjUxMTMgNTUuMjAyNCA0NS4yNTA5IDU1LjQ3MzlDNDQuOTkwNSA1NS43NDUzIDQ0LjY2MTQgNTUuOTQxMSA0NC4yOTg2IDU2LjA0MDRWNTYuMDc5MUwzMi4zODY2IDU5LjUwNThDMzEuNzk2IDU0LjEzOSAzMy4wMDk4IDQ4LjcyODQgMzUuODM2NCA0NC4xMjgzVjQ0LjEzNjFaTTc3LjQ3NDYgNDQuMTM2MUM4MC4yOTQzIDQ4LjcyNDEgODEuNTQwOCA1NC4xMDY2IDgxLjAyNSA1OS40NjcxTDY5LjA5NzQgNTYuMDMyN1Y1NS45ODYzQzY4LjczNDYgNTUuODg3IDY4LjQwNTUgNTUuNjkxMiA2OC4xNDUyIDU1LjQxOTdDNjcuODg0OCA1NS4xNDgzIDY3LjcwMjkgNTQuODExMyA2Ny42MTg3IDU0LjQ0NDdDNjcuNTM0NiA1NC4wNzgxIDY3LjU1MTUgNTMuNjk1NSA2Ny42Njc1IDUzLjMzNzdDNjcuNzgzNSA1Mi45Nzk5IDY3Ljk5NDMgNTIuNjYwMiA2OC4yNzc1IDUyLjQxMjdMNzcuNDgyMyA0NC4xNjdMNzcuNDc0NiA0NC4xMzYxWk01NC43ODc1IDUzLjA3MDFINTguNTc3N0w2MC44OTgyIDU2LjAwOTVMNjAuMDQ3MyA1OS42OTE0TDU2LjY0MzkgNjEuMzMxMkw1My4yMjUgNTkuNjkxNEw1Mi40MjA1IDU2LjAwMTdMNTQuNzg3NSA1My4wNzAxWk02Ni45NTQ4IDYzLjEyNThDNjcuMTE0MSA2My4xMDcyIDY3LjI3NTEgNjMuMTA3MiA2Ny40MzQ0IDYzLjEyNThMNzkuNzE3OCA2NS4xOTg4Qzc3LjkwOTUgNzAuMzAzNSA3NC40NDk3IDc0LjY1ODkgNjkuODg2NCA3Ny41NzVMNjUuMTM3MSA2Ni4wNjUxQzY1LjAwNjMgNjUuNzU2OSA2NC45NTE2IDY1LjQyMTggNjQuOTc3NCA2NS4wODgxQzY1LjAwMzMgNjQuNzU0MyA2NS4xMDkgNjQuNDMxNiA2NS4yODU3IDY0LjE0NzNDNjUuNDYyNCA2My44NjI5IDY1LjcwNDkgNjMuNjI1MiA2NS45OTI2IDYzLjQ1NDJDNjYuMjgwNCA2My4yODMxIDY2LjYwNTEgNjMuMTgzOCA2Ni45MzkzIDYzLjE2NDVMNjYuOTU0OCA2My4xMjU4Wk00Ni4zMjUyIDYzLjE3OTlDNDYuNjY2OCA2My4xODUzIDQ3LjAwMTggNjMuMjc0NyA0Ny4zMDA3IDYzLjQ0MDJDNDcuNTk5NSA2My42MDU3IDQ3Ljg1MyA2My44NDIyIDQ4LjAzODggNjQuMTI4OUM0OC4yMjQ1IDY0LjQxNTYgNDguMzM2OSA2NC43NDM2IDQ4LjM2NTggNjUuMDg0QzQ4LjM5NDggNjUuNDI0NCA0OC4zMzk1IDY1Ljc2NjcgNDguMjA0OSA2Ni4wODA2VjY2LjEyN0w0My40Nzg3IDc3LjUxMzFDMzguOTcwNiA3NC42MTU0IDM1LjU0MDUgNzAuMzE1NSAzMy43MTcgNjUuMjc2Mkw0NS44OTIxIDYzLjIwMzFDNDYuMDI4NCA2My4xODk4IDQ2LjE2NTcgNjMuMTg5OCA0Ni4zMDIgNjMuMjAzMUw0Ni4zMjUyIDYzLjE3OTlaTTU2LjYxMyA2OC4xNzY4QzU2Ljk5OTkgNjguMTY1MiA1Ny4zODI1IDY4LjI2MDkgNTcuNzE4NCA2OC40NTM0QzU4LjA1NDMgNjguNjQ2IDU4LjMzMDMgNjguOTI3NyA1OC41MTU4IDY5LjI2NzVINTguNTYyMkw2NC41NjQ3IDgwLjA5NjdDNjMuNzc3MSA4MC4zNjA5IDYyLjk3NjggODAuNTg1NSA2Mi4xNjY4IDgwLjc2OTZDNTcuNzUxNSA4MS43ODAzIDUzLjE0MjEgODEuNTQyIDQ4Ljg1NDYgODAuMDgxMkw1NC44NDE2IDY5LjI1MkM1NS4wMjExIDY4LjkzOTQgNTUuMjc4OCA2OC42Nzg5IDU1LjU4OTMgNjguNDk1OEM1NS44OTk4IDY4LjMxMjcgNTYuMjUyNSA2OC4yMTM1IDU2LjYxMyA2OC4yMDc4VjY4LjE3NjhaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIwLjA1Mzk4NyIvPgo8cGF0aCBkPSJNMTcyLjY1OSA2MC45NjdMMTc4LjEzMSA1NC45OTQzQzE4MC4wMTEgNTIuOTE2OSAxODEuODM1IDUwLjg2NDIgMTgzLjYwMyA0OC44MzYyTDE4OC42MTEgNDMuMDQ5MUMxOTAuMTY5IDQxLjIxODkgMTkxLjUxMSAzOS42MjM4IDE5Mi42MzYgMzguMjYzNUgyMTMuOTNDMjA5LjY3NiA0My4xNDggMjA1LjUzNCA0Ny44MDM3IDIwMS41MDIgNTIuMjMwNkMxOTcuNDU5IDU2LjY1NzUgMTkzLjAzMiA2MS4yMzI4IDE4OC4yMjIgNjUuOTU2NkMxOTAuODYxIDY4LjM4MzQgMTkzLjMzOSA3MC45Nzk1IDE5NS42NDEgNzMuNzI4NEMxOTguMjAxIDc2LjczMzMgMjAwLjY3NCA3OS44MjQ3IDIwMy4wNiA4My4wMDI3QzIwNS40NDcgODYuMTgwNyAyMDcuNjQ4IDg5LjM5NTggMjA5LjY2NCA5Mi42NDhDMjExLjY2NyA5NS44NjMgMjEzLjM0OSA5OC43OTM3IDIxNC43MDkgMTAxLjQ0SDE5NC4xMkMxOTIuODgzIDk5LjMzNzggMTkxLjQyNCA5Ny4wMjU0IDE4OS43NDMgOTQuNTAyOEMxODguMDYxIDkxLjk2NzggMTg2LjMzIDg5LjQ4MjMgMTg0LjU0OSA4Ny4wNDYzQzE4Mi42OTQgODQuNTczMSAxODAuNzUzIDgyLjE0MzMgMTc4LjcyNSA3OS43NTY3QzE3Ni44NzcgNzcuNjE5IDE3NC44NDggNzUuNjQ1NSAxNzIuNjU5IDczLjg1ODJWMTAxLjU3SDE1NC43NDFWMTEuMTA4NEwxNzIuNjU5IDguMjE0ODNWNjAuOTg1NVY2MC45NjdaTTI3Ny4wODggOTkuMzI1NEMyNzMuMjE1IDEwMC4zODUgMjY5LjI4MiAxMDEuMjA4IDI2NS4zMDkgMTAxLjc5MkMyNjAuMzAyIDEwMi41NzEgMjU1LjI0MSAxMDIuOTU2IDI1MC4xNzQgMTAyLjk0MkMyNDUuNjA2IDEwMy4wNzggMjQxLjA1NSAxMDIuMzQxIDIzNi43NjMgMTAwLjc3MkMyMzMuNDYgOTkuNTE4NCAyMzAuNTM5IDk3LjQyODQgMjI4LjI4NiA5NC43MDY4QzIyNi4xNCA5MS45Nzk1IDIyNC42MiA4OC44MTMyIDIyMy44MzUgODUuNDMyNkMyMjIuOTIxIDgxLjUzMDIgMjIyLjQ3OSA3Ny41MzIyIDIyMi41MTggNzMuNTI0NFYzOC4yODIxSDI0MC40MzZWNzEuMjk4NUMyNDAuNDM2IDc3LjA3MzMgMjQxLjE5NiA4MS4yNDA2IDI0Mi43MTcgODMuODAwM0MyNDQuMjM4IDg2LjM2IDI0Ny4wODIgODcuNjM5OCAyNTEuMjUgODcuNjM5OEMyNTIuNDg2IDg3LjYzOTggMjUzLjg0NiA4Ny41NzggMjU1LjMzIDg3LjQ1NDRDMjU2LjgxNCA4Ny4zMzA3IDI1OC4wOTQgODcuMTg4NSAyNTkuMTcgODcuMDI3N1YzOC4yNDVIMjc3LjA4OFY5OS4zMjU0Wk0zNTIuNzI5IDY5Ljg3MDNDMzUyLjc5MiA3NC41MzQzIDM1Mi4wMzkgNzkuMTczNCAzNTAuNTAzIDgzLjU3NzdDMzQ5LjEzIDg3LjQ4NSAzNDYuOTM2IDkxLjA1MjQgMzQ0LjA2NyA5NC4wMzkxQzM0MS4xNTUgOTYuOTk2NCAzMzcuNjI3IDk5LjI3NjIgMzMzLjczNSAxMDAuNzE3QzMyOS4yNjggMTAyLjM0MyAzMjQuNTQgMTAzLjEzNSAzMTkuNzg3IDEwMy4wNTRDMzE3LjYyMyAxMDMuMDU0IDMxNS4zNiAxMDIuOTU1IDMxMi45OTggMTAyLjc1N0MzMTAuNjQ4IDEwMi41NTkgMzA4LjMyNCAxMDIuMjk5IDMwNi4wMjQgMTAxLjk3OEMzMDMuNzM2IDEwMS42NTYgMzAxLjU1MyAxMDEuMjczIDI5OS40NzYgMTAwLjgyOEMyOTcuMzk5IDEwMC4zODMgMjk1LjU0NCA5OS45MTkgMjkzLjkxMSA5OS40MzY3VjExLjA4OTlMMzExLjgyOSA4LjE5NjI5VjM5LjcyODlDMzEzLjg0MSAzOC44NDYxIDMxNS45MzUgMzguMTYyNyAzMTguMDggMzcuNjg4NUMzMjAuMzcyIDM3LjE5MzUgMzIyLjcxIDM2Ljk1MDkgMzI1LjA1NCAzNi45NjUxQzMyOS4xNDUgMzYuODgxNyAzMzMuMjA3IDM3LjY3ODcgMzM2Ljk2MyAzOS4zMDIyQzM0MC4zMzggNDAuODEwNCAzNDMuMzA3IDQzLjA5OTEgMzQ1LjYyNSA0NS45Nzk3QzM0OC4wNTIgNDkuMDY4NCAzNDkuODQ4IDUyLjYwNCAzNTAuOTExIDU2LjM4NTVDMzUyLjE2MiA2MC43Njk2IDM1Mi43NzUgNjUuMzExMyAzNTIuNzI5IDY5Ljg3MDNaTTMzNC40NTkgNjkuMzg4QzMzNC40NTkgNTcuODUwOCAzMzAuMjExIDUyLjA4MjIgMzIxLjcxNiA1Mi4wODIyQzMxOS44NjggNTIuMDgzMiAzMTguMDI4IDUyLjMyNjQgMzE2LjI0NCA1Mi44MDU2QzMxNC42OTIgNTMuMTk0MyAzMTMuMjA5IDUzLjgxOTkgMzExLjg0OCA1NC42NjA1Vjg3LjE3NjFDMzEyLjcxMyA4Ny4zMzY5IDMxMy44MjYgODcuNDc5MSAzMTUuMTg3IDg3LjYwMjdDMzE2LjU0NyA4Ny43MjY0IDMxOC4wMzEgODcuNzg4MiAzMTkuNjM4IDg3Ljc4ODJDMzIxLjc2NiA4Ny45MzUxIDMyMy44OTcgODcuNTUwOSAzMjUuODQgODYuNjcwM0MzMjcuNzgyIDg1Ljc4OTcgMzI5LjQ3NiA4NC40NDAxIDMzMC43NjcgODIuNzQzQzMzMy40MDEgNzguODA0NiAzMzQuNjkgNzQuMTE5NCAzMzQuNDQgNjkuMzg4SDMzNC40NTlaTTM2My41MjQgNzAuMzUyNkMzNjMuNDE2IDY1LjMyMjMgMzY0LjI5MiA2MC4zMTk1IDM2Ni4xMDIgNTUuNjI1QzM2Ny42NCA1MS43MDA5IDM2OS45NDggNDguMTI0NyAzNzIuODkxIDQ1LjEwOEMzNzUuNjUxIDQyLjM2NzQgMzc4Ljk0NyA0MC4yMjY2IDM4Mi41NzQgMzguODJDMzg2LjE0OCAzNy4zODg3IDM4OS45NjMgMzYuNjUyMSAzOTMuODE0IDM2LjY0OThDNDAyLjc5MiAzNi42NDk4IDQwOS44ODMgMzkuMzk1IDQxNS4wODkgNDQuODg1NEM0MjAuMjgzIDUwLjM3NTcgNDIyLjg4IDU4LjQ1MDYgNDIyLjg4IDY5LjEwOThDNDIyLjg4IDcwLjE0ODUgNDIyLjg0MiA3MS4yOTI0IDQyMi43NjggNzIuNTQxM0M0MjIuNjk0IDczLjc3NzkgNDIyLjYxNCA3NC44Nzg0IDQyMi41MjcgNzUuODQyOUgzODEuOTA2QzM4Mi4wNjUgNzcuNTk3NCAzODIuNjExIDc5LjI5NDYgMzgzLjUwNiA4MC44MTE5QzM4NC40MDEgODIuMzI5MyAzODUuNjIyIDgzLjYyODcgMzg3LjA4MSA4NC42MTY0QzM5MC43MjkgODYuOTUgMzk1LjAxNiA4OC4wODQ5IDM5OS4zNDEgODcuODYyNEM0MDIuNTkgODcuODY0IDQwNS44MzIgODcuNTU5OCA0MDkuMDI0IDg2Ljk1MzVDNDExLjY4MyA4Ni41MDA3IDQxNC4yODMgODUuNzU0MiA0MTYuNzc3IDg0LjcyNzdMNDE5LjE4OCA5OS4yNjk4QzQxNy45NTEgOTkuODU3MyA0MTYuNjY2IDEwMC4zNDEgNDE1LjM0OSAxMDAuNzE3QzQxMy41OTIgMTAxLjIzNCA0MTEuODA5IDEwMS42NTUgNDEwLjAwNyAxMDEuOTc4QzQwOC4wMjggMTAyLjM0OSA0MDUuOTI2IDEwMi42NTggNDAzLjcgMTAyLjkwNUM0MDEuNDY0IDEwMy4xNDIgMzk5LjIxNiAxMDMuMjYgMzk2Ljk2NyAxMDMuMjU4QzM5MS45MDYgMTAzLjM2NyAzODYuODcgMTAyLjUxMSAzODIuMTI4IDEwMC43MzVDMzc4LjE3NyA5OS4yMjI2IDM3NC42MDYgOTYuODYwOCAzNzEuNjY3IDkzLjgxNjVDMzY4Ljg3OSA5MC44NDU5IDM2Ni43ODggODcuMjkxMSAzNjUuNTQ2IDgzLjQxMDhDMzY0LjE2OSA3OS4yMDIyIDM2My40OCA3NC43OTkxIDM2My41MDYgNzAuMzcxMUwzNjMuNTI0IDcwLjM1MjZaTTQwNS41OTIgNjMuNDg5NkM0MDUuNTE1IDYxLjk3OTUgNDA1LjI1MyA2MC40ODQ1IDQwNC44MTMgNTkuMDM3OUM0MDQuMzkyIDU3LjYzNjQgNDAzLjY5OSA1Ni4zMzE2IDQwMi43NzMgNTUuMTk4NEM0MDEuODEzIDU0LjA0NzMgNDAwLjYyNiA1My4xMDY1IDM5OS4yODYgNTIuNDM0NkMzOTcuNjUyIDUxLjY2NTkgMzk1Ljg1OSA1MS4yOTcxIDM5NC4wNTUgNTEuMzU4OEMzOTIuMjc2IDUxLjMxMjEgMzkwLjUwOCA1MS42NjA2IDM4OC44OCA1Mi4zNzlDMzg3LjUwMiA1My4wMTYzIDM4Ni4yNzUgNTMuOTM5NCAzODUuMjgyIDU1LjA4NzFDMzg0LjMwMiA1Ni4yNDExIDM4My41NDcgNTcuNTY4NiAzODMuMDU2IDU5LjAwMDhDMzgyLjUzNyA2MC40NjUzIDM4Mi4xNTIgNjEuOTczOSAzODEuOTA2IDYzLjUwODFINDA1LjU5MlY2My40ODk2Wk00NzQuODE2IDU0LjEyMjZDNDczLjIwOCA1My43MjY5IDQ3MS4zNTMgNTMuMzA2NCA0NjkuMjUxIDUyLjg2MTNDNDY2Ljk1NSA1Mi40MDYgNDY0LjYxOCA1Mi4xODIzIDQ2Mi4yNzcgNTIuMTkzNUM0NjAuOTMgNTIuMjA5IDQ1OS41ODYgNTIuMzA4MSA0NTguMjUyIDUyLjQ5MDNDNDU3LjA1NiA1Mi42MjI4IDQ1NS44NzEgNTIuODQ2IDQ1NC43MDkgNTMuMTU4VjEwMS4zODRINDM2Ljc5MVY0MS42MDIzQzQ0MC40OSA0MC4zNDc3IDQ0NC4yNTUgMzkuMjk1IDQ0OC4wNjkgMzguNDQ5QzQ1Mi44NjMgMzcuNDAyOCA0NTcuNzU5IDM2Ljg5ODggNDYyLjY2NiAzNi45NDY2QzQ2My42MzEgMzYuOTQ2NiA0NjQuNzkzIDM3LjAwODQgNDY2LjE1MyAzNy4xMzIxQzQ2Ny41MTQgMzcuMjU1NyA0NjguODc0IDM3LjQxNjUgNDcwLjIzNCAzNy42MTQzQzQ3MS41OTQgMzcuODEyMiA0NzIuOTU1IDM4LjA1OTUgNDc0LjMxNSAzOC4zNTYzQzQ3NS41MDcgMzguNTg2NCA0NzYuNjc0IDM4LjkyOCA0NzcuODAyIDM5LjM3NjRMNDc0LjgxNiA1NC4xMjI2Wk00ODcuNDI5IDQwLjQzMzdDNDkxLjMwMiAzOS4zNzYxIDQ5NS4yMzUgMzguNTUyMyA0OTkuMjA3IDM3Ljk2NjhDNTA0LjIyMSAzNy4xODczIDUwOS4yODcgMzYuODAyOCA1MTQuMzYxIDM2LjgxNjdDNTE4LjkzNiAzNi42ODE4IDUyMy40OTYgMzcuMzk4OCA1MjcuODA5IDM4LjkzMTNDNTMxLjEwNSA0MC4xNDM5IDUzNC4wMjcgNDIuMTk2MyA1MzYuMjg2IDQ0Ljg4NTRDNTM4LjQyNCA0Ny41NjE3IDUzOS45NDUgNTAuNjc4MiA1NDAuNzM3IDU0LjAxMTNDNTQxLjY1NCA1Ny44NjkxIDU0Mi4wOTcgNjEuODI0NSA1NDIuMDU0IDY1Ljc4OTZWMTAxLjUxNEg1MjQuMTE4VjY3Ljk0MTJDNTI0LjExOCA2Mi4xNjY1IDUyMy4zNTcgNTguMDg1OCA1MjEuODM2IDU1LjY5OTJDNTIwLjMxNSA1My4zMDAyIDUxNy40NzEgNTIuMTAwOCA1MTMuMzA0IDUyLjEwMDhDNTEyLjA2NyA1Mi4xMDA4IDUxMC43MDcgNTIuMTYyNiA1MDkuMjIzIDUyLjI4NjNDNTA3LjczOSA1Mi40MDk5IDUwNi40NTkgNTIuNTUyMSA1MDUuMzg0IDUyLjcxMjlWMTAxLjQ5Nkg0ODcuNDY2VjQwLjQzMzdINDg3LjQyOVpNNTU1LjIyNCA3MC4zNTI2QzU1NS4xMTYgNjUuMzIyNCA1NTUuOTkyIDYwLjMxOTYgNTU3LjgwMiA1NS42MjVDNTU5LjMzOSA1MS43MDA5IDU2MS42NDggNDguMTI0NyA1NjQuNTkxIDQ1LjEwOEM1NjcuMzI5IDQyLjM3NjMgNTcwLjU5OSA0MC4yMzYxIDU3NC4xOTkgMzguODJDNTc3Ljc3NCAzNy4zODkxIDU4MS41ODkgMzYuNjUyNiA1ODUuNDM5IDM2LjY0OThDNTk0LjQxNyAzNi42NDk4IDYwMS41MDkgMzkuMzk1IDYwNi43MTUgNDQuODg1NEM2MTEuOTA4IDUwLjM3NTcgNjE0LjUwNSA1OC40NTA2IDYxNC41MDUgNjkuMTA5OEM2MTQuNTA1IDcwLjE0ODUgNjE0LjQ2MiA3MS4yOTI0IDYxNC4zNzUgNzIuNTQxM0M2MTQuMjg5IDczLjc3NzkgNjE0LjIwOCA3NC44Nzg0IDYxNC4xMzQgNzUuODQyOUg1NzMuNTEzQzU3My42NzEgNzcuNTk3NCA1NzQuMjE4IDc5LjI5NDYgNTc1LjExMyA4MC44MTE5QzU3Ni4wMDggODIuMzI5MyA1NzcuMjI5IDgzLjYyODcgNTc4LjY4OCA4NC42MTY0QzU4Mi4zMzYgODYuOTUgNTg2LjYyMyA4OC4wODQ5IDU5MC45NDggODcuODYyNEM1OTQuMTk3IDg3Ljg2MzkgNTk3LjQzOSA4Ny41NTk2IDYwMC42MzEgODYuOTUzNUM2MDMuMjg5IDg2LjUwMDYgNjA1Ljg5IDg1Ljc1NDEgNjA4LjM4NCA4NC43Mjc3TDYxMC43OTUgOTkuMjY5OEM2MDkuNTU4IDk5Ljg1NzIgNjA4LjI3MyAxMDAuMzQxIDYwNi45NTYgMTAwLjcxN0M2MDUuMTk5IDEwMS4yMzQgNjAzLjQxNiAxMDEuNjU1IDYwMS42MTQgMTAxLjk3OEM1OTkuNjM1IDEwMi4zNDkgNTk3LjUzMyAxMDIuNjU4IDU5NS4zMDcgMTAyLjkwNUM1OTMuMDcxIDEwMy4xNDIgNTkwLjgyMyAxMDMuMjYgNTg4LjU3NCAxMDMuMjU4QzU4My41MTIgMTAzLjM2NyA1NzguNDc2IDEwMi41MTEgNTczLjczNSAxMDAuNzM1QzU2OS43ODQgOTkuMjIyNiA1NjYuMjEyIDk2Ljg2MDggNTYzLjI3NCA5My44MTY1QzU2MC40OTIgOTAuODI2MSA1NTguNDEzIDg3LjI1MTkgNTU3LjE5IDgzLjM1NTFDNTU1LjgzOCA3OS4xNjExIDU1NS4xNjggNzQuNzc3NCA1NTUuMjA1IDcwLjM3MTFMNTU1LjIyNCA3MC4zNTI2Wk01OTcuMjkyIDYzLjQ4OTZDNTk3LjIxNSA2MS45Nzk1IDU5Ni45NTMgNjAuNDg0NSA1OTYuNTEzIDU5LjAzNzlDNTk2LjA5MiA1Ny42MzY0IDU5NS4zOTggNTYuMzMxNiA1OTQuNDcyIDU1LjE5ODRDNTkzLjUxMiA1NC4wNDczIDU5Mi4zMjUgNTMuMTA2NSA1OTAuOTg1IDUyLjQzNDZDNTg5LjM1MiA1MS42NjU5IDU4Ny41NTkgNTEuMjk3MSA1ODUuNzU1IDUxLjM1ODhDNTgzLjk3NSA1MS4zMTE1IDU4Mi4yMDggNTEuNjYgNTgwLjU4IDUyLjM3OUM1NzkuMjAyIDUzLjAxNjMgNTc3Ljk3NSA1My45Mzk0IDU3Ni45ODEgNTUuMDg3MUM1NzYuMDAxIDU2LjI0MDggNTc1LjI0NiA1Ny41Njg0IDU3NC43NTUgNTkuMDAwOEM1NzQuMjM2IDYwLjQ2NTEgNTczLjg1MSA2MS45NzM4IDU3My42MDUgNjMuNTA4MUg1OTcuMjkyVjYzLjQ4OTZaTTYyNy44MDQgMjIuNDk3Mkw2NDUuNzIyIDE5LjYwMzdWMzguMTUyMkg2NjcuMjM5VjUyLjk5MTFINjQ1LjcyMlY3NS4yNDk0QzY0NS41NzUgNzguMzc2OSA2NDYuMjYgODEuNDg3NiA2NDcuNzA3IDg0LjI2NEM2NDkuMDMgODYuNDg5OCA2NTEuNjg5IDg3LjYwMjcgNjU1LjY4MyA4Ny42MDI3QzY1Ny42NzkgODcuNTk3NCA2NTkuNjcyIDg3LjQxNzQgNjYxLjYzNyA4Ny4wNjQ4QzY2My41MzUgODYuNzQwMiA2NjUuMzk4IDg2LjIzNzEgNjY3LjIwMiA4NS41NjI0TDY2OS43MjQgOTkuNTEwOUM2NjcuMzc5IDEwMC40NSA2NjQuOTY3IDEwMS4yMTMgNjYyLjUwOSAxMDEuNzkyQzY1OS4zMTEgMTAyLjQ5MiA2NTYuMDQzIDEwMi44MTUgNjUyLjc3MSAxMDIuNzU3QzY0OC42MzcgMTAyLjg4NCA2NDQuNTE4IDEwMi4yMSA2NDAuNjQgMTAwLjc3MkM2MzcuNjQ1IDk5LjU5NzggNjM0Ljk5NyA5Ny42ODMzIDYzMi45NDIgOTUuMjA3N0M2MzAuOTQ5IDkyLjY5OCA2MjkuNTcxIDg5Ljc1NyA2MjguOTE3IDg2LjYxOTdDNjI4LjEyNCA4Mi45NjM3IDYyNy43MzkgNzkuMjMxMyA2MjcuNzY3IDc1LjQ5MDVWMjIuNDk3Mkg2MjcuODA0Wk02NzYuNzczIDcwLjM1MjZDNjc2LjY2NSA2NS4zMjI0IDY3Ny41NDEgNjAuMzE5NiA2NzkuMzUxIDU1LjYyNUM2ODAuODg4IDUxLjcwMDkgNjgzLjE5NyA0OC4xMjQ3IDY4Ni4xNCA0NS4xMDhDNjg4LjkgNDIuMzY3OCA2OTIuMTk2IDQwLjIyNzEgNjk1LjgyMiAzOC44MkM2OTkuMzk3IDM3LjM4OTEgNzAzLjIxMiAzNi42NTI2IDcwNy4wNjIgMzYuNjQ5OEM3MTYuMDQgMzYuNjQ5OCA3MjMuMTMyIDM5LjM5NSA3MjguMzM4IDQ0Ljg4NTRDNzMzLjUzMSA1MC4zNzU3IDczNi4xMjggNTguNDMyIDczNi4xMjggNjkuMDU0MkM3MzYuMTI4IDcwLjA5MjkgNzM2LjA4NSA3MS4yMzY3IDczNS45OTggNzIuNDg1N0M3MzUuOTEyIDczLjcyMjIgNzM1LjgzMSA3NC44MjI4IDczNS43NTcgNzUuNzg3M0g2OTUuMTM2QzY5NS4yOTcgNzcuNTQzMyA2OTUuODQ2IDc5LjI0MTUgNjk2Ljc0NCA4MC43NTlDNjk3LjY0MyA4Mi4yNzY0IDY5OC44NjcgODMuNTc1IDcwMC4zMjkgODQuNTYwOEM3MDMuOTc4IDg2Ljg5NDQgNzA4LjI2NSA4OC4wMjkzIDcxMi41OSA4Ny44MDY4QzcxNS44MzkgODcuODA4MyA3MTkuMDggODcuNTA0IDcyMi4yNzIgODYuODk3OUM3MjQuOTMxIDg2LjQ0NSA3MjcuNTMxIDg1LjY5ODQgNzMwLjAyNiA4NC42NzIxTDczMi40MzcgOTkuMjE0MUM3MzEuMTk5IDk5LjgwMTYgNzI5LjkxNSAxMDAuMjg1IDcyOC41OTcgMTAwLjY2MUM3MjYuODQxIDEwMS4xNzggNzI1LjA1NyAxMDEuNTk5IDcyMy4yNTUgMTAxLjkyMkM3MjEuMjc3IDEwMi4yOTMgNzE5LjE3NSAxMDIuNjAyIDcxNi45NDkgMTAyLjg1QzcxNC43MTIgMTAzLjA4NyA3MTIuNDY1IDEwMy4yMDQgNzEwLjIxNiAxMDMuMjAyQzcwNS4xNTQgMTAzLjMxMiA3MDAuMTE4IDEwMi40NTYgNjk1LjM3NyAxMDAuNjc5QzY5MS40MjUgOTkuMTY2OSA2ODcuODU0IDk2LjgwNTEgNjg0LjkxNSA5My43NjA5QzY4Mi4xIDkwLjc5NzUgNjc5Ljk4NCA4Ny4yNDIyIDY3OC43MiA4My4zNTUxQzY3Ny4zNzUgNzkuMTYwMSA2NzYuNzExIDc0Ljc3NjQgNjc2Ljc1NCA3MC4zNzExTDY3Ni43NzMgNzAuMzUyNlpNNzE4Ljg3OCA2My40ODk2QzcxOC44MDEgNjEuOTc5NSA3MTguNTM5IDYwLjQ4NDUgNzE4LjA5OSA1OS4wMzc5QzcxNy42NzggNTcuNjM2NCA3MTYuOTg0IDU2LjMzMTYgNzE2LjA1OCA1NS4xOTg0QzcxNS4wOTggNTQuMDQ3MyA3MTMuOTExIDUzLjEwNjUgNzEyLjU3MSA1Mi40MzQ2QzcxMC45MzggNTEuNjY1OSA3MDkuMTQ1IDUxLjI5NzEgNzA3LjM0MSA1MS4zNTg4QzcwNS41NjEgNTEuMzExNSA3MDMuNzk0IDUxLjY2IDcwMi4xNjYgNTIuMzc5QzcwMC43NTYgNTIuOTk5NSA2OTkuNDk3IDUzLjkxNjkgNjk4LjQ3NCA1NS4wNjg1QzY5Ny40OTQgNTYuMjIyMyA2OTYuNzM5IDU3LjU0OTkgNjk2LjI0OSA1OC45ODIzQzY5NS43MjkgNjAuNDQ2NiA2OTUuMzQ0IDYxLjk1NTMgNjk1LjA5OSA2My40ODk2SDcxOC44NzhaTTc2OC4wODcgODguNjIyOUM3NzAuNDUzIDg4Ljc2NzMgNzcyLjgyNCA4OC40Mzk0IDc3NS4wNjEgODcuNjU4NEM3NzUuNzM5IDg3LjMyMiA3NzYuMjk4IDg2Ljc4NjMgNzc2LjY2MyA4Ni4xMjMyQzc3Ny4wMjggODUuNDYwMSA3NzcuMTgxIDg0LjcwMTMgNzc3LjEwMiA4My45NDg3Qzc3Ny4wMjQgODMuMTUyIDc3Ni43MzggODIuMzg5OCA3NzYuMjcyIDgxLjczODdDNzc1LjgwNyA4MS4wODc1IDc3NS4xNzggODAuNTcwMyA3NzQuNDQ5IDgwLjIzOUM3NzEuODggNzguNzY4MiA3NjkuMTg2IDc3LjUyNjggNzY2LjM5OSA3Ni41MjkyQzc2My43OTkgNzUuNTc3MyA3NjEuMjQ4IDc0LjQ5MzkgNzU4Ljc1NyA3My4yODMyQzc1Ni42MTUgNzIuMjU4NCA3NTQuNjQ5IDcwLjg5OTggNzUyLjkzMyA2OS4yNTgyQzc1MS4zMjQgNjcuNjgwMyA3NTAuMDYxIDY1Ljc4NTQgNzQ5LjIyMyA2My42OTM2Qzc0OC4yODUgNjEuMTk5OSA3NDcuODM4IDU4LjU0ODIgNzQ3LjkwNiA1NS44ODQ3Qzc0Ny44MDIgNTMuMTgzOSA3NDguMzQ4IDUwLjQ5NzUgNzQ5LjQ5NyA0OC4wNTFDNzUwLjY0NiA0NS42MDQ2IDc1Mi4zNjUgNDMuNDY5NSA3NTQuNTEgNDEuODI0OUM3NTguOTEyIDM4LjM2MjUgNzY0Ljk1OSAzNi42MzEzIDc3Mi42NSAzNi42MzEzQzc3Ni4zODQgMzYuNjE0MiA3ODAuMTExIDM2Ljk1NTkgNzgzLjc3OSAzNy42NTE0Qzc4Ni42NDQgMzguMTU0OSA3ODkuNDYxIDM4Ljg5OTUgNzkyLjIgMzkuODc3M0w3ODkuMDg0IDUzLjgyNThDNzg2Ljg1NiA1My4wODcxIDc4NC41OSA1Mi40NjggNzgyLjI5NSA1MS45NzA5Qzc3OS41OSA1MS4zODU0IDc3Ni44MjggNTEuMTA1NCA3NzQuMDYgNTEuMTM2MkM3NjguNDQ2IDUxLjEzNjIgNzY1LjYzOSA1Mi43MDA1IDc2NS42MzkgNTUuODI5Qzc2NS42MzMgNTYuNDY0NSA3NjUuNzUzIDU3LjA5NDcgNzY1Ljk5MSA1Ny42ODM5Qzc2Ni4zMiA1OC4zNDE5IDc2Ni44MiA1OC44OTkyIDc2Ny40MzggNTkuMjk3NkM3NjguMzcyIDU5Ljk0MTkgNzY5LjM1OCA2MC41MDY2IDc3MC4zODcgNjAuOTg1NUM3NzEuNjI0IDYxLjYwMzggNzczLjIwNyA2Mi4yNzE2IDc3NS4xMzYgNjIuOTg4OEM3NzguNDgxIDY0LjE4NiA3ODEuNzM2IDY1LjYyNDIgNzg0Ljg3NCA2Ny4yOTJDNzg3LjEzMyA2OC40NzY2IDc4OS4xODIgNzAuMDI0NCA3OTAuOTM5IDcxLjg3MzVDNzkyLjM3MyA3My40MzUzIDc5My40MzggNzUuMjk4OSA3OTQuMDU1IDc3LjMyNjhDNzk0LjY5NCA3OS41ODkgNzk1LjAwMSA4MS45MzIxIDc5NC45NjQgODQuMjgyNUM3OTUuMTE1IDg3LjA0NzkgNzk0LjU0NyA4OS44MDUyIDc5My4zMTUgOTIuMjg1NUM3OTIuMDgzIDk0Ljc2NTkgNzkwLjIyOSA5Ni44ODQ2IDc4Ny45MzQgOTguNDM1MUM3ODMuMjM1IDEwMS42MjUgNzc2LjYwNyAxMDMuMjMzIDc2OC4wNSAxMDMuMjU4Qzc2My4zNCAxMDMuMzU0IDc1OC42MzYgMTAyLjg2OCA3NTQuMDQ2IDEwMS44MTFDNzUxLjQwNyAxMDEuMTk0IDc0OC44MTYgMTAwLjM4OCA3NDYuMjkzIDk5LjM5OTZMNzQ5LjI5NyA4NC44NTc1Qzc1Mi4zMzYgODYuMDU2OSA3NTUuNDY5IDg3IDc1OC42NjUgODcuNjc2OUM3NjEuNzY0IDg4LjMxOSA3NjQuOTIyIDg4LjYzNjEgNzY4LjA4NyA4OC42MjI5WiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" alt="Kubernetes"></div>
+      <div class="name">Any Kubernetes</div>
+      <div class="desc">EKS, GKE, AKS, vanilla kubeadm, K3s, and others</div>
+    </div>
+    <div class="distro-card" onclick="startGuide('nutanix')">
+      <div class="card-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzgzIiBoZWlnaHQ9Ijk5IiB2aWV3Qm94PSIwIDAgNzgzIDk5IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZyBjbGlwLXBhdGg9InVybCgjY2xpcDBfMzU4XzE5MTQpIj4KPHBhdGggZD0iTTM1MC4wOCAyMC44MjgzSDMxMC43OTZDMzEwLjc1OSAyMC44MjgzIDMxMC43MzcgMjAuODU3OCAzMTAuNzM3IDIwLjg4NzJWOTcuNTE3OUMzMTAuNzM3IDk4LjMyODYgMzEwLjA3NSA5OC45OTIgMzA5LjI2NiA5OC45OTJIMjkwLjI5QzI4OS40ODEgOTguOTkyIDI4OC44MTkgOTguMzI4NiAyODguODE5IDk3LjUxNzlWMjAuODg3MkMyODguODE5IDIwLjg1MDQgMjg4Ljc5IDIwLjgyODMgMjg4Ljc2IDIwLjgyODNIMjQ5LjU4N0MyNDguNzc4IDIwLjgyODMgMjQ4LjExNiAyMC4xNjQ5IDI0OC4xMTYgMTkuMzU0MlYyLjE5NTc2QzI0OC4xMTYgMS4zODUwMSAyNDguNzc4IDAuNzIxNjY4IDI0OS41ODcgMC43MjE2NjhIMzUwLjA4QzM1MC44ODkgMC43MjE2NjggMzUxLjU1IDEuMzg1MDEgMzUxLjU1IDIuMTk1NzZWMTkuMzU0MkMzNTEuNTUgMjAuMTY0OSAzNTAuODk2IDIwLjgyODMgMzUwLjA4IDIwLjgyODNaTTYyOS4xNzkgMC43MjE2NjhINjEwLjIwM0M2MDkuMzk0IDAuNzIxNjY4IDYwOC43MzIgMS4zODUwMSA2MDguNzMyIDIuMTk1NzZWOTcuNTI1M0M2MDguNzMyIDk4LjMzNiA2MDkuMzk0IDk4Ljk5OTQgNjEwLjIwMyA5OC45OTk0SDYyOS4xNzlDNjI5Ljk4OCA5OC45OTk0IDYzMC42NSA5OC4zMzYgNjMwLjY1IDk3LjUyNTNWMi4xOTU3NkM2MzAuNjUgMS4zNzc2NCA2MjkuOTg4IDAuNzIxNjY4IDYyOS4xNzkgMC43MjE2NjhaTTc4Mi41MyA5Ni42MTEzQzc4Mi45NTYgOTYuOTc5OSA3ODMuMTEgOTcuNTg0MiA3ODIuOTEyIDk4LjExNDlDNzgyLjcxMyA5OC42NDU2IDc4Mi4yMDYgOTguOTk5NCA3ODEuNjQgOTguOTk5NEg3NTIuNDE0Qzc1Mi4wOSA5OC45OTk0IDc1MS43NzQgOTguODgxNCA3NTEuNTI0IDk4LjY2NzdMNzE5LjQxNiA3MC44MTQ3QzcxOS4xMjIgNzAuNTU2OCA3MTguOTQ1IDcwLjE4MDkgNzE4Ljk0NSA2OS43OTAyQzcxOC45NDUgNjkuMzkyMiA3MTkuMTE1IDY5LjAyMzcgNzE5LjQxNiA2OC43NjU3TDczNC4wMjUgNTYuMDg4NkM3MzQuNTMzIDU1LjY0NjMgNzM1LjI5IDU1LjY0NjMgNzM1Ljc5NyA1Ni4wODg2TDc4Mi41MyA5Ni42MTEzWk03MzQuMDQgNDMuNjMyNUM3MzQuMjk3IDQzLjg1MzYgNzM0LjYxNCA0My45NjQxIDczNC45MyA0My45NjQxQzczNS4yNDYgNDMuOTY0MSA3MzUuNTYyIDQzLjg1MzYgNzM1LjgxOSA0My42MzI1TDc4Mi41MzcgMy4xMDIzM0M3ODIuOTYzIDIuNzMzOCA3ODMuMTE4IDIuMTI5NDMgNzgyLjkxOSAxLjU5ODc1Qzc4Mi43MjEgMS4wNjgwOCA3ODIuMjEzIDAuNzE0Mjk3IDc4MS42NDcgMC43MTQyOTdINzUyLjQyMUM3NTIuMDk4IDAuNzE0Mjk3IDc1MS43ODIgMC44MzIyMjUgNzUxLjUzMiAxLjA0NTk3TDcxOS40MjMgMjguODk4OUM3MTkuMTI5IDI5LjE1NjkgNzE4Ljk1MyAyOS41MzI4IDcxOC45NTMgMjkuOTIzNEM3MTguOTUzIDMwLjMyMTQgNzE5LjEyMiAzMC42OSA3MTkuNDIzIDMwLjk0NzlMNzM0LjA0IDQzLjYzMjVaTTcyNy45MjMgNDkuODYwNUM3MjcuOTIzIDQ5LjQ2MjUgNzI3Ljc1NCA0OS4wOTQgNzI3LjQ1MiA0OC44MzZMNjcyLjM3NSAxLjA1MzM0QzY3Mi4xMzIgMC44Mzk1OTUgNjcxLjgxNiAwLjcyMTY2OCA2NzEuNDg1IDAuNzIxNjY4SDY0Mi4yNTlDNjQxLjY5MyAwLjcyMTY2OCA2NDEuMTg2IDEuMDc1NDUgNjQwLjk4NyAxLjYwNjEyQzY0MC43ODkgMi4xMzY4IDY0MC45NDMgMi43MzM4IDY0MS4zNyAzLjEwOTdMNjk1LjIxMiA0OS44MTYzQzY5NS4yNDEgNDkuODM4NCA2OTUuMjQxIDQ5Ljg4MjYgNjk1LjIxMiA0OS45MTIxTDY0MS4zNyA5Ni42MTg3QzY0MC45NDMgOTYuOTg3MiA2NDAuNzg5IDk3LjU5MTYgNjQwLjk4NyA5OC4xMjIzQzY0MS4xODYgOTguNjUzIDY0MS42OTMgOTkuMDA2NyA2NDIuMjU5IDk5LjAwNjdINjcxLjQ4NUM2NzEuODA5IDk5LjAwNjcgNjcyLjEyNSA5OC44ODg4IDY3Mi4zNzUgOTguNjc1MUw3MjcuNDUyIDUwLjg5MjRDNzI3Ljc1NCA1MC42MjcgNzI3LjkyMyA1MC4yNTEyIDcyNy45MjMgNDkuODYwNVpNMjEuOTE3NyAzMi42NjUyQzIxLjkxNzcgMzIuNjEzNiAyMS45NzY1IDMyLjU4NDIgMjIuMDEzMyAzMi42MTM2QzI0Ljg5NTQgMzUuMjAwNyA5MC40ODY3IDk0LjA3NTkgOTMuNjQ4MyA5Ni41NjcxQzk2LjQ0MjIgOTguNzYzNSA5OS42Njk5IDEwMC4xMjcgMTAzLjg3NiA5OS41MDc5QzEwOS4zMTYgOTguODQ0NiAxMTUuMzAxIDk0LjE4NjUgMTE1LjMwMSA4Ni4zNDQzVjIuMTk1NzZDMTE1LjMwMSAxLjM4NTAxIDExNC42NCAwLjcyMTY2OCAxMTMuODMxIDAuNzIxNjY4SDk0Ljg1NDFDOTQuMDQ1MyAwLjcyMTY2OCA5My4zODM2IDEuMzg1MDEgOTMuMzgzNiAyLjE5NTc2VjY2Ljk4OTVDOTMuMzgzNiA2Ny4wNDExIDkzLjMyNDggNjcuMDcwNSA5My4yODggNjcuMDQxMUM5MC40MDU4IDY0LjQ1NCAyNC44MTQ1IDUuNTc4OCAyMS42NTMgMy4wODc1OEMxOC44NTkxIDAuODkxMTg4IDE1LjYzMTMgLTAuNDcyMzQ3IDExLjQyNTcgMC4xNDY3NzJDNS45ODQ5IDAuODEwMTEzIDAgNS40NzU2MSAwIDEzLjMxMDRWOTcuNTE3OUMwIDk4LjMyODYgMC42NjE3MjEgOTguOTkyIDEuNDcwNDkgOTguOTkySDIwLjQ0NzJDMjEuMjU2IDk4Ljk5MiAyMS45MTc3IDk4LjMyODYgMjEuOTE3NyA5Ny41MTc5VjMyLjY2NTJaTTUwMy42MTQgMzIuNjY1MkM1MDMuNjE0IDMyLjYxMzYgNTAzLjY3MyAzMi41ODQyIDUwMy43MSAzMi42MTM2QzUwNi41OTIgMzUuMjAwNyA1NzIuMTgzIDk0LjA3NTkgNTc1LjM0NSA5Ni41NjcxQzU3OC4xMzkgOTguNzYzNSA1ODEuMzY2IDEwMC4xMjcgNTg1LjU3MiA5OS41MDc5QzU5MS4wMTMgOTguODQ0NiA1OTYuOTk4IDk0LjE4NjUgNTk2Ljk5OCA4Ni4zNDQzVjIuMTk1NzZDNTk2Ljk5OCAxLjM4NTAxIDU5Ni4zMzYgMC43MjE2NjggNTk1LjUyNyAwLjcyMTY2OEg1NzYuNTVDNTc1Ljc0MiAwLjcyMTY2OCA1NzUuMDggMS4zODUwMSA1NzUuMDggMi4xOTU3NlY2Ni45ODk1QzU3NS4wOCA2Ny4wNDExIDU3NS4wMjEgNjcuMDcwNSA1NzQuOTg0IDY3LjA0MTFDNTcyLjEwMiA2NC40NTQgNTA2LjUxMSA1LjU3ODggNTAzLjM0OSAzLjA4NzU4QzUwMC41NTUgMC44OTExODggNDk3LjMyOCAtMC40NzIzNDcgNDkzLjEyMiAwLjE0Njc3MkM0ODcuNjgxIDAuODEwMTEzIDQ4MS42OTYgNS40NzU2MSA0ODEuNjk2IDEzLjMxMDRWOTcuNTE3OUM0ODEuNjk2IDk4LjMyODYgNDgyLjM1OCA5OC45OTIgNDgzLjE2NyA5OC45OTJINTAyLjE0NEM1MDIuOTUyIDk4Ljk5MiA1MDMuNjE0IDk4LjMyODYgNTAzLjYxNCA5Ny41MTc5VjMyLjY2NTJaTTE4OC4wMTcgMTAwLjk0NUMxOTkuODQgMTAwLjkxNiAyMTMuMDE1IDEwMC4yNDUgMjIxLjEwMyA5NS40NjE1QzIzMS44NjcgODkuMDkzNSAyMzcuMTAyIDgwLjI0ODkgMjM3LjEwMiA2OC40MzQxTDIzNy4xMDkgMi4xOTU3NkMyMzcuMTA5IDEuMzg1MDEgMjM2LjQ0OCAwLjcyMTY2OCAyMzUuNjM5IDAuNzIxNjY4SDIxNi40NzhDMjE1LjY3IDAuNzIxNjY4IDIxNS4wMDggMS4zODUwMSAyMTUuMDA4IDIuMTk1NzZMMjE1LjAwMSA2Ny4xNDQyQzIxNC44MTcgODAuMDcyIDE5OC44NCA4MC4yMDQ3IDE4Ny4zMTEgODAuMjA0N0gxNzYuODM0QzE2NS4zMDUgODAuMjA0NyAxNDkuMzM2IDgwLjA3OTQgMTQ5LjE0NSA2Ny4xNDQyTDE0OS4xMzcgMi4xOTU3NkMxNDkuMTM3IDEuMzg1MDEgMTQ4LjQ3NiAwLjcyMTY2OCAxNDcuNjY3IDAuNzIxNjY4SDEyOC41MDZDMTI3LjY5NyAwLjcyMTY2OCAxMjcuMDM2IDEuMzg1MDEgMTI3LjAzNiAyLjE5NTc2TDEyNy4wNDMgNjguNDM0MUMxMjcuMDQzIDgwLjI0ODkgMTMyLjI3OCA4OS4wOTM1IDE0My4wNDIgOTUuNDYxNUMxNTEuMTMgMTAwLjI0NSAxNjQuMzA1IDEwMC45MjMgMTc2LjEyOCAxMDAuOTQ1SDE4OC4wMTdaTTQ3Mi42NiA5Ni43ODA5QzQ3Mi45NjIgOTcuMjA4MyA0NzIuOTk4IDk3Ljc2ODUgNDcyLjc2MyA5OC4yNDAyQzQ3Mi41MjggOTguNzA0NSA0NzIuMDUgOTguOTk5NCA0NzEuNTI4IDk4Ljk5OTRINDQ4LjA5NkM0NDcuNjI1IDk4Ljk5OTQgNDQ3LjE4NCA5OC43NzA5IDQ0Ni45MTIgOTguMzgwMkw0MzMuMjQ0IDc4Ljc4OTZDNDMzLjIyOSA3OC43NzQ4IDQzMy4yMTQgNzguNzYwMSA0MzMuMTkyIDc4Ljc2MDFIMzYyLjkzMkMzNjIuOTEgNzguNzYwMSAzNjIuODk1IDc4Ljc2NzUgMzYyLjg4MSA3OC43ODk2TDM0OS4xNjEgOTguNDAyM0MzNDguOTA0IDk4Ljc3ODIgMzQ4LjQ3NyA5OC45OTk0IDM0OC4wMjkgOTguOTk5NEgzMjQuNTk2QzMyNC4wNzQgOTguOTk5NCAzMjMuNTk2IDk4LjcwNDUgMzIzLjM2MSA5OC4yNDAyQzMyMy4xMjYgOTcuNzc1OSAzMjMuMTYzIDk3LjIwODMgMzIzLjQ2NCA5Ni43ODA5QzMyMy40NjQgOTYuNzgwOSAzODMuMDU2IDExLjUxMiAzODYuNzMyIDYuNDE5MDNDMzkwLjQwOCAxLjMyNjA1IDM5NC4xMDYgLTAuMDAwNjM3MTk2IDM5OC4wOTIgLTAuMDAwNjM3MTk2QzQwMi40ODEgLTAuMDAwNjM3MTk2IDQwNS44NyAxLjY0Mjk4IDQwOS4xMzUgNi4wMjg0TDQ3Mi42NiA5Ni43ODA5Wk00MTguOTczIDU4LjU1NzdMMzk4LjEyMSAyOC45NjUzQzM5OC4wOTkgMjguOTI4NCAzOTguMDQ3IDI4LjkyODQgMzk4LjAxOCAyOC45NjUzTDM3Ny4xNTkgNTguNTU3N0MzNzcuMTMgNTguNjAxOSAzNzcuMTU5IDU4LjY1MzUgMzc3LjIxMSA1OC42NTM1SDQxOC45MjFDNDE4Ljk3MiA1OC42NTM1IDQxOS4wMDIgNTguNTk0NSA0MTguOTczIDU4LjU1NzdaIiBmaWxsPSIjMTMxMzEzIi8+CjwvZz4KPGRlZnM+CjxjbGlwUGF0aCBpZD0iY2xpcDBfMzU4XzE5MTQiPgo8cmVjdCB3aWR0aD0iNzgzIiBoZWlnaHQ9Ijk5IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPgo=" alt="Nutanix NKP"></div>
+      <div class="name">Nutanix NKP</div>
+      <div class="desc">Nutanix Kubernetes Platform + NC2</div>
+    </div>
+    <div class="distro-card" onclick="startGuide('rh')">
+      <div class="card-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjk2IiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDI5NiAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xMDguNjE4IDkwLjk2MDNDOTkuODE5NSA5MC45NjAzIDkyLjkwMTkgODQuMTAzNCA5Mi45MDE5IDc1LjM2NTRDOTIuOTAxOSA2Ni42Mjc0IDk5LjgxOTUgNTkuNzcwNSAxMDguNjE4IDU5Ljc3MDVDMTE3LjQxNyA1OS43NzA1IDEyNC4zOTUgNjYuNjI3NCAxMjQuMzk1IDc1LjM2NTRDMTI0LjQ1NiA4NC4xMDM0IDExNy40NzggOTAuOTYwMyAxMDguNjE4IDkwLjk2MDNaTTEwOC42MTggNjMuOTU3NUMxMDIuMzY4IDYzLjk1NzUgOTcuNTEzNiA2OC44NzI2IDk3LjUxMzYgNzUuMzY1NEM5Ny41MTM2IDgxLjg1ODMgMTAyLjM2OCA4Ni43NzM0IDEwOC42MTggODYuNzczNEMxMTQuODY4IDg2Ljc3MzQgMTE5Ljc4MyA4MS43OTc2IDExOS43ODMgNzUuMzY1NEMxMTkuNzgzIDY4LjkzMzMgMTE0LjkyOSA2My45NTc1IDEwOC42MTggNjMuOTU3NVoiIGZpbGw9IiMwMTAyMDIiLz4KPHBhdGggZD0iTTEyOC43NjQgNjguNDQ3MUgxMzMuMDEyVjcwLjU3MDlDMTM0Ljg5MyA2OC45MzI1IDEzNy4yNTkgNjguMDgzIDEzOS43NDcgNjguMDgzQzE0NS45OTcgNjguMDgzIDE1MC44NTIgNzMuMDU4OCAxNTAuODUyIDc5LjQzMDNDMTUwLjg1MiA4NS43NDExIDE0NS45MzcgOTAuNzc3NiAxMzkuNjI2IDkwLjc3NzZDMTM3LjI1OSA5MC43Nzc2IDEzNC45NTMgOTAuMDQ5NCAxMzMuMDEyIDg4LjU5M1Y5OS4zMzM1SDEyOC43MDNMMTI4Ljc2NCA2OC40NDcxWk0xMzMuMDcyIDc0LjUxNTJWODQuNDY2OEMxMzQuNDY4IDg2LjA0NDUgMTM2Ljc3NCA4Ny4wNzYgMTM5LjIwMSA4Ny4wNzZDMTQzLjQ0OSA4Ny4wNzYgMTQ2LjY2NSA4My44NiAxNDYuNjY1IDc5LjQ5MUMxNDYuNjY1IDc1LjEyMiAxNDMuNDQ5IDcxLjkwNTkgMTM5LjIwMSA3MS45MDU5QzEzNi43MTMgNzEuOTA1OSAxMzQuNDY4IDcyLjgxNjEgMTMzLjA3MiA3NC41MTUyWiIgZmlsbD0iIzAxMDIwMiIvPgo8cGF0aCBkPSJNMTY1LjU5NyA5MC44MzgyQzE1OS4xMDQgOTAuODM4MiAxNTQuMDY4IDg1Ljg2MjQgMTU0LjA2OCA3OS40MzAzQzE1NC4wNjggNzMuMDU4OCAxNTguOTIyIDY4LjA4MyAxNjUuMTEyIDY4LjA4M0MxNzEuMTggNjguMDgzIDE3NS43MzEgNzMuMTE5NSAxNzUuNzMxIDc5LjU1MTZWODAuODI1OUgxNTguMzc2QzE1OC45MjIgODQuNDY2OCAxNjIuMDc4IDg3LjE5NzQgMTY1Ljc3OSA4Ny4xMzY3QzE2Ny43ODIgODcuMTk3NCAxNjkuNzg0IDg2LjUyOTkgMTcxLjM2MiA4NS4xOTQ5TDE3NC4xNTMgODcuOTI1NkMxNzEuNzI2IDg5LjkyOCAxNjguNjkyIDkwLjk1OTYgMTY1LjU5NyA5MC44MzgyWk0xNTguMzc2IDc3LjYwOTlIMTcxLjQyM0MxNzAuNzU1IDc0LjIxMTcgMTY4LjIwNiA3MS43MjM4IDE2NC45OSA3MS43MjM4QzE2MS43MTQgNzEuNzg0NSAxNTkuMDQ0IDc0LjE1MTEgMTU4LjM3NiA3Ny42MDk5WiIgZmlsbD0iIzAxMDIwMiIvPgo8cGF0aCBkPSJNMTc5Ljg1NyA2OC40NDc2SDE4NC4xNjVWNzAuNjMyMUMxODUuOTI1IDY4Ljg3MjQgMTg4LjI5MiA2Ny45MDE1IDE5MC43OCA2OC4wMjI5QzE5NS44MTYgNjguMDIyOSAxOTkuMzk2IDcxLjU0MjMgMTk5LjM5NiA3Ni42Mzk1VjkwLjQ3NDdIMTk1LjA4OFY3Ny4zNjc3QzE5NS4wODggNzMuOTA4OSAxOTIuOTY0IDcxLjc4NTEgMTg5LjYyNyA3MS43ODUxQzE4Ny40NDIgNzEuNzI0NCAxODUuMzc5IDcyLjgxNjYgMTg0LjE2NSA3NC42MzdWOTAuNDc0N0gxNzkuODU3VjY4LjQ0NzZaIiBmaWxsPSIjMDEwMjAyIi8+CjxwYXRoIGQ9Ik0yMDQuOTE4IDgyLjI4MjlDMjA4LjE5NSA4NS40OTkgMjExLjU5MyA4Ny4wMTYgMjE1LjM1NSA4Ny4wMTZDMjE5LjcyNCA4Ny4wMTYgMjIyLjY5OCA4NC45NTI4IDIyMi42OTggODEuOTc5NUMyMjIuNjk4IDc5LjMwOTUgMjIwLjk5OSA3Ny45NzQ2IDIxNi41NjkgNzcuMjQ2NEwyMTEuNTMzIDc2LjM5NjlDMjA2LjAxMSA3NS40ODY2IDIwMy4yOCA3Mi44Nzc0IDIwMy4yOCA2OC41MDg0QzIwMy4yOCA2My4yMjkyIDIwNy43MSA1OS44MzExIDIxNC40NDUgNTkuODMxMUMyMTguODc1IDU5LjgzMTEgMjIzLjEyMyA2MS4yODc0IDIyNi42NDIgNjMuOTU3M0wyMjQuMTU0IDY3LjQxNjFDMjIwLjg3NyA2NC45MjgyIDIxNy42MDEgNjMuNzE0NiAyMTQuMjYzIDYzLjcxNDZDMjEwLjMxOSA2My43MTQ2IDIwNy43MSA2NS41MzUgMjA3LjcxIDY4LjIwNUMyMDcuNzEgNzAuNjkyOSAyMDkuMjI3IDcxLjg0NTggMjEzLjExIDcyLjUxMzNMMjE3Ljk2NSA3My4zMDIyQzIyNC4zMzYgNzQuMzMzNyAyMjcuMjQ5IDc3LjAwMzcgMjI3LjI0OSA4MS42NzYxQzIyNy4yNDkgODcuMjU4NyAyMjIuMzk0IDkwLjk2MDIgMjE1LjE3MyA5MC45NjAyQzIxMC4zMTkgOTAuOTYwMiAyMDUuNjQ3IDg5LjAxODQgMjAyLjE4OCA4NS40OTg5TDIwNC45MTggODIuMjgyOVoiIGZpbGw9IiMwMTAyMDIiLz4KPHBhdGggZD0iTTIzMC44MjkgNjAuMTk1NUwyMzUuMTM3IDU5LjIyNDZWNzAuNjMyNkMyMzYuODk3IDY4Ljg3MjggMjM5LjI2MyA2Ny45MDE5IDI0MS43NTEgNjguMDIzM0MyNDYuNzg4IDY4LjAyMzMgMjUwLjM2OCA3MS41NDI4IDI1MC4zNjggNzYuNjRWOTAuNDc1MUgyNDYuMDZWNzcuMzY4MUMyNDYuMDYgNzMuOTA5MyAyNDMuOTM2IDcxLjc4NTUgMjQwLjU5OCA3MS43ODU1QzIzOC40MTQgNzEuNzI0OCAyMzYuMzUxIDcyLjgxNzEgMjM1LjEzNyA3NC42Mzc1VjkwLjQ3NTFIMjMwLjgyOVY2MC4xOTU1WiIgZmlsbD0iIzAxMDIwMiIvPgo8cGF0aCBkPSJNMjU0Ljg1OCA2Mi4yNTc4QzI1NC44NTggNjAuODAxNSAyNTYuMDExIDU5LjU4NzkgMjU3LjQ2OCA1OS41ODc5QzI1OC45MjQgNTkuNjQ4NiAyNjAuMDc3IDYwLjkyMjkgMjYwLjAxNiA2Mi4zNzkyQzI1OS45NTYgNjMuNzc0OCAyNTguODYzIDY0LjkyNzggMjU3LjQ2OCA2NC45Mjc4QzI1Ni4wNzIgNjQuOTI3OCAyNTQuODU4IDYzLjcxNDIgMjU0Ljg1OCA2Mi4yNTc4Wk0yNTkuNzEzIDkwLjQ3NDNIMjU1LjQwNVY2OC40NDczSDI1OS43MTNWOTAuNDc0M1oiIGZpbGw9IiMwMTAyMDIiLz4KPHBhdGggZD0iTTI2OC4wODcgNjguNDQ3OFY2NS4xMTA0QzI2OC4wODcgNjAuNTU5MyAyNzAuNjk2IDU4LjAxMDcgMjc1LjU1MSA1OC4wMTA3QzI3Ni41ODIgNTguMDEwNyAyNzcuNjc0IDU4LjEzMjEgMjc4LjY0NSA1OC4zNzQ4VjYyLjEzN0MyNzcuNzM1IDYxLjgzMzYgMjc2LjgyNSA2MS43MTIzIDI3NS45MTUgNjEuNzcyOUMyNzMuNTQ4IDYxLjc3MjkgMjcyLjM5NSA2Mi44NjUyIDI3Mi4zOTUgNjUuMTcxMVY2OC4zODcxSDI3OC42NDVWNzIuMDI4SDI3Mi4zOTVWOTAuNDE0MkgyNjguMDg3VjcyLjAyOEgyNjIuOTlWNjguMzg3MUgyNjguMDg3VjY4LjQ0NzhaIiBmaWxsPSIjMDEwMjAyIi8+CjxwYXRoIGQ9Ik0yODUuMjYgNzIuMDg4SDI4MC41ODdWNjguNDQ3MkgyODUuMjZWNjIuODY0NkwyODkuNTA3IDYxLjgzM1Y2OC41MDc5SDI5NlY3Mi4xNDg3SDI4OS41MDdWODQuMDQyMUMyODkuNTA3IDg2LjI4NzMgMjkwLjQxNyA4Ny4xMzY4IDI5Mi43MjMgODcuMTM2OEMyOTMuODE2IDg3LjEzNjggMjk0Ljg0NyA4Ny4wMTU1IDI5NS44NzkgODYuNTkwN1Y5MC4yMzE1QzI5NC41NDQgOTAuNjU2MyAyOTMuMTQ4IDkwLjgzODMgMjkxLjc1MiA5MC44OTlDMjg3LjQ0NCA5MC44OTkgMjg1LjE5OSA4OC44OTY2IDI4NS4xOTkgODUuMDczN0wyODUuMjYgNzIuMDg4WiIgZmlsbD0iIzAxMDIwMiIvPgo8cGF0aCBkPSJNNTIuNzkyMSAzNC41MjczQzU4LjAxMDcgMzQuNTI3MyA2NS41MzUxIDMzLjQzNSA2NS41MzUxIDI3LjI0NTZDNjUuNTM1MSAyNi43NjAyIDY1LjUzNTEgMjYuMjc0NyA2NS40MTM3IDI1Ljg0OTlMNjIuMzE5IDEyLjM3ODhDNjEuNTkwOCA5LjQwNTUgNjAuOTg0IDguMDcwNTIgNTUuNzY1NSA1LjQ2MTI1QzUxLjY5OTkgMy4zOTgxMSA0Mi45NjE5IDAgNDAuMzUyNiAwQzM3LjkyNTQgMCAzNy4xOTcyIDMuMTU1NCAzNC4zNDUyIDMuMTU1NEMzMS41NTM5IDMuMTU1NCAyOS40OTA4IDAuODQ5NTM0IDI2Ljg4MTUgMC44NDk1MzRDMjQuMzkzNiAwLjg0OTUzNCAyMi43NTUyIDIuNTQ4NTkgMjEuNDgwOSA2LjA2ODA2QzIxLjQ4MDkgNi4wNjgwNiAxNy45NjE1IDE1Ljg5ODMgMTcuNTM2NyAxNy4zNTQ3QzE3LjQ3NiAxNy41OTc0IDE3LjQxNTMgMTcuOTAwOCAxNy40MTUzIDE4LjE0MzVDMTcuNDc2IDIxLjk2NjQgMzIuNTI0OCAzNC41MjczIDUyLjc5MjEgMzQuNTI3M1pNNjYuMzIzOSAyOS43OTQyQzY3LjA1MjEgMzMuMTkyMyA2Ny4wNTIxIDMzLjU1NjQgNjcuMDUyMSAzMy45ODExQzY3LjA1MjEgMzkuODA2NSA2MC40OTg2IDQzLjAyMjYgNTEuODgxOSA0My4wMjI2QzMyLjQwMzQgNDMuMDIyNiAxNS40MTI5IDMxLjYxNDYgMTUuNDEyOSAyNC4wOTAyQzE1LjQxMjkgMjMuMDU4NiAxNS42NTU2IDIyLjAyNzEgMTYuMDE5NyAyMS4wNTYyQzkuMDQxNDEgMjEuNDIwMyAwIDIyLjY5NDUgMCAzMC42NDM3QzAgNDMuNzUwNyAzMS4wMDc4IDU5LjgzMTEgNTUuNTgzNCA1OS44MzExQzc0LjM5NDQgNTkuODMxMSA3OS4xMjc1IDUxLjMzNTggNzkuMTI3NSA0NC42MDAyQzc5LjEyNzUgMzkuMzgxNyA3NC41MTU4IDMzLjM3NDMgNjYuMzIzOSAyOS43OTQyWiIgZmlsbD0iI0U0MTgxNCIvPgo8cGF0aCBkPSJNNjYuMzIzOSAyOS43OTNDNjcuMDUyIDMzLjE5MTIgNjcuMDUyIDMzLjU1NTIgNjcuMDUyIDMzLjk4QzY3LjA1MiAzOS44MDUzIDYwLjQ5ODUgNDMuMDIxNCA1MS44ODE5IDQzLjAyMTRDMzIuNDAzNCA0My4wMjE0IDE1LjQxMjggMzEuNjc0MSAxNS40MTI4IDI0LjE0OTdDMTUuNDEyOCAyMy4xMTgyIDE1LjY1NTYgMjIuMDg2NiAxNi4wMTk2IDIxLjExNTdMMTcuNTM2NyAxNy4zNTM1QzE3LjQ3NiAxNy41OTYyIDE3LjQxNTMgMTcuODk5NiAxNy40MTUzIDE4LjE0MjRDMTcuNDE1MyAyMS45NjUyIDMyLjUyNDggMzQuNTI2MSA1Mi43MzE0IDM0LjUyNjFDNTcuOTQ5OSAzNC41MjYxIDY1LjQ3NDMgMzMuNDMzOSA2NS40NzQzIDI3LjI0NDVDNjUuNDc0MyAyNi43NTkgNjUuNDc0MyAyNi4yNzM2IDY1LjM1MyAyNS44NDg4TDY2LjMyMzkgMjkuNzkzWiIgZmlsbD0iIzAxMDIwMiIvPgo8cGF0aCBkPSJNMjQwLjc4MSAzOC40MTA3QzI0MC43ODEgNDMuMzI1OCAyNDMuNzU0IDQ1Ljc1MzEgMjQ5LjE1NSA0NS43NTMxQzI1MC44NTQgNDUuNjkyNCAyNTIuNDkyIDQ1LjQ0OTcgMjU0LjA3IDQ1LjAyNDlWMzkuMzIwOUMyNTMuMDM4IDM5LjYyNDMgMjUxLjk0NiAzOS44MDY0IDI1MC44NTQgMzkuODA2NEMyNDguNjA5IDM5LjgwNjQgMjQ3LjgyIDM5LjA3ODIgMjQ3LjgyIDM3LjAxNVYyOC4yMTY0SDI1NC4zMTNWMjIuMzMwM0gyNDcuODJWMTQuODY2NkwyNDAuNzgxIDE2LjM4MzZWMjIuMzMwM0gyMzYuMTA4VjI4LjIxNjRIMjQwLjc4MVYzOC40MTA3Wk0yMTguNzU0IDM4LjUzMjFDMjE4Ljc1NCAzNy4wMTUgMjIwLjI3MSAzNi4yODY5IDIyMi41NzcgMzYuMjg2OUMyMjMuOTcyIDM2LjI4NjkgMjI1LjQyOSAzNi40Njg5IDIyNi43NjQgMzYuODMzVjM5LjgwNjRDMjI1LjQyOSA0MC41MzQ1IDIyMy45MTIgNDAuODk4NiAyMjIuMzM0IDQwLjg5ODZDMjIwLjA4OSA0MC44Mzc5IDIxOC43NTQgMzkuOTg4NCAyMTguNzU0IDM4LjUzMjFaTTIyMC44NzcgNDUuODc0NEMyMjMuMzY1IDQ1Ljg3NDQgMjI1LjM2OCA0NS4zMjgzIDIyNy4yNDkgNDQuMDU0VjQ1LjQ0OTdIMjM0LjIyN1YzMC42NDM2QzIzNC4yMjcgMjUuMDAwMyAyMzAuNDA0IDIxLjkwNTYgMjI0LjA5NCAyMS45MDU2QzIyMC41NzQgMjEuOTA1NiAyMTcuMDU1IDIyLjc1NTEgMjEzLjI5MiAyNC40NTQyTDIxNS44NDEgMjkuNjcyN0MyMTguNTcyIDI4LjUxOTggMjIwLjgxNyAyNy44NTIzIDIyMi44MTkgMjcuODUyM0MyMjUuNzMyIDI3Ljg1MjMgMjI3LjI0OSAyOS4wMDUyIDIyNy4yNDkgMzEuMzExMVYzMi40NjRDMjI1LjU1IDMyLjAzOTIgMjIzLjc5IDMxLjc5NjUgMjIyLjAzIDMxLjc5NjVDMjE2LjA4NCAzMS43OTY1IDIxMi41MDQgMzQuMjg0NCAyMTIuNTA0IDM4Ljc3NDhDMjEyLjUwNCA0Mi43Nzk3IDIxNS43MiA0NS44NzQ0IDIyMC44NzcgNDUuODc0NFpNMTgyLjQ2NyA0NS40NDk3SDE4OS45OTFWMzMuNDM0OUgyMDIuNTUyVjQ1LjM4OUgyMTAuMDc2VjE0LjgwNTlIMjAyLjU1MlYyNi41NzhIMTg5Ljk5MVYxNC44MDU5SDE4Mi40NjdWNDUuNDQ5N1pNMTUzLjgyNSAzMy44NTk3QzE1My44MjUgMzAuNTIyMiAxNTYuNDM1IDI3Ljk3MzYgMTU5Ljg5MyAyNy45NzM2QzE2MS43MTQgMjcuOTEzIDE2My40MTMgMjguNTgwNCAxNjQuODA5IDI5Ljc5NDFWMzcuODY0NkMxNjMuNDc0IDM5LjA3ODIgMTYxLjcxNCAzOS43NDU3IDE1OS44OTMgMzkuNjg1QzE1Ni40OTUgMzkuNzQ1NyAxNTMuODI1IDM3LjE5NzEgMTUzLjgyNSAzMy44NTk3Wk0xNjQuOTMgNDUuNDQ5N0gxNzEuOTA4VjEzLjM0OTZMMTY0Ljg2OSAxNC44NjY2VjIzLjU0NEMxNjMuMDQ5IDIyLjUxMjQgMTYxLjA0NiAyMS45NjYzIDE1OC45ODMgMjIuMDI2OUMxNTIuMjQ4IDIyLjAyNjkgMTQ2Ljk2OSAyNy4yNDU1IDE0Ni45NjkgMzMuODU5N0MxNDYuOTA4IDQwLjM1MjUgMTUyLjA2NiA0NS42OTI0IDE1OC41NTkgNDUuNzUzMUMxNTguNjE5IDQ1Ljc1MzEgMTU4LjY4IDQ1Ljc1MzEgMTU4Ljc0MSA0NS43NTMxQzE2MC45ODYgNDUuNzUzMSAxNjMuMTcgNDUuMDg1NiAxNjQuOTMgNDMuNzUwNlY0NS40NDk3Wk0xMzIuODMgMjcuNjcwMkMxMzUuMDc1IDI3LjY3MDIgMTM2Ljk1NiAyOS4xMjY2IDEzNy42ODQgMzEuMzExMUgxMjguMDM2QzEyOC43MDQgMjkuMDY1OSAxMzAuNDYzIDI3LjY3MDIgMTMyLjgzIDI3LjY3MDJaTTEyMC44NzYgMzMuOTIwM0MxMjAuODc2IDQwLjY1NTkgMTI2LjM5OCA0NS44NzQ0IDEzMy40MzcgNDUuODc0NEMxMzcuMzIgNDUuODc0NCAxNDAuMTcyIDQ0Ljg0MjggMTQzLjA4NSA0Mi4zNTQ5TDEzOC40MTMgMzguMTY4QzEzNy4zMiAzOS4zMjA5IDEzNS42ODIgMzkuOTI3NyAxMzMuODAxIDM5LjkyNzdDMTMxLjMxMyAzOS45ODg0IDEyOS4wNjggMzguNTMyMSAxMjguMDk3IDM2LjI4NjlIMTQ0LjYwMlYzNC41MjcxQzE0NC42MDIgMjcuMTg0OCAxMzkuNjg3IDIxLjkwNTYgMTMyLjk1MSAyMS45MDU2QzEyNi4zOTggMjEuNzg0MiAxMjAuOTk3IDI3LjA2MzQgMTIwLjg3NiAzMy42MTY5QzEyMC44NzYgMzMuNzM4MyAxMjAuODc2IDMzLjc5OSAxMjAuODc2IDMzLjkyMDNaTTEwOC42NzkgMjEuMjk4OEMxMTEuMTY3IDIxLjI5ODggMTEyLjU2MyAyMi44NzY1IDExMi41NjMgMjQuNzU3NkMxMTIuNTYzIDI2LjYzODcgMTExLjE2NyAyOC4yMTY0IDEwOC42NzkgMjguMjE2NEgxMDEuMjc2VjIxLjI5ODhIMTA4LjY3OVpNOTMuNjkwOSA0NS40NDk3SDEwMS4yMTVWMzQuMjg0NEgxMDYuOTE5TDExMi42ODQgNDUuNDQ5N0gxMjEuMDU4TDExNC4zMjIgMzMuMTkyMkMxMTcuODQyIDMxLjc5NjUgMTIwLjA4NyAyOC4zMzc3IDEyMC4wODcgMjQuNTc1NUMxMjAuMDg3IDE5LjA1MzYgMTE1Ljc3OSAxNC44MDU5IDEwOS4yODYgMTQuODA1OUg5My42OTA5VjQ1LjQ0OTdaIiBmaWxsPSIjMDEwMjAyIi8+Cjwvc3ZnPgo=" alt="Red Hat OpenShift"></div>
+      <div class="name">Red Hat OpenShift</div>
+      <div class="desc">OCP, ROSA, ARO, OSD</div>
+    </div>
+    <div class="distro-card" onclick="startGuide('suse')">
+      <div class="card-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTU1IiBoZWlnaHQ9IjExOSIgdmlld0JveD0iMCAwIDU1NSAxMTkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xNzQuNSAxNy45OTU4TDE3Mi42MTggNi42MjU4NUMxNzIuMDA5IDIuOTY4MzggMTcwLjU3OCAwIDE2OS40NjQgMEMxNjguMzI1IDAgMTY3LjQyNCAzLjAyMTM5IDE2Ny40MjQgNi43MzE4NlY5LjcwMDI0QzE2Ny40MjQgMTMuMzg0MiAxNjQuNDAyIDE2LjQzMjEgMTYwLjY5MiAxNi40MzIxSDE1Ny43MjNDMTU3LjUxMSAxNi40MzIxIDE1Ny4yOTkgMTYuNDMyMSAxNTcuMDg3IDE2LjQ1ODZWMjQuNjIxNkMxNTcuMjk5IDI0LjYyMTYgMTU3LjUxMSAyNC42NDgxIDE1Ny43MjMgMjQuNjQ4MUgxNjguOTA4QzE3Mi41OTIgMjQuNjIxNiAxNzUuMTEgMjEuNjUzMyAxNzQuNSAxNy45OTU4WiIgZmlsbD0iIzI0NTNGRiIvPgo8cGF0aCBkPSJNMTQ3LjcwNSA4LjM3NTA3SDEyOS41NzdDMTI5LjQxOCA4LjM3NTA3IDEyOS4yODYgOC4zNzUwNyAxMjkuMTI2IDguNDAxNTdIMTEwLjUyMUMxMTAuMzA5IDguNDAxNTcgMTEwLjA5NyA4LjQyODA4IDEwOS44ODUgOC40NTQ1OFY2LjczMTg2QzEwOS44ODUgMy4wNDc4OSAxMDguOTU3IDAgMTA3Ljg0NCAwQzEwNi43MDUgMCAxMDUuMyAyLjk5NDg4IDEwNC42OSA2LjYyNTg1TDEwMi44MDkgMTcuOTk1OEMxMDIuMTk5IDIxLjY1MzMgMTA0LjcxNyAyNC42MjE3IDEwOC40MjcgMjQuNjIxN0gxMTkuNjEyQzEyMC43NTEgMjQuNjIxNyAxMjEuODM4IDI0LjQzNjEgMTIyLjc5MiAyNC4xMTgxQzEyMi40NDggMjYuMDI2MyAxMjAuNzc4IDI3LjQ1NzUgMTE4Ljc2NCAyNy40NTc1SDEwMy4xQzEwMC41NTYgMjcuNDU3NSA5OC42NDc2IDI1LjE3ODIgOTkuMDQ1MSAyMi42ODY5TDEwMC42MzUgMTMuMTcyMkMxMDEuMDU5IDEwLjY4MDkgOTkuMTI0NyA4LjQwMTU3IDk2LjU4MDMgOC40MDE1N0gxOC41ODA5QzE2LjkxMTEgOC40MDE1NyAxNS40OCA5LjM4MjIgMTQuODQzOSAxMC44MTM0TDAuMTYxMDA3IDMzLjE1NTdDLTAuMDc3NTIzMiAzMy41MjY4IC0wLjA1MTAxOCAzNC4wMzA0IDAuMjQwNTE5IDM0LjM3NDlMMy4xMDI4OCAzNy43NDA4QzMuNDQ3NDMgMzguMTY0OSA0LjA4MzUxIDM4LjIxNzkgNC41MDc1NiAzNy44NzMzTDE0LjQ5OTMgMzAuMDAxOFY3Ny44MTRDMTQuNDk5MyA4MC4wOTMyIDE2LjMyODEgODEuOTIyIDE4LjYwNzQgODEuOTIySDQwLjczNzdDNDMuMDE3IDgxLjkyMiA0NC44NDU3IDgwLjA5MzIgNDQuODQ1NyA3Ny44MTRWNjEuMTk2M0M0NC44NDU3IDU4Ljk0MzUgNDYuNjc0NCA1Ny4wODgzIDQ4Ljk1MzcgNTcuMDg4M0gxMDQuMjEzQzEwNi40OTMgNTcuMDg4MyAxMDguMzIxIDU4LjkxNyAxMDguMzIxIDYxLjE5NjNWNzcuODE0QzEwOC4zMjEgODAuMDkzMiAxMTAuMTUgODEuOTIyIDExMi40MjkgODEuOTIySDEzNC41NkMxMzYuODEyIDgxLjkyMiAxMzguNjY4IDgwLjA5MzIgMTM4LjY2OCA3Ny44MTRWNTkuOTI0MkgxMjYuOUMxMjMuMjE2IDU5LjkyNDIgMTIwLjE2OCA1Ni45MDI4IDEyMC4xNjggNTMuMTkyM1Y0MS42ODk4QzEyMC4xNjggMzkuNDkgMTIxLjIyOCAzNy41NTUzIDEyMi44NzIgMzYuMzM2MVY1MC4wNjQ5QzEyMi44NzIgNTMuNzQ4OSAxMjUuODkzIDU2Ljc5NjggMTI5LjYwNCA1Ni43OTY4SDE0Ny43MzJDMTUxLjQxNiA1Ni43OTY4IDE1NC40NjQgNTMuNzc1NCAxNTQuNDY0IDUwLjA2NDlWMTUuMTA2OUMxNTQuNDM3IDExLjQyMyAxNTEuNDE2IDguMzc1MDcgMTQ3LjcwNSA4LjM3NTA3WiIgZmlsbD0iIzI0NTNGRiIvPgo8cGF0aCBkPSJNNTMxLjIzNiAxMTguNjgxQzUyOC42OTIgMTE4LjY4MSA1MjYuNjI0IDExNi42MTQgNTI2LjYyNCAxMTQuMDY5VjEwMC4zNjdDNTI2LjYyNCA5Ny44MjI4IDUyOC42OTIgOTUuNzU1NSA1MzEuMjM2IDk1Ljc1NTVINTQxLjc1OEM1NDIuNTc5IDk1Ljc1NTUgNTQzLjI0MiA5Ni40MTgxIDU0My4yNDIgOTcuMjM5N0M1NDMuMjQyIDk4LjA2MTMgNTQyLjU3OSA5OC43MjM5IDU0MS43NTggOTguNzIzOUg1MzEuMjM2QzUzMC4zMzUgOTguNzIzOSA1MjkuNTkzIDk5LjQ2NiA1MjkuNTkzIDEwMC4zNjdWMTA1Ljc0N0g1MzkuOTAyQzU0MC42NzEgMTA1Ljc0NyA1NDEuMzA3IDEwNi4zODMgNTQxLjMwNyAxMDcuMTUyQzU0MS4zMDcgMTA3LjkyMSA1NDAuNjcxIDEwOC41NTcgNTM5LjkwMiAxMDguNTU3SDUyOS41OTNWMTE0LjA0M0M1MjkuNTkzIDExNC45NDQgNTMwLjMzNSAxMTUuNjg2IDUzMS4yMzYgMTE1LjY4Nkg1NDEuNzU4QzU0Mi41NzkgMTE1LjY4NiA1NDMuMjQyIDExNi4zNDkgNTQzLjI0MiAxMTcuMTdDNTQzLjI0MiAxMTcuOTkyIDU0Mi41NzkgMTE4LjY1NCA1NDEuNzU4IDExOC42NTRINTMxLjIzNlYxMTguNjgxWk00ODQuMTEzIDExOC45NzNDNDgxLjA5MSAxMTguOTczIDQ3OC43NTkgMTE4LjIwNCA0NzcuMTY5IDExNi42OTNDNDc1LjYwNSAxMTUuMTgzIDQ3NC44MSAxMTIuOTAzIDQ3NC44MSAxMDkuOTA4Vjk3LjE2MDJDNDc0LjgxIDk2LjIwNjEgNDc1LjU3OSA5NS40Mzc1IDQ3Ni41MzMgOTUuNDM3NUM0NzcuNDg3IDk1LjQzNzUgNDc4LjI1NiA5Ni4yMDYxIDQ3OC4yNTYgOTcuMTYwMlYxMDkuNDMxQzQ3OC4yNTYgMTExLjY1OCA0NzguNzMzIDExMy4zMjcgNDc5LjY4NyAxMTQuMzg3QzQ4MC42NDEgMTE1LjQ0OCA0ODIuMTI1IDExNi4wMDQgNDg0LjExMyAxMTYuMDA0QzQ4Ni4xMDEgMTE2LjAwNCA0ODcuNTg1IDExNS40NDggNDg4LjUzOSAxMTQuMzg3QzQ4OS40OTMgMTEzLjMyNyA0ODkuOTcgMTExLjY1OCA0ODkuOTcgMTA5LjQzMVY5Ny4xNjAyQzQ4OS45NyA5Ni4yMDYxIDQ5MC43MzkgOTUuNDM3NSA0OTEuNjkzIDk1LjQzNzVDNDkyLjY0NyA5NS40Mzc1IDQ5My40MTYgOTYuMjA2MSA0OTMuNDE2IDk3LjE2MDJWMTA5LjkwOEM0OTMuNDE2IDExMi44NzcgNDkyLjYyIDExNS4xNTYgNDkxLjA1NyAxMTYuNjkzQzQ4OS40NjcgMTE4LjIwNCA0ODcuMTM0IDExOC45NzMgNDg0LjExMyAxMTguOTczWk01MTAuMTEzIDExOC45NzNDNTA2LjIxNyAxMTguOTczIDUwMy4yNDggMTE3Ljg1OSA1MDEuMjg3IDExNS42ODZDNTAwLjczIDExNS4wNSA1MDAuNzU3IDExNC4wNjkgNTAxLjM2NyAxMTMuNDZDNTAxLjY4NSAxMTMuMTQyIDUwMi4wODIgMTEyLjk4MyA1MDIuNTMzIDExMi45ODNDNTAzLjAxIDExMi45ODMgNTAzLjQzNCAxMTMuMTY4IDUwMy43MjUgMTEzLjUzOUM1MDQuMjgyIDExNC4xNzUgNTA0Ljg5MSAxMTQuNjc5IDUwNS41ODEgMTE1LjA3N0M1MDYuNzczIDExNS43MzkgNTA4LjI4NCAxMTYuMDg0IDUxMC4wNiAxMTYuMDg0QzUxMS43NTYgMTE2LjA4NCA1MTMuMDgxIDExNS43OTIgNTE0LjA2MiAxMTUuMjA5QzUxNS4wNjkgMTE0LjU5OSA1MTUuNTcyIDExMy43NTEgNTE1LjU3MiAxMTIuNjM4QzUxNS41NzIgMTExLjczNyA1MTUuMTIyIDExMC45OTUgNTE0LjIyMSAxMTAuNDY1QzUxMy4zNDYgMTA5LjkzNSA1MTEuODYyIDEwOS40ODQgNTA5LjY4OSAxMDkuMDg3QzUwNy41NjggMTA4LjY4OSA1MDUuODcyIDEwOC4yMTIgNTA0LjYyNiAxMDcuNjI5QzUwMy40MDcgMTA3LjA3MiA1MDIuNTA2IDEwNi4zNTcgNTAxLjk1IDEwNS41MDlDNTAxLjM5MyAxMDQuNjg3IDUwMS4xMjggMTAzLjY1NCA1MDEuMTI4IDEwMi40MzRDNTAxLjEyOCAxMDEuMTYyIDUwMS40NzMgOTkuOTk2MSA1MDIuMTg4IDk4LjkzNTlDNTAyLjkwNCA5Ny45MDIzIDUwMy45MzcgOTcuMDU0MiA1MDUuMjYzIDk2LjQ0NDZDNTA2LjYxNCA5NS44MzUgNTA4LjIwNCA5NS41MTcgNTA5Ljk4IDk1LjUxN0M1MTIuMDc0IDk1LjUxNyA1MTMuODc2IDk1Ljg4ODEgNTE1LjM2IDk2LjY1NjdDNTE2LjM0MSA5Ny4xNjAyIDUxNy4yNDIgOTcuODc1OCA1MTguMDM3IDk4LjcyMzlDNTE4LjY0NyA5OS4zODY1IDUxOC41NjcgMTAwLjQyIDUxNy45MDUgMTAxLjAzQzUxNy42MTMgMTAxLjI5NSA1MTcuMjE2IDEwMS40NTQgNTE2LjgxOCAxMDEuNDU0QzUxNi4zMTQgMTAxLjQ1NCA1MTUuODM3IDEwMS4yMTUgNTE1LjUxOSAxMDAuODE4QzUxNS4wNjkgMTAwLjIzNSA1MTQuNTY1IDk5Ljc4NDEgNTE0LjAzNSA5OS40MTNDNTEzLjAyOCA5OC43NzY5IDUxMS42NzYgOTguNDMyNCA1MTAuMDA3IDk4LjQzMjRDNTA4LjM2MyA5OC40MzI0IDUwNy4wNjUgOTguNzc2OSA1MDYuMTY0IDk5LjQzOTVDNTA1LjIzNiAxMDAuMTAyIDUwNC43NTkgMTAwLjk3NyA1MDQuNzU5IDEwMi4wMzdDNTA0Ljc1OSAxMDMuMDE3IDUwNS4yMSAxMDMuODEzIDUwNi4xMzcgMTA0LjM5NkM1MDcuMDEyIDEwNC45NTIgNTA4LjU0OSAxMDUuNDI5IDUxMC44MjggMTA1Ljg1M0M1MTIuODk2IDEwNi4yMjQgNTE0LjUzOSAxMDYuNzAxIDUxNS43NTggMTA3LjI1OEM1MTYuOTUxIDEwNy44MTUgNTE3LjgyNSAxMDguNTA0IDUxOC4zODIgMTA5LjM1MkM1MTguOTEyIDExMC4xNzMgNTE5LjIwMyAxMTEuMjA3IDUxOS4yMDMgMTEyLjQyNkM1MTkuMjAzIDExMy43NTEgNTE4LjgzMiAxMTQuOTE3IDUxOC4wOSAxMTUuODk4QzUxNy4zNDggMTE2LjkwNSA1MTYuMjYxIDExNy42NzQgNTE0LjkxIDExOC4yMDRDNTEzLjUwNSAxMTguNzA3IDUxMS45MTUgMTE4Ljk3MyA1MTAuMTEzIDExOC45NzNaTTQ1OC4yOTkgMTE4Ljk5OUM0NTQuNDAzIDExOC45OTkgNDUxLjQzNCAxMTcuODg2IDQ0OS40NzMgMTE1LjcxM0M0NDguOTE2IDExNS4wNzcgNDQ4Ljk0MyAxMTQuMDk2IDQ0OS41NTIgMTEzLjQ4NkM0NDkuODcgMTEzLjE2OCA0NTAuMjY4IDExMy4wMDkgNDUwLjcxOSAxMTMuMDA5QzQ1MS4xOTYgMTEzLjAwOSA0NTEuNjIgMTEzLjE5NSA0NTEuOTExIDExMy41NjZDNDUyLjQ2OCAxMTQuMjAyIDQ1My4wNzcgMTE0LjcwNSA0NTMuNzY2IDExNS4xMDNDNDU0Ljk1OSAxMTUuNzY2IDQ1Ni40NyAxMTYuMTEgNDU4LjI0NiAxMTYuMTFDNDU5Ljk0MiAxMTYuMTEgNDYxLjI2NyAxMTUuODE5IDQ2Mi4yNDggMTE1LjIzNkM0NjMuMjU1IDExNC42MjYgNDYzLjc1OCAxMTMuNzc4IDQ2My43NTggMTEyLjY2NUM0NjMuNzU4IDExMS43NjQgNDYzLjMwOCAxMTEuMDIxIDQ2Mi40MDcgMTEwLjQ5MUM0NjEuNTMyIDEwOS45NjEgNDYwLjA0OCAxMDkuNTExIDQ1Ny44NzQgMTA5LjExM0M0NTUuNzgxIDEwOC43MTYgNDU0LjA1OCAxMDguMjM5IDQ1Mi44MTIgMTA3LjY1NkM0NTEuNTkzIDEwNy4wNzIgNDUwLjY2NiAxMDYuMzgzIDQ1MC4xMzYgMTA1LjUzNUM0NDkuNTc5IDEwNC43MTQgNDQ5LjMxNCAxMDMuNjggNDQ5LjMxNCAxMDIuNDYxQzQ0OS4zMTQgMTAxLjE4OSA0NDkuNjU4IDEwMC4wMjMgNDUwLjM3NCA5OC45NjI0QzQ1MS4wOSA5Ny45Mjg4IDQ1Mi4xMjMgOTcuMDgwNyA0NTMuNDQ4IDk2LjQ3MTFDNDU0LjggOTUuODYxNiA0NTYuMzY0IDk1LjU0MzUgNDU4LjE2NiA5NS41NDM1QzQ2MC4yNiA5NS41NDM1IDQ2Mi4wNjIgOTUuOTE0NiA0NjMuNTQ2IDk2LjY4MzJDNDY0LjU1MyA5Ny4xODY3IDQ2NS40MjggOTcuOTAyMyA0NjYuMjIzIDk4Ljc1MDRDNDY2LjgzMyA5OS40MTMgNDY2Ljc1MyAxMDAuNDQ3IDQ2Ni4wOTEgMTAxLjA1NkM0NjUuNzk5IDEwMS4zMjEgNDY1LjQwMSAxMDEuNDggNDY1LjAwNCAxMDEuNDhDNDY0LjUgMTAxLjQ4IDQ2NC4wMjMgMTAxLjI0MiA0NjMuNzA1IDEwMC44NDRDNDYzLjI1NSAxMDAuMjYxIDQ2Mi43NTEgOTkuODEwNiA0NjIuMjIxIDk5LjQzOTVDNDYxLjIxNCA5OC44MDM0IDQ1OS44NjIgOTguNDU4OSA0NTguMTkzIDk4LjQ1ODlDNDU2LjU0OSA5OC40NTg5IDQ1NS4yNTEgOTguODAzNCA0NTQuMzUgOTkuNDY2QzQ1My40MjIgMTAwLjEyOSA0NTIuOTQ1IDEwMS4wMyA0NTIuOTQ1IDEwMi4wNjNDNDUyLjk0NSAxMDMuMDQ0IDQ1My4zOTUgMTAzLjgzOSA0NTQuMzIzIDEwNC40MjJDNDU1LjE5OCAxMDQuOTc5IDQ1Ni43MzUgMTA1LjQ1NiA0NTkuMDE0IDEwNS44OEM0NjEuMDgxIDEwNi4yNTEgNDYyLjcyNSAxMDYuNzI4IDQ2My45NDQgMTA3LjI4NUM0NjUuMTM2IDEwNy44NDEgNDY2LjAxMSAxMDguNTU3IDQ2Ni41NjggMTA5LjM3OEM0NjcuMDk4IDExMC4yIDQ2Ny4zODkgMTExLjIzNCA0NjcuMzg5IDExMi40NTNDNDY3LjM4OSAxMTMuNzc4IDQ2Ny4wMTggMTE0Ljk0NCA0NjYuMjc2IDExNS45MjVDNDY1LjUzNCAxMTYuOTMyIDQ2NC40NDcgMTE3LjcgNDYzLjA5NiAxMTguMjNDNDYxLjY5MSAxMTguNzA3IDQ2MC4xMDEgMTE4Ljk5OSA0NTguMjk5IDExOC45OTlaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNNDA1LjE2IDExOC45NzNIMzk2LjM4N1Y5NS40Mzc1SDQwNC44MTVDNDA5Ljc3MSA5NS40Mzc1IDQxMi4yNjMgOTguMTQwOCA0MTIuMjYzIDEwMS40MDFDNDEyLjI2MyAxMDQuMzY5IDQxMC40MDcgMTA2LjA5MiA0MDguMTU0IDEwNi44MzRDNDEwLjcyNSAxMDcuMjg1IDQxMi44MTkgMTA5Ljc0OSA0MTIuODE5IDExMi42MzhDNDEyLjgxOSAxMTYuMjE2IDQxMC4wMzYgMTE4Ljk3MyA0MDUuMTYgMTE4Ljk3M1pNNDA0LjU1IDk3Ljk4MThIMzk5LjQ2MVYxMDUuNjE1SDQwNC42M0M0MDcuNDkyIDEwNS42MTUgNDA5LjE2MiAxMDQuMjEgNDA5LjE2MiAxMDEuNzk4QzQwOS4xNjIgOTkuNDY2IDQwNy41NzEgOTcuOTgxOCA0MDQuNTUgOTcuOTgxOFpNNDA0Ljc4OSAxMDguMTMzSDM5OS40NjFWMTE2LjQyOEg0MDQuODk1QzQwNy45NDIgMTE2LjQyOCA0MDkuNzQ1IDExNC45MTcgNDA5Ljc0NSAxMTIuMzQ3QzQwOS43NDUgMTA5Ljc3NiA0MDcuODEgMTA4LjEzMyA0MDQuNzg5IDEwOC4xMzNaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNNDE2LjgyMSA5NS40Mzc1SDQyMC4yNEw0MjYuMDQ0IDEwNy4zNjRMNDMxLjg0OCA5NS40Mzc1SDQzNS4yNjdMNDI3LjYwOCAxMTAuMDk0VjExOC45NzNINDI0LjUzM1YxMTAuMDk0TDQxNi44MjEgOTUuNDM3NVoiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGQ9Ik0xODkuMzk1IDEwLjcwOEgyMTQuMzM1QzIyNi4xODIgMTAuNzA4IDIzNC4xNTkgMTYuNDU5MiAyMzQuMTU5IDI3LjU2NDJDMjM0LjE1OSAzNi42MjgzIDIyNy45ODQgNDIuMDg4IDIyMS45NjggNDMuOTY5OEMyMjMuNzcgNDUuNTA2OSAyMjUuMDk1IDQ3LjU0NzcgMjI2LjE4MiA0OS43MjFDMjI4LjcgNTQuODM2MSAyMzAuMzk2IDYwLjQ4MTQgMjM1LjY5NiA2MC40ODE0QzIzNy4wNDggNjAuNDgxNCAyMzguMTA4IDYwLjAzMDggMjM4LjEwOCA2MC4wMzA4TDIzNi45NDIgNzAuNzExN0MyMzYuOTQyIDcwLjcxMTcgMjMzLjcwOSA3MS41MDY4IDIzMC45MjYgNzEuNTA2OEMyMjMuNzQzIDcxLjUwNjggMjE5LjYzNSA2OC43MjM5IDIxNS40MjEgNTkuMTI5N0MyMTMuNjE5IDU0LjgzNjEgMjExLjEyOCA0Ny4yODI3IDIwNy43ODggNDcuMjgyN0gyMDQuMzY5VjcxLjIxNTJIMTg5LjM5NVYxMC43MDhaTTIwNC4zNjkgMjEuNTQ3OVYzNi40NDI4SDIwOS43NUMyMTQuMDQzIDM2LjQ0MjggMjE5LjA3OSAzNS4wOTExIDIxOS4wNzkgMjguNjUwOEMyMTkuMDc5IDIzLjM1MDEgMjE1LjY2IDIxLjU3NDQgMjExLjU1MiAyMS41NzQ0SDIwNC4zNjlWMjEuNTQ3OVoiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGQ9Ik0yNTQuMzgyIDEwLjcwOEgyNjkuNTQyTDI4OS45NzYgNzEuMjQxN0gyNzQuODE2TDI3MS4wNTIgNTkuNzY1OEgyNTAuNzc3TDI0Ny4wOTMgNzEuMjQxN0gyMzRMMjU0LjM4MiAxMC43MDhaTTI1NC4zODIgNDguNjM0NEgyNjcuMzk1TDI2My4yNiAzNS45MTI3QzI2MS44MjkgMzEuNjE5MiAyNjEuMTkzIDI1LjUyMzQgMjYxLjE5MyAyNS41MjM0SDI2MC44MjJDMjYwLjgyMiAyNS41MjM0IDI1OS45MjEgMzEuNjk4NyAyNTguNTY5IDM1LjgzMzJMMjU0LjM4MiA0OC42MzQ0WiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTI5MC42MTEgMTAuNzA4SDMwNi42NzJMMzIyLjU0OCA0MC43MzYzQzMyMy45IDQzLjMzMzcgMzI1LjY3NSA0Ny45MTg4IDMyNy4xMzMgNTEuNDk2N0gzMjcuNTA0QzMyNy4zMTkgNDguMDc3OCAzMjYuODY4IDQzLjI1NDIgMzI2Ljg2OCAzOS43NTU3VjEwLjcwOEgzMzkuMTM5VjcxLjI0MTdIMzIzLjQ0OUwzMDYuOTY0IDQxLjI5MjlDMzA1LjQyNyAzOC41ODk2IDMwMy44MzcgMzQuNjY3MSAzMDIuNTY0IDMxLjQzMzdIMzAyLjE5M0MzMDIuNDU4IDM0Ljg1MjYgMzAyLjkwOSAzOC44ODExIDMwMi45MDkgNDIuMTk0VjcxLjI0MTdIMjkwLjYxMVYxMC43MDhaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNMzQyLjMxOSA0MC41NTA1QzM0Mi4zMTkgMTguNjg1MiAzNTMuMTU5IDkuNjIxMDkgMzY5LjkzNiA5LjYyMTA5QzM4Ny41ODcgOS42MjEwOSAzOTQuNjkgMTkuMjk0OCAzOTIuNzAyIDMyLjM4NzVMMzc4LjcwOCAzMy42MzMyQzM4MC4yNDYgMjQuMDM4OSAzNzYuNDU2IDIwLjE5NTkgMzY5LjY0NCAyMC4xOTU5QzM2My4wOTggMjAuMTk1OSAzNTcuNzk3IDI1LjA0NjEgMzU3Ljc5NyA0MC42MzAxQzM1Ny43OTcgNTcuMTQxNyAzNjMuNTQ5IDYxLjM1NTcgMzcwLjA2OCA2MS4zNTU3QzM3Ni4yNDQgNjEuMzU1NyAzODEuMjc5IDU3LjQ4NjIgMzgwLjE5MyA0OS42MTQ3TDM5My4yODUgNTAuOTY2NEMzOTQuMjY2IDYzLjIzNzQgMzg1LjM4NyA3Mi4zMDE2IDM2OS4yNDcgNzIuMzAxNkMzNTIuOTIxIDcyLjMwMTYgMzQyLjMxOSA2Mi42Mjc5IDM0Mi4zMTkgNDAuNTUwNVoiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGQ9Ik0zOTYuMzg3IDEwLjcwOEg0MTEuMzYxVjMzLjU4MDRINDI5Ljc1NVYxMC43MDhINDQ0LjcyOVY3MS4yNDE3SDQyOS43NTVWNDUuNTg2NUg0MTEuMzYxVjcxLjI0MTdIMzk2LjM4N1YxMC43MDhaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNNDUwLjcxOSAxMC43MDhINDkwLjc5MlYyMS44MTI5SDQ2NS42OTNWMzQuODI2MUg0ODYuNzYzVjQ1LjkzMUg0NjUuNjkzVjYwLjExMDNINDkxLjY5M1Y3MS4yNDE3SDQ1MC43MTlWMTAuNzA4WiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTQ5NC41NTUgMTAuNzA4SDUxOS40OTVDNTMxLjM0MiAxMC43MDggNTM5LjMxOSAxNi40NTkyIDUzOS4zMTkgMjcuNTY0MkM1MzkuMzE5IDM2LjYyODMgNTMzLjE0NCA0Mi4wODggNTI3LjEyOCA0My45Njk4QzUyOC45MyA0NS41MDY5IDUzMC4yNTUgNDcuNTQ3NyA1MzEuMzQyIDQ5LjcyMUM1MzMuODYgNTQuODM2MSA1MzUuNTU2IDYwLjQ4MTQgNTQwLjg1NyA2MC40ODE0QzU0Mi4yMDggNjAuNDgxNCA1NDMuMjY4IDYwLjAzMDggNTQzLjI2OCA2MC4wMzA4TDU0Mi4xMDIgNzAuNzExN0M1NDIuMTAyIDcwLjcxMTcgNTM4Ljg2OSA3MS41MDY4IDUzNi4wODYgNzEuNTA2OEM1MjguOTA0IDcxLjUwNjggNTI0Ljc5NiA2OC43MjM5IDUyMC41ODIgNTkuMTI5N0M1MTguNzc5IDU0LjgzNjEgNTE2LjI4OCA0Ny4yODI3IDUxMi45NDkgNDcuMjgyN0g1MDkuNTNWNzEuMjE1Mkg0OTQuNTU1VjEwLjcwOFpNNTA5LjUzIDIxLjU0NzlWMzYuNDQyOEg1MTQuOTFDNTE5LjIwMyAzNi40NDI4IDUyNC4yMzkgMzUuMDkxMSA1MjQuMjM5IDI4LjY1MDhDNTI0LjIzOSAyMy4zNTAxIDUyMC44MiAyMS41NzQ0IDUxNi43MTIgMjEuNTc0NEg1MDkuNTNWMjEuNTQ3OVoiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGQ9Ik01NDQuODA2IDE0LjUyNDJDNTQ0LjgwNiAxMS4xMDUzIDU0Ny4zNSA5LjYyMTA5IDU0OS42ODMgOS42MjEwOUM1NTIuMDQxIDkuNjIxMDkgNTU0LjU1OSAxMS4wNzg4IDU1NC41NTkgMTQuNTI0MkM1NTQuNTU5IDE3Ljg2MzYgNTUyLjAxNSAxOS4zNDc4IDU0OS42ODMgMTkuMzQ3OEM1NDcuMzI0IDE5LjM0NzggNTQ0LjgwNiAxNy44OTAyIDU0NC44MDYgMTQuNTI0MlpNNTUzLjM5MyAxNC40OTc3QzU1My4zOTMgMTEuODIwOSA1NTEuNjQ0IDEwLjY1NDcgNTQ5LjY4MyAxMC42NTQ3QzU0Ny43MjEgMTAuNjU0NyA1NDUuOTE5IDExLjgyMDkgNTQ1LjkxOSAxNC40OTc3QzU0NS45MTkgMTcuMTQ4MSA1NDcuNzIxIDE4LjMxNDIgNTQ5LjY4MyAxOC4zMTQyQzU1MS42NDQgMTguMzE0MiA1NTMuMzkzIDE3LjE3NDYgNTUzLjM5MyAxNC40OTc3Wk01NDguMDY2IDEyLjA4NTlINTQ5Ljc4OUM1NTAuNjYzIDEyLjA4NTkgNTUxLjUzOCAxMi4zMjQ0IDU1MS41MzggMTMuNTcwMUM1NTEuNTM4IDE0LjMxMjIgNTUxLjA2MSAxNC43MDk3IDU1MC4zOTggMTQuODQyM0w1NTEuNTM4IDE2LjgwMzVINTUwLjQ3OEw1NDkuNDE4IDE0Ljg5NTNINTQ4Ljk5M1YxNi44MDM1SDU0OC4wMzlWMTIuMDg1OUg1NDguMDY2Wk01NDkuODY4IDE0LjIzMjdDNTUwLjI2NiAxNC4yMzI3IDU1MC42MSAxMy45OTQyIDU1MC42MSAxMy41NDM2QzU1MC42MSAxMy4wNCA1NTAuMjEzIDEyLjkwNzUgNTQ5Ljg2OCAxMi45MDc1SDU0OS4wMlYxNC4yMzI3SDU0OS44NjhaIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K" alt="SUSE Rancher"></div>
+      <div class="name">SUSE Rancher</div>
+      <div class="desc">RKE2, K3s, Harvester, Rancher Manager</div>
+    </div>
+    <div class="distro-card" onclick="startGuide('vmware')">
+      <div class="card-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQ5IiBoZWlnaHQ9Ijk5IiB2aWV3Qm94PSIwIDAgNjQ5IDk5IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZyBjbGlwLXBhdGg9InVybCgjY2xpcDBfMzU4XzE5MTYpIj4KPHBhdGggZD0iTTI3OC41ODggOTEuNTA5N0wyNTAuMTQzIDEyLjM1OTZDMjQ5Ljc2OSAxMS4yMzYxIDI0OS4yNyA5Ljg2Mjc5IDI0OS4yNyA4LjQ4OTUzQzI0OS4yNyA1LjExODc4IDI1Mi4xMzkgMS43NDgwNSAyNTYuMzgxIDEuNzQ4MDVDMjU5Ljk5OSAxLjc0ODA1IDI2Mi4zNyA0LjEyMDA2IDI2My40OTIgNy40OTA4TDI4Ny4wNzIgNzUuNzc5NkwzMTAuNzc2IDcuMzY1OTVDMzExLjg5OSA0LjEyMDA1IDMxNC4wMiAxLjc0ODA1IDMxNy42MzggMS43NDgwNUgzMTguMzg3QzMyMi4yNTQgMS43NDgwNSAzMjQuNSA0LjEyMDA1IDMyNS42MjMgNy4zNjU5NUwzNDkuMjAyIDc1Ljc3OTZMMzczLjE1NiA3LjI0MTFDMzc0LjAzIDQuMzY5NzMgMzc2LjAyNiAxLjc0ODA1IDM3OS44OTMgMS43NDgwNUMzODMuODg2IDEuNzQ4MDUgMzg2Ljc1NSA0Ljg2OTEgMzg2Ljc1NSA4LjIzOTg1QzM4Ni43NTUgOS40ODgyNyAzODYuMjU2IDEwLjk4NjQgMzg1Ljg4MiAxMi4xMUwzNTcuMzEyIDkxLjUwOTdDMzU1LjgxNSA5NS42Mjk1IDM1Mi45NDUgOTcuODc2NyAzNDkuNzAxIDk3Ljg3NjdIMzQ5LjIwMkMzNDUuNTg0IDk3Ljg3NjcgMzQyLjg0IDk1Ljc1NDMgMzQxLjU5MiA5MS41MDk3TDMxOC4yNjIgMjQuMjE5N0wyOTQuNjgyIDkxLjUwOTdDMjkzLjQzNSA5NS42Mjk1IDI5MC42OSA5Ny44NzY3IDI4Ny4wNzIgOTcuODc2N0gyODYuNjk4QzI4Mi45NTUgOTcuNzUxOCAyNzkuOTYxIDk1LjYyOTUgMjc4LjU4OCA5MS41MDk3WiIgZmlsbD0iIzZBNjY2NyIvPgo8cGF0aCBkPSJNNDg1LjY5IDguNzM5MDhDNDg1LjY5IDQuODY4OTYgNDg4LjgwOSAxLjYyMzA1IDQ5Mi41NTEgMS42MjMwNUM0OTYuNTQ0IDEuNjIzMDUgNDk5LjY2MyA0Ljc0NDEyIDQ5OS42NjMgOC43MzkwOFYyNC44NDM3QzUwNi41MjQgOS4yMzg0NCA1MjEuODcgMS44NzI3NSA1MzEuOTc1IDEuODcyNzVDNTM2LjIxNyAxLjg3Mjc1IDUzOC44MzcgNC45OTM4MiA1MzguODM3IDguOTg4NzhDNTM4LjgzNyAxMi44NTg5IDUzNi4zNDIgMTUuNDgwNiA1MzIuNTk5IDE2LjEwNDhDNTE0LjUwOSAxOC4yMjcxIDQ5OS41MzggMzEuOTU5OCA0OTkuNTM4IDU4LjkyNTdWOTAuNzYwNUM0OTkuNTM4IDk0LjYzMDYgNDk2LjY2OCA5Ny44NzY1IDQ5Mi42NzYgOTcuODc2NUM0ODguNjg0IDk3Ljg3NjUgNDg1LjU2NSA5NC43NTU1IDQ4NS41NjUgOTAuNzYwNUw0ODUuNjkgOC43MzkwOFoiIGZpbGw9IiM2QTY2NjciLz4KPHBhdGggZD0iTTU4My44NzUgOTguNzUwNkM1NTguNjc0IDk4Ljc1MDYgNTM4LjA4OSA3OS4xNTAzIDUzOC4wODkgNTAuNDM2NlY1MC4wNjJDNTM4LjA4OSAyMy4zNDU4IDU1Ni44MDMgMS43NDgwNSA1ODIuMTI5IDEuNzQ4MDVDNjA5LjMyNiAxLjc0ODA1IDYyNC43OTcgMjQuMjE5NyA2MjQuNzk3IDQ4LjgxMzZDNjI0Ljc5NyA1Mi41NTg5IDYyMS44MDIgNTUuMzA1NCA2MTguNDM0IDU1LjMwNTRINTUyLjA2MkM1NTQuMDU4IDc1LjQwNTEgNTY4LjAzMSA4Ni43NjU3IDU4NC4zNzQgODYuNzY1N0M1OTUuNzI4IDg2Ljc2NTcgNjA0LjA4NiA4Mi4yNzE0IDYxMC44MjMgNzYuMDI5M0M2MTEuOTQ2IDc1LjE1NTQgNjEzLjE5NCA3NC40MDYzIDYxNC42OTEgNzQuNDA2M0M2MTguMDYgNzQuNDA2MyA2MjAuNjc5IDc3LjE1MjggNjIwLjY3OSA4MC4zOTg3QzYyMC42NzkgODIuMDIxNyA2MTkuOTMxIDgzLjY0NDYgNjE4LjU1OSA4NC44OTMxQzYwOS44MjUgOTMuMjU3NSA1OTkuNTk1IDk4Ljc1MDYgNTgzLjg3NSA5OC43NTA2Wk02MTEuMDczIDQ1LjA2ODNDNjA5LjcwMSAyOC4yMTQ2IDYwMC4wOTQgMTMuNDgzMiA1ODEuNzU0IDEzLjQ4MzJDNTY1Ljc4NSAxMy40ODMyIDU1My42ODQgMjYuOTY2MiA1NTEuOTM3IDQ1LjA2ODNINjExLjA3M1oiIGZpbGw9IiM2QTY2NjciLz4KPHBhdGggZD0iTTM4Ny4xMjkgNjkuNzg2NlY2OS40MTIxQzM4Ny4xMjkgNDkuNjg3IDQwMy4zNDggMzkuMjAwMyA0MjcuMDUyIDM5LjIwMDNDNDM5LjAyOSAzOS4yMDAzIDQ0Ny41MTMgNDAuODIzMiA0NTUuODcyIDQzLjE5NTJWMzkuOTQ5M0M0NTUuODcyIDIzLjA5NTYgNDQ1LjUxNyAxNC40ODE1IDQyOC4wNTEgMTQuNDgxNUM0MTguNjk0IDE0LjQ4MTUgNDEzLjIwNCAxNS43Mjk5IDQwNi4zNDIgMTguNzI2MUM0MDUuNDY5IDE5LjEwMDYgNDA0LjU5NiAxOS4yMjU1IDQwMy44NDcgMTkuMjI1NUM0MDAuNjAzIDE5LjIyNTUgMzk3LjczNCAxNi40Nzg5IDM5Ny43MzQgMTMuMjMzQzM5Ny43MzQgMTAuMzYxNyAzOTguOTgyIDguNjEzODggNDAxLjYwMSA3LjQ5MDNDNDEwLjgzNCAzLjQ5NTM0IDQxNy42OTUgMi4xMjIwNyA0MjkuNjcyIDIuMTIyMDdDNDQyLjg5NyAyLjEyMjA3IDQ1My4wMDIgNS40OTI4MiA0NTkuODY0IDEyLjQ4NEM0NjYuMjI3IDE4Ljg1MSA0NjkuNDcxIDI3LjgzOTYgNDY5LjQ3MSAzOS44MjQ1VjkxLjUwOTJDNDY5LjQ3MSA5NS41MDQyIDQ2Ni42MDEgOTguMzc1NSA0NjIuNzM0IDk4LjM3NTVDNDU4Ljc0MSA5OC4zNzU1IDQ1Ni4xMjEgOTUuNTA0MiA0NTYuMTIxIDkxLjg4MzdWODMuMDE5OUM0NDkuNjM0IDkxLjUwOTIgNDM4Ljc4IDk5LjEyNDYgNDIyLjMxMiA5OS4xMjQ2QzQwNC43MiA5OC45OTk3IDM4Ny4xMjkgODkuMDEyNCAzODcuMTI5IDY5Ljc4NjZaTTQ1NS45OTcgNjIuNTQ1OFY1My41NTcxQzQ0OS4xMzUgNTEuNTU5NiA0MzkuOTAzIDQ5LjU2MjIgNDI4LjU1IDQ5LjU2MjJDNDExLjA4MyA0OS41NjIyIDQwMS4yMjcgNTcuMTc3NiA0MDEuMjI3IDY4LjkxMjdWNjkuMjg3M0M0MDEuMjI3IDgxLjAyMjUgNDEyLjA4MSA4Ny44ODg4IDQyNC42ODIgODcuODg4OEM0NDEuODk5IDg3Ljg4ODggNDU1Ljk5NyA3Ny40MDIgNDU1Ljk5NyA2Mi41NDU4WiIgZmlsbD0iIzZBNjY2NyIvPgo8cGF0aCBkPSJNMjUuNTc1NyA3Ljg2NDlDMjIuNDU2OCAxLjEyMzQyIDE0Ljk3MTIgLTEuODcyODIgNy44NTk4NSAxLjI0ODI0QzAuNzQ4NTQ3IDQuMzY5MjkgLTEuODcxNDIgMTIuMjM0NCAxLjM3MjMzIDE4Ljk3NTlMMzEuMDY1MiA4My41MTk0QzM1LjY4MTMgOTMuNjMxNiA0MC42NzE3IDk4Ljg3NSA0OS45MDM5IDk4Ljg3NUM1OS43NTk5IDk4Ljg3NSA2NC4xMjY1IDkzLjEzMjIgNjguNzQyNiA4My41MTk0QzY4Ljc0MjYgODMuNTE5NCA5NC41Njc5IDI3LjA5MDYgOTQuOTQyMSAyNi40NjY0Qzk1LjE5MTcgMjUuODQyMiA5Ni4wNjUgMjQuMDk0NCA5OC42ODQ5IDI0LjA5NDRDMTAwLjkzMSAyNC4wOTQ0IDEwMi44MDIgMjUuODQyMiAxMDIuODAyIDI4LjIxNDJWODMuMzk0NUMxMDIuODAyIDkxLjg4MzggMTA3LjU0MyA5OC44NzUgMTE2LjUyNiA5OC44NzVDMTI1LjYzMyA5OC44NzUgMTMwLjQ5OSA5MS44ODM4IDEzMC40OTkgODMuMzk0NVYzOC4yMDE2QzEzMC40OTkgMjkuNDYyNiAxMzYuNzM3IDIzLjg0NDcgMTQ1LjIyIDIzLjg0NDdDMTUzLjcwNCAyMy44NDQ3IDE1OS4zMTggMjkuNzEyMyAxNTkuMzE4IDM4LjIwMTZWODMuMzk0NUMxNTkuMzE4IDkxLjg4MzggMTY0LjA1OSA5OC44NzUgMTczLjA0MiA5OC44NzVDMTgyLjE0OSA5OC44NzUgMTg3LjAxNSA5MS44ODM4IDE4Ny4wMTUgODMuMzk0NVYzOC4yMDE2QzE4Ny4wMTUgMjkuNDYyNiAxOTMuMjUzIDIzLjg0NDcgMjAxLjczNiAyMy44NDQ3QzIxMC4yMiAyMy44NDQ3IDIxNS44MzQgMjkuNzEyMyAyMTUuODM0IDM4LjIwMTZWODMuMzk0NUMyMTUuODM0IDkxLjg4MzggMjIwLjU3NSA5OC44NzUgMjI5LjU1OCA5OC44NzVDMjM4LjY2NSA5OC44NzUgMjQzLjUzMSA5MS44ODM4IDI0My41MzEgODMuMzk0NVYzMS45NTk1QzI0My41MzEgMTMuMTA4MyAyMjguMzEgLTAuMTI1IDIxMC4wOTUgLTAuMTI1QzE5MS44OCAtMC4xMjUgMTgwLjQwMyAxMi40ODQgMTgwLjQwMyAxMi40ODRDMTc0LjI4OSA0LjYxODk4IDE2NS45MyAtMC4xMjUgMTUxLjgzMyAtMC4xMjVDMTM2Ljg2MSAtMC4xMjUgMTIzLjc2MiAxMi40ODQgMTIzLjc2MiAxMi40ODRDMTE3LjY0OCA0LjYxODk4IDEwNy4yOTMgLTAuMTI1IDk4LjgwOTcgLTAuMTI1Qzg1LjU4NTEgLTAuMTI1IDc1LjEwNTMgNS43NDI1OCA2OC42MTc4IDIwLjM0OTFMNDkuNjU0NCA2NS4wNDI3TDI1LjU3NTcgNy44NjQ5WiIgZmlsbD0iIzZBNjY2NyIvPgo8cGF0aCBkPSJNNjI1LjkxOSAxMy42MDgyQzYyNS45MTkgNy4yNDEyNiA2MzEuMDM1IDEuODczMDUgNjM3LjUyMiAxLjg3MzA1QzY0NC4wMSAxLjg3MzA1IDY0OS4xMjUgNy4xMTY0MSA2NDkuMTI1IDEzLjQ4MzRDNjQ5LjEyNSAxOS44NTAzIDY0NC4wMSAyNS4wOTM3IDYzNy41MjIgMjUuMDkzN0M2MzAuOTEgMjUuMDkzNyA2MjUuOTE5IDE5Ljg1MDMgNjI1LjkxOSAxMy42MDgyWk02NDYuNzU0IDEzLjQ4MzRDNjQ2Ljc1NCA4LjIzOTk5IDY0Mi43NjIgMy45OTUzNCA2MzcuMzk3IDMuOTk1MzRDNjMyLjE1NyAzLjk5NTM0IDYyOC4wNCA4LjM2NDgzIDYyOC4wNCAxMy40ODM0QzYyOC4wNCAxOC42MDE5IDYzMi4wMzMgMjIuOTcxNCA2MzcuMzk3IDIyLjk3MTRDNjQyLjc2MiAyMi45NzE0IDY0Ni43NTQgMTguNjAxOSA2NDYuNzU0IDEzLjQ4MzRaIiBmaWxsPSIjNkE2NjY3Ii8+CjxwYXRoIGQ9Ik02MzMuMTU1IDguNzM4NjZDNjMzLjE1NSA3Ljk4OTYgNjMzLjY1NCA3LjQ5MDIzIDYzNC40MDMgNy40OTAyM0g2MzguMjcxQzYzOS43NjggNy40OTAyMyA2NDAuODkxIDcuODY0NzUgNjQxLjUxNCA4LjYxMzgxQzY0Mi4xMzggOS4yMzgwMiA2NDIuNTEyIDEwLjExMTkgNjQyLjUxMiAxMS4xMTA3QzY0Mi41MTIgMTIuODU4NCA2NDEuNjM5IDEzLjk4MiA2NDAuMjY3IDE0LjQ4MTRMNjQyLjAxMyAxNi42MDM3QzY0Mi4yNjMgMTYuODUzNCA2NDIuMzg4IDE3LjIyNzkgNjQyLjM4OCAxNy42MDI1QzY0Mi4zODggMTguMjI2NyA2NDEuNzY0IDE4LjcyNiA2NDEuMjY1IDE4LjcyNkM2NDAuNzY2IDE4LjcyNiA2NDAuMzkyIDE4LjQ3NjQgNjQwLjAxNyAxOC4xMDE4TDYzNy42NDcgMTUuMTA1Nkg2MzUuNjUxVjE3LjYwMjVDNjM1LjY1MSAxOC4zNTE1IDYzNS4xNTIgMTguODUwOSA2MzQuNDAzIDE4Ljg1MDlDNjMzLjY1NCAxOC44NTA5IDYzMy4xNTUgMTguMzUxNSA2MzMuMTU1IDE3LjYwMjVWOC43Mzg2NlpNNjM4LjE0NiAxMi45ODMzQzYzOS4zOTMgMTIuOTgzMyA2NDAuMDE3IDEyLjM1OTEgNjQwLjAxNyAxMS4zNjA0QzY0MC4wMTcgMTAuMzYxNiA2MzkuMjY5IDkuNzM3MzggNjM4LjE0NiA5LjczNzM4SDYzNS42NTFWMTIuOTgzM0g2MzguMTQ2WiIgZmlsbD0iIzZBNjY2NyIvPgo8L2c+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzM1OF8xOTE2Ij4KPHJlY3Qgd2lkdGg9IjY0OSIgaGVpZ2h0PSI5OSIgZmlsbD0id2hpdGUiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4K" alt="VMware VKS"></div>
+      <div class="name">VMware VKS</div>
+      <div class="desc">vSphere Kubernetes Service + VCF</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROSPECT INFO SCREEN -->
+<div id="prospect-screen">
+  <h2>Prospect Information</h2>
+  <p class="screen-sub">Enter the contact details for this call before starting the qualifying questions.</p>
+  <div class="prospect-form">
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Contact Name <span class="req">*</span></label>
+        <input type="text" id="p-name" placeholder="Jane Smith">
+      </div>
+      <div class="form-field">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="p-email" placeholder="jane@company.com">
+      </div>
+      <div class="form-field">
+        <label>Company <span class="req">*</span></label>
+        <input type="text" id="p-company" placeholder="Acme Corp">
+      </div>
+      <div class="form-field">
+        <label>Phone</label>
+        <input type="tel" id="p-phone" placeholder="+1 (555) 000-0000">
+      </div>
+      <div class="form-field">
+        <label>Title / Role</label>
+        <input type="text" id="p-title" placeholder="VP Engineering">
+      </div>
+      <div class="form-field">
+        <label>Country <span class="req">*</span></label>
+        <select id="p-country">
+          <option value="">-- Select Country --</option>
+          <option>United States</option><option>United Kingdom</option><option>Canada</option>
+          <option>Australia</option><option>Germany</option><option>France</option>
+          <option>Netherlands</option><option>Sweden</option><option>Norway</option>
+          <option>Denmark</option><option>Finland</option><option>Switzerland</option>
+          <option>Austria</option><option>Belgium</option><option>Spain</option>
+          <option>Italy</option><option>Portugal</option><option>Poland</option>
+          <option>Czech Republic</option><option>Hungary</option><option>Romania</option>
+          <option>India</option><option>Japan</option><option>South Korea</option>
+          <option>Singapore</option><option>Australia</option><option>New Zealand</option>
+          <option>Brazil</option><option>Mexico</option><option>Argentina</option>
+          <option>Colombia</option><option>Chile</option><option>South Africa</option>
+          <option>Nigeria</option><option>Kenya</option><option>Egypt</option>
+          <option>Israel</option><option>UAE</option><option>Saudi Arabia</option>
+          <option>Turkey</option><option>Russia</option><option>China</option>
+          <option>Taiwan</option><option>Indonesia</option><option>Malaysia</option>
+          <option>Thailand</option><option>Vietnam</option><option>Philippines</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-field full-width">
+        <label>Address</label>
+        <input type="text" id="p-address" placeholder="123 Main St, City, State / Province">
+      </div>
+      <div class="form-field full-width">
+        <label>Notes (optional)</label>
+        <input type="text" id="p-notes" placeholder="e.g. Referral from partner, inbound from website…">
+      </div>
+    </div>
+    <div class="prospect-actions">
+      <button class="btn btn-restart" onclick="goHome()">← Change distro</button>
+      <button class="btn btn-next" onclick="startQuestionsFromProspect()">Start Questions →</button>
+    </div>
+  </div>
+</div>
+
+<!-- GUIDE SCREEN -->
+<div id="guide-screen">
+  <div class="guide-layout">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-distro" id="sidebar-distro-label"></div>
+      <div id="sidebar-steps"></div>
+      <button class="sidebar-restart" onclick="goHome()">← Change distro</button>
+    </div>
+    <div class="main-content">
+      <div class="progress-bar-wrap">
+        <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        <span class="progress-text" id="progress-text"></span>
+      </div>
+      <div class="section-content" id="section-content"></div>
+      <div class="nav-bar">
+        <button class="btn btn-back" id="btn-back" onclick="prevSection()" style="display:none">← Back</button>
+        <button class="btn btn-next" id="btn-next" onclick="nextSection()">Next section →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCORING SCREEN -->
+<div id="scoring-screen">
+  <div class="score-header">
+    <h2>Lead Qualification Summary</h2>
+    <p id="scoring-distro-label"></p>
+  </div>
+  <div class="prospect-card" id="prospect-card" style="display:none;"></div>
+  <div class="score-cards">
+    <div class="score-card hot"><div class="count" id="hot-count">0</div><div class="label">🔥 Hot Signals</div></div>
+    <div class="score-card warm"><div class="count" id="warm-count">0</div><div class="label">🌡 Warm Signals</div></div>
+    <div class="score-card cold"><div class="count" id="cold-count">0</div><div class="label">❄️ Cold / Unclear</div></div>
+  </div>
+  <div class="verdict" id="verdict"></div>
+  <div class="notes-summary" id="notes-summary"></div>
+  <div class="action-row">
+    <button class="btn btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
+    <button class="btn btn-submit" id="btn-submit" onclick="submitSalesQA()">Submit Result</button>
+    <button class="btn btn-restart" onclick="goHome()">Start New Call</button>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  any: {
+    label: "Any Kubernetes Distribution",
+    sections: [
+      {
+        title: "Section 1: Kubernetes Platform & Status",
+        subtitle: "",
+        questions: [
+          { q: "Are you currently running Kubernetes in production? Which distribution?", hint: "Determines installation path (Helm on any) and readiness. EKS, GKE, AKS, OpenShift, Rancher, K3s, Tanzu, vanilla kubeadm?" },
+          { q: "If not on K8s: Are you evaluating Kubernetes? What is blocking database adoption?", hint: "Uncovers migration narrative. KubeDB is often the best first K8s production workload." },
+          { q: "How many clusters are you running (or planning)? What is the scale?", hint: "Sizes licensing, surfaces multi-cluster needs. Ask about node count and workload type." },
+          { q: "What storage platforms are you using? CSI-compliant storage classes (EBS, GCP PD, Azure Disk, etc.)?", hint: "KubeDB works with ANY CSI-compliant storage." },
+          { q: "Are you using GitOps tooling? (ArgoCD, FluxCD, or other declarative sync tools)", hint: "Declarative CRDs enable GitOps for databases." },
+        ]
+      },
+      {
+        title: "Section 2: Database Environment & Operations",
+        subtitle: "",
+        questions: [
+          { q: "Which databases are you running or planning to deploy? (PostgreSQL, MySQL, MongoDB, Redis, Elasticsearch, other)", hint: "Identifies database breadth and match with KubeDB's 25+ supported engines." },
+          { q: "How many operators/Helm charts/scripts do you use today? Operator sprawl?", hint: "Postgres Operator, MySQL Operator, MongoDB Operator... >3 operators = consolidation pain point." },
+          { q: "How are databases currently managed? (Manual scripts, cloud-managed services, community operators)", hint: "Pain points for DIY, cost for cloud, fragmentation for community operators." },
+          { q: "Who owns database operations? (Platform team, SRE, DBA, developer team)", hint: "Identifies the buyer persona and tailors the messaging." },
+          { q: "How long to provision a new database today? Does it require a ticket or approval process?", hint: "Baseline. KubeDB targets <60 seconds. If current process takes days, this is a major agility win." },
+          { q: "What is your backup & recovery approach? Do you need PITR (point-in-time recovery)?", hint: "Database-aware backup / PITR is a major KubeDB differentiator over volume snapshots alone." },
+          { q: "Are they evaluating or using vector databases (Milvus, Qdrant, Pgvector) for AI/RAG workloads?", hint: "YES = KubeDB supports pgvector, Milvus, and Qdrant. AI/GenAI workloads on-prem = strong data sovereignty + cost story vs. cloud AI services." },
+        ]
+      },
+      {
+        title: "Section 3: Day-Two Pain Points",
+        subtitle: "",
+        questions: [
+          { q: "How do you handle HA and failover today? (Manual promotion, operator-managed, cloud-managed)", hint: "Confidence level matters. Manual failover = risky gap. KubeDB codifies expert HA via OpsRequest CRDs." },
+          { q: "How do you upgrade databases? (Manual, scripted, operator-managed) What is your downtime tolerance?", hint: "Upgrade automation is a major KubeDB value proposition." },
+          { q: "Do you have monitoring/alerting in place? Any gaps? (slow query detection, replication lag, capacity planning)", hint: "Observability gaps are common. KubeDB + Prometheus = unified view across all database engines." },
+        ]
+      },
+      {
+        title: "Section 4: Security & Compliance",
+        subtitle: "",
+        questions: [
+          { q: "Do you need encryption? (TDE, at-rest, in-transit, all)", hint: "KubeDB supports TDE via encrypted storage — critical compliance gate for regulated industries." },
+          { q: "How do you manage database secrets? (K8s Secrets, HashiCorp Vault, AWS Secrets Manager)", hint: "KubeDB integrates with Vault/OpenBao for enterprise secret management and automated rotation." },
+          { q: "Do you have data sovereignty/regulatory requirements? (GDPR, data localization, air-gap)", hint: "Major market driver. KubeDB runs ANYWHERE and breaks cloud lock-in." },
+          { q: "Do you audit database access? (Logging, compliance requirements, SIEM integration)", hint: "Audit trail is often a compliance gate. KubeDB supports audit logging for PostgreSQL, MySQL, MongoDB." },
+        ]
+      },
+      {
+        title: "Section 5: Budget, Timeline & Decision",
+        subtitle: "",
+        questions: [
+          { q: "What is your timeline for improving database operations? (Urgent / medium / exploratory)", hint: "Urgency = deal velocity. Next 2-3 months = hot. 6-12 months = medium. Exploratory = nurture." },
+          { q: "Who owns the budget decision? (Platform team, engineering director, VP engineering)", hint: "Identifies economic buyer. May differ from technical champion." },
+          { q: "Are cloud database costs a pain point? Total monthly spend on RDS/Cloud SQL/Cosmos DB?", hint: "3-5× savings vs. cloud managed DBs is a powerful ROI anchor for repatriation conversations." },
+          { q: "Have you evaluated other operators or solutions? (Crunchy Data, Percona, CloudNativePG, Zalando) What were the gaps?", hint: "Surfaces competitive situation and deal-breakers. KubeDB's breadth (25+ engines) is often the key differentiator." },
+        ]
+      }
+    ],
+    scoring: {
+      hot: ["Running K8s in production", "Cloud DBaaS costs >$50K/yr", "3+ database operators managed", "Data sovereignty / air-gap requirements", "Timeline <90 days", "Active DB migration project"],
+      warm: ["Evaluating K8s (not yet production)", "Cloud DB costs rising", "Community operators in use (sprawl acknowledged)", "GitOps planned but not deployed", "Timeline 90-180 days"],
+      cold: ["No K8s plans yet", "Fully committed to cloud DBaaS", "No budget identified", "Timeline >1 year"]
+    }
+  },
+
+  nutanix: {
+    label: "Nutanix Kubernetes Platform (NKP)",
+    sections: [
+      {
+        title: "Section 1: NKP Platform & Environment",
+        subtitle: "",
+        questions: [
+          { q: "Are you running Nutanix Kubernetes Platform (NKP) in production? How many clusters and at what scale?", hint: "Confirms NKP fit. Helps size licensing. Surfaces multi-cluster (hub/spoke) needs." },
+          { q: "Are you running NC2 (Nutanix Cloud Clusters) on AWS, Azure, or GCP in addition to on-prem NKP?", hint: "NC2 = major differentiator — same KubeDB manifests work on NC2. Opens hybrid/multi-cloud angle and cost-repatriation proof point." },
+          { q: "What storage configuration are you using on NKP? (Nutanix CSI, external storage, local PVs)", hint: "Nutanix CSI = native performance angle — dedup, erasure coding, sub-ms latency. Already paid for. Validates KubeDB integration value." },
+          { q: "Are you currently using Nutanix Database Service (NDB)? For which databases?", hint: "Critical qualifier. NDB confirms they understand DBaaS value. KubeDB fills the cloud-native gap beyond NDB's ~8 engines. Sets up 'NDB + KubeDB' positioning." },
+          { q: "Are you using GitOps tooling on NKP? (ArgoCD, FluxCD, or other)", hint: "GitOps = immediate KubeDB differentiator vs NDB's console-driven model. Validates developer-centric positioning." },
+          { q: "Are data sovereignty, FIPS 140-2, or air-gap requirements critical? Do they drive your infrastructure decisions?", hint: "NKP on-prem nature + KubeDB TDE/air-gap = strong compliance narrative. Resonates with Finance, Healthcare, Government verticals." },
+        ]
+      },
+      {
+        title: "Section 2: Database Environment & Operations",
+        subtitle: "",
+        questions: [
+          { q: "Which databases are running on NKP or planned for deployment?", hint: "Identifies database breadth. If beyond NDB's ~8 engines, KubeDB is a natural fit." },
+          { q: "How many separate operators/Helm charts/scripts manage those databases today?", hint: "Quantifies operator sprawl. >3 operators = pain. KubeDB = consolidation play." },
+          { q: "How are you provisioning databases on NKP today? (NDB, manual, community operators, cloud managed)", hint: "Current method = baseline for KubeDB ROI story. Manual = high ops cost. Cloud DBs = cost-repatriation angle. NDB = complementary fit." },
+          { q: "Who owns database operations on NKP? (Platform engineers, DBA team, SREs, developers)", hint: "Identifies buyer: platform engineers = infrastructure angle; DBAs = operational excellence; devs = self-service." },
+          { q: "How long does it take to provision a new database for developers?", hint: "Baseline. KubeDB targets <60 seconds. If current >days, major agility win." },
+          { q: "What databases does NDB cover vs. what falls outside NDB today?", hint: "Directly surfaces the NDB gap — engines not covered by NDB are KubeDB's first landing zone. Redis, Kafka, Elasticsearch, ClickHouse, vector DBs for AI." },
+          { q: "Are they evaluating or using vector databases (Milvus, Qdrant, Pgvector) for AI/RAG workloads?", hint: "YES = KubeDB supports pgvector, Milvus, and Qdrant. AI/GenAI workloads on-prem = strong data sovereignty + cost story vs. cloud AI services." },
+        ]
+      },
+      {
+        title: "Section 3: Day-Two Pain Points",
+        subtitle: "",
+        questions: [
+          { q: "How do you currently back up databases on NKP? Do you have Point-in-Time Recovery (PITR) capability?", hint: "PVC snapshots alone are insufficient. Built-in backup = PITR, incremental, encrypted." },
+          { q: "How do you handle High Availability (HA) and failover for databases?", hint: "HA is often manual/engine-specific. KubeDB = codified expertise via OpsRequest CRDs." },
+          { q: "How often do you upgrade database versions? What's the process? Downtime or zero-downtime?", hint: "Upgrade automation = major KubeDB value. If manual today, time savings is real." },
+          { q: "Do you have centralized monitoring and observability across all K8s databases?", hint: "Observability gaps = common pain. KubeDB + Prometheus = unified view." },
+          { q: "How do you manage scaling (vertical/horizontal) for databases?", hint: "Manual scaling = risky. KubeDB scaling via CRDs = safety + automation." },
+        ]
+      },
+      {
+        title: "Section 4: Security & Compliance",
+        subtitle: "",
+        questions: [
+          { q: "Do you require Transparent Data Encryption (TDE)? Is it enforced by policy or regulation?", hint: "TDE = compliance gate. KubeDB = native support." },
+          { q: "Are you using Nutanix microsegmentation (AHV network policies) to isolate database traffic?", hint: "KubeDB integrates cleanly with Nutanix microsegmentation. Zero-trust networking angle." },
+          { q: "Do you use a secrets management system? (HashiCorp Vault, cloud vaults, or integrated secrets management)", hint: "Integrated secrets management = automated credential rotation, TDE key management." },
+          { q: "Is FIPS 140-2 compliance required? (NKP supports FIPS-compliant nodes; KubeDB works seamlessly within that environment)", hint: "FIPS is a compliance gate for government and regulated industries. KubeDB + NKP = end-to-end FIPS posture." },
+          { q: "Are there air-gap or private registry requirements? Can you pull container images from DockerHub or private registries only?", hint: "Helm + private registry = offline deployment. Critical for government and regulated verticals." },
+        ]
+      },
+      {
+        title: "Section 5: Budget, Timeline & Decision",
+        subtitle: "",
+        questions: [
+          { q: "Are you actively evaluating cloud-managed database services on NC2? What's the cost vs. KubeDB on-cluster potential?", hint: "Cost-repatriation = primary NC2 buyer angle. 3-5× savings vs. cloud managed DBs." },
+          { q: "Is an NDB renewal or budget conversation coming up? Any timing for database ops budget discussions?", hint: "Budget cycle = deal timing. NDB refresh = opportunity to pitch KubeDB as complement." },
+          { q: "Who controls K8s platform budget vs. database budget? Are they the same org or separate?", hint: "Budget ownership = deal structure. Platform team may own Helm install; DBAs own ops." },
+          { q: "What's your timeline for improving K8s database operations? (Days, weeks, or months)", hint: "Urgency = deal velocity. 'Next quarter' = hot. 'Next year' = nurture." },
+          { q: "Can you do a proof of concept (PoC) on one NKP cluster within 30 days?", hint: "Willingness to test = strong buying signal. Low friction — Helm install under 5 minutes." },
+        ]
+      }
+    ],
+    scoring: {
+      hot: ["Using NDB in production", "NKP in production with 3+ clusters", "NC2 in use (cost-repatriation motive)", "GitOps (ArgoCD/FluxCD) already adopted", "Compliance drivers (FIPS, TDE, data sovereignty)", "Managing >5 database engines on NKP", "Budget available, timeline <90 days"],
+      warm: ["Evaluating NKP (not yet production)", "Cloud DB costs rising, interested in repatriation", "NDB gap identified but no immediate budget", "Community operators in use (sprawl acknowledged)", "Timeline 90-180 days"],
+      cold: ["No NKP plans yet", "Fully satisfied with NDB", "No budget identified", "Timeline >1 year"]
+    }
+  },
+
+  rh: {
+    label: "Red Hat OpenShift",
+    sections: [
+      {
+        title: "Section 1: OpenShift Environment Discovery",
+        subtitle: "",
+        questions: [
+          { q: "Which OpenShift variant are you running? (OCP on-premises, ROSA on AWS, ARO on Azure, OSD Dedicated, OCP+ with Virtualization?)", hint: "Determines deployment model, cloud exposure, and compliance posture. OCP on-prem = data sovereignty angle." },
+          { q: "Are you using OpenShift Data Foundation (ODF) for persistent storage? How is capacity/performance/cost working out?", hint: "ODF = integrated storage. Any gaps or cost concerns = KubeDB + better storage pairing story." },
+          { q: "Are you using OpenShift GitOps (ArgoCD) or another GitOps pipeline? How deep is GitOps adoption?", hint: "Deep GitOps = KubeDB CRDs fit naturally as database-as-code. Validates developer-centric positioning." },
+          { q: "Are you using Advanced Cluster Management (ACM) for multi-cluster management? How many clusters?", hint: "Multi-cluster = larger footprint and stronger consolidation story. Ask how databases are managed across clusters." },
+          { q: "Are you running OpenShift Virtualization (OCP+) alongside containers? Are any databases still on VMs?", hint: "VM databases = migration workload and direct KubeDB use case. Plans to consolidate = active opportunity." },
+          { q: "How many OpenShift clusters are managed today? Across how many regions/clouds?", hint: "Scale of deployment sizes licensing and indicates multi-cluster management complexity." },
+        ]
+      },
+      {
+        title: "Section 2: Current Database Management",
+        subtitle: "",
+        questions: [
+          { q: "Which databases are currently running on OpenShift? Which are still on VMs?", hint: "Identifies engines, versions, scale, and timeline for VM→container migration. Direct KubeDB targets." },
+          { q: "Are you using community operators or commercial solutions for databases? Which ones? Satisfaction level?", hint: "Community operators = support gap. Commercial = competitive situation. Satisfaction gaps = KubeDB opportunity." },
+          { q: "How do you handle Day-2 operations? (backups, upgrades, scaling) Manual scripts, in-house tooling, or operator automation?", hint: "Manual = high ops cost. Multiple tools per DB = fragmentation. KubeDB = 'Day-2 on Autopilot'." },
+          { q: "How long does it currently take to provision a new database environment? (KubeDB delivers <60 seconds via kubectl)", hint: "Baseline comparison. Hours or days = major agility win with KubeDB." },
+          { q: "Are you using OperatorHub/Red Hat Marketplace for operator installs? How is discoverability and security vetting?", hint: "OperatorHub familiarity = KubeDB certified operator install path is natural. Security vetting = Red Hat certification is an accelerator." },
+          { q: "What's your current database backup strategy? (PVC snapshots, engine-native tools, third-party backup software)", hint: "PVC snapshots alone = insufficient. Engine-native backup + PITR = major KubeDB differentiator." },
+          { q: "Are they evaluating or using vector databases (Milvus, Qdrant, Pgvector) for AI/RAG workloads?", hint: "YES = KubeDB supports pgvector, Milvus, and Qdrant. AI/GenAI workloads on-prem = strong data sovereignty + cost story vs. cloud AI services." },
+        ]
+      },
+      {
+        title: "Section 3: Pain Points & Business Drivers",
+        subtitle: "",
+        questions: [
+          { q: "Are you paying cloud DBaaS fees (RDS, Azure DB, Cloud SQL)? If yes, how much annually?", hint: "Annual spend + egress fees = TCO comparison anchor. >$50K/yr = strong displacement story." },
+          { q: "Do you have data sovereignty or residency requirements? (GDPR, NIS2, FedRAMP, government mandates)", hint: "YES = KubeDB on OpenShift on-prem = zero cloud lock-in, full data residency." },
+          { q: "Do you have FIPS 140-2 requirements? How critical for your compliance/regulatory posture?", hint: "FIPS = compliance gate. KubeDB + OpenShift FIPS nodes = end-to-end compliant posture." },
+          { q: "How many different operators/backup scripts do you maintain per database engine? Operator sprawl?", hint: "3+ per engine = high maintenance burden. KubeDB consolidates all engines under one operator." },
+          { q: "Have you explored Certified Operators on Red Hat Marketplace vs community operators? How important is Red Hat certification?", hint: "Red Hat certification = procurement trust accelerator. KubeDB is certified, which reduces security vetting overhead." },
+        ]
+      },
+      {
+        title: "Section 4: Security & Compliance",
+        subtitle: "",
+        questions: [
+          { q: "Are you enforcing Pod Security Admission (PSA) or SCCs for database workloads? Any operator compatibility issues?", hint: "Restrictive SCCs = common pain point for community operators. KubeDB is built for OpenShift security model." },
+          { q: "Do you use Red Hat OpenShift OAuth for RBAC or a third-party IdP? How do databases inherit the identity model?", hint: "Identity integration = KubeDB + RBAC = fine-grained database access control aligned with OpenShift model." },
+          { q: "Do you have requirements for TDE or encryption-at-rest for databases? How is encryption currently enforced?", hint: "TDE = compliance gate. KubeDB supports encryption at rest for PostgreSQL, MySQL, SQL Server." },
+          { q: "Are you in a regulated industry (FSI, Healthcare, Government) with compliance mandates? (HIPAA, SOC 2, PCI-DSS)", hint: "Regulated = KubeDB on OpenShift delivers on-prem compliance posture no cloud DBaaS can match." },
+          { q: "Are you operating in air-gapped or FIPS environments? Any database operator constraints?", hint: "Air-gap = KubeDB supports offline Helm chart installation with private registry." },
+        ]
+      },
+      {
+        title: "Section 5: Commercial & Decision Process",
+        subtitle: "",
+        questions: [
+          { q: "Who owns the database management budget? (Platform Engineering, Infrastructure, or specific business unit)", hint: "Budget owner = economic buyer. May differ from technical champion — engage both." },
+          { q: "What's the timeline for solving this problem? (This quarter, next quarter, part of a larger roadmap)", hint: "Urgency = deal velocity. This quarter = hot. Part of roadmap = nurture." },
+          { q: "Are you open to a 30-day trial via OperatorHub — no procurement required?", hint: "Low friction: install, provision a DB, measure results. OperatorHub = familiar path for OpenShift customers." },
+          { q: "What does 'Certified Operator' or 'Red Hat Marketplace' mean to your procurement/security team?", hint: "Red Hat certification = trust/approval accelerator. Key differentiator vs. community operators." },
+          { q: "How many GB of database RAM are you managing today? (For capacity planning and pricing tier discussion)", hint: "100+ GB RAM = pricing conversation. Helps build TCO comparison vs. current cloud DBaaS spend." },
+        ]
+      }
+    ],
+    scoring: {
+      hot: ["Paying cloud DBaaS (RDS/Azure DB) — high spend", "Data sovereignty or FIPS/regulatory requirements", "OpenShift in production with 3+ clusters", "Operator sprawl (3+ community operators)", "Active VM-to-container DB migration", "Budget available, timeline <90 days"],
+      warm: ["Evaluating OpenShift (not yet production)", "Cloud DB costs rising", "Community operators in use", "GitOps adoption in progress", "Timeline 90-180 days"],
+      cold: ["No OpenShift plans yet", "Fully committed to cloud DBaaS", "No budget identified", "Timeline >1 year"]
+    }
+  },
+
+  suse: {
+    label: "SUSE Rancher Prime",
+    sections: [
+      {
+        title: "Section 1: Kubernetes Environment Discovery",
+        subtitle: "Understand the customer's SUSE Rancher footprint and supporting infrastructure.",
+        questions: [
+          { q: "Which SUSE Rancher products are in use today? (RKE2, K3s, Harvester, Rancher Manager)", hint: "Listen for: Mix of enterprise (RKE2), edge (K3s), or HCI (Harvester) deployments. Multi-cluster management = larger footprint." },
+          { q: "How many clusters are currently managed by Rancher Prime?", hint: "Listen for: 3+ clusters = strong multi-cluster use case for KubeDB." },
+          { q: "Are you running edge or K3s deployments? (manufacturing, retail, telco)", hint: "Listen for: K3s at the edge = data sovereignty + low-latency database requirements." },
+          { q: "Are you using SUSE Longhorn for persistent storage?", hint: "Listen for: YES = strong data residency story. Longhorn + KubeDB = fully managed, no external storage dependency." },
+          { q: "Are you using Fleet for GitOps / declarative workload management?", hint: "Listen for: YES = KubeDB CRDs fit naturally into Fleet Bundles. Databases as code." },
+          { q: "Are you using NeuVector for Kubernetes security and container scanning?", hint: "Listen for: YES = KubeDB + NeuVector = full stack for secure, managed databases." },
+        ]
+      },
+      {
+        title: "Section 2: Current Database Management",
+        subtitle: "Discover what databases exist, how they're managed, and where the operational pain is.",
+        questions: [
+          { q: "Which databases are running on Kubernetes today? Which remain on VMs?", hint: "Listen for: Mix of K8s + VM databases. Plan to migrate VMs = migration workload opportunity." },
+          { q: "Are you using community operators today? If so, which ones?", hint: "Listen for: Operator sprawl (managing 3+ different operators) = KubeDB consolidation story." },
+          { q: "How do you currently handle Day-2 operations? (backups, upgrades, scaling, monitoring)", hint: "Listen for: Manual scripts, multiple tools per database, no unified approach = KubeDB 'Day-2 Operations on Auto Pilot' value." },
+          { q: "How long does it currently take to provision a new database cluster?", hint: "Listen for: Hours or days = KubeDB <60 seconds provisioning is a strong differentiator." },
+          { q: "How many backup tools / scripts do you maintain per database engine?", hint: "Listen for: 2+ per engine = operational tax. KubeDB provides unified backup/restore API." },
+          { q: "Are you managing KubeDB or any other database operator today?", hint: "Listen for: Already evaluating or running a DB operator = warm lead for 'certified' story." },
+          { q: "Are they evaluating or using vector databases (Milvus, Qdrant, Pgvector) for AI/RAG workloads?", hint: "Listen for: YES = KubeDB supports pgvector, Milvus, and Qdrant. AI/GenAI workloads on-prem = strong data sovereignty + cost story vs. cloud AI services." },
+        ]
+      },
+      {
+        title: "Section 3: Pain Points & Business Drivers",
+        subtitle: "Uncover budget, compliance, and economic drivers.",
+        questions: [
+          { q: "Are you currently paying for cloud-managed databases (RDS, Azure DB, Cloud SQL)?", hint: "Listen for: YES + annual spend >$50K = strong cost/lock-in story. Quantify egress fees." },
+          { q: "Do you have data sovereignty or data residency requirements? (GDPR, NIS2, FedRAMP, government)", hint: "Listen for: YES = Zero Cloud Lock-In is the #1 value prop. All data stays inside your Rancher cluster." },
+          { q: "Are you affected by cloud egress/data transfer fees?", hint: "Listen for: YES = KubeDB eliminates egress by keeping data local to the cluster." },
+          { q: "Have you evaluated other commercial DBaaS solutions? (Aiven, Neon, Planetscale, DataStax)", hint: "Listen for: YES + concerns = lock-in, per-core pricing, egress, compliance. KubeDB is the answer." },
+          { q: "How many different database engines are you running across your infrastructure?", hint: "Listen for: 5+ engines = '25+ engines in KubeDB' is relevant. One platform, many databases." },
+        ]
+      },
+      {
+        title: "Section 4: Security & Compliance",
+        subtitle: "Identify compliance, encryption, and credential management requirements.",
+        questions: [
+          { q: "Are you using RKE2 for FIPS 140-2 compliance or other compliance frameworks?", hint: "Listen for: YES = KubeDB + RKE2 = end-to-end FIPS compliance, no cloud DBaaS equivalent." },
+          { q: "Do you have requirements for Transparent Data Encryption (TDE) at rest?", hint: "Listen for: YES = KubeDB supports encryption at rest using encrypted storage." },
+          { q: "How do you currently manage database credentials and rotation?", hint: "Listen for: Manual, spreadsheets, no rotation = KubeDB integrates with Vault and Rancher's secret store." },
+          { q: "Are you in a regulated industry? (Financial Services, Healthcare, Government)", hint: "Listen for: YES = Certified for Rancher partnership + audit trail + multi-tenant isolation are key." },
+        ]
+      },
+      {
+        title: "Section 5: Commercial & Decision Process",
+        subtitle: "Understand budget, stakeholders, and decision timeline.",
+        questions: [
+          { q: "Who owns the database management budget? (Finance, InfoSec, DevOps, Platform Engineering)", hint: "Listen for: Multiple stakeholders = engage technical champion first, economics buyer separately." },
+          { q: "What's the timeline for solving this problem? (Q2, EOY, next fiscal year)", hint: "Listen for: Urgent = prioritize PoC. Future = nurture with content, trial access." },
+          { q: "Are you open to a 30-day trial without procurement overhead?", hint: "Listen for: YES = low friction to PoC. Helm install via Rancher Apps & Marketplace." },
+          { q: "What does 'Certified for Rancher' mean to your procurement / security process?", hint: "Listen for: Important validation. KubeDB is officially certified, supported, and tested by SUSE." },
+          { q: "How many GB of database RAM are you managing across your infrastructure?", hint: "Listen for: 100+ GB = pricing conversation. Helps understand scale of current spend vs. KubeDB." },
+        ]
+      }
+    ],
+    scoring: {
+      hot: ["RKE2/K3s in production with 3+ clusters", "Longhorn + Fleet already deployed", "Cloud DBaaS costs >$50K/yr", "Data sovereignty / FIPS / compliance requirements", "Operator sprawl (3+ community operators)", "Budget available, timeline <90 days"],
+      warm: ["Evaluating SUSE Rancher (not yet production)", "Cloud DB costs rising", "Community operators in use", "Edge/K3s deployments under consideration", "Timeline 90-180 days"],
+      cold: ["No Rancher plans yet", "Fully committed to cloud DBaaS", "No budget identified", "Timeline >1 year"]
+    }
+  },
+
+  vmware: {
+    label: "VMware vSphere Kubernetes Service (VKS)",
+    sections: [
+      {
+        title: "Section 1: VMware/vSphere Environment Discovery",
+        subtitle: "",
+        questions: [
+          { q: "Are they running VMware vSphere Kubernetes Service (VKS) today, or evaluating it?", hint: "Production VKS = immediate fit. Evaluating = education + trial play. Broadcom acquisition often creates budget uncertainty — acknowledge it." },
+          { q: "Are they using vSAN for persistent storage? What storage classes do they use?", hint: "YES = strong data residency story. vSAN + KubeDB = fully managed databases on your own infrastructure. Ask about vSAN ESA/NVMe performance needs." },
+          { q: "Are they using NSX for networking and micro-segmentation?", hint: "YES = KubeDB works with NSX-T network policies for database traffic isolation. Strong compliance angle for regulated industries." },
+          { q: "Are they using VMware Cloud Foundation (VCF) for multi-cluster management?", hint: "VCF adoption = enterprise-scale deployment. Multiple VKS clusters = strong multi-database, multi-tenant use case for KubeDB." },
+          { q: "How many vSphere clusters and VKS workload clusters are they managing?", hint: "3+ clusters = strong multi-cluster use case. Ask about database sprawl across clusters — each cluster managing its own operators = consolidation opportunity." },
+          { q: "Are they using VMware Cloud (on AWS/Azure/GCP) alongside on-prem vSphere?", hint: "YES = hybrid/multi-cloud = data sovereignty + egress cost concerns. KubeDB keeps databases on-prem inside VKS, eliminating cloud egress fees." },
+        ]
+      },
+      {
+        title: "Section 2: Current Database Management",
+        subtitle: "",
+        questions: [
+          { q: "Which databases are running on VMware VMs today? Which have moved to VKS containers?", hint: "Mix of VMs + containers = migration workload in progress. PostgreSQL, MySQL, MongoDB on VMs = direct KubeDB targets. Ask about migration timeline." },
+          { q: "Are they using community operators or commercial solutions for Kubernetes databases?", hint: "Community operators (Zalando, Percona, etc.) = operator sprawl opportunity. No operator yet = greenfield. Commercial DBaaS = displacement conversation." },
+          { q: "How do they manage database backups today? (VM snapshots, PVC snapshots, or engine-native)", hint: "VM snapshots only = not application-consistent. No engine-native backup = major risk. KubeDB provides engine-native backup and point-in-time recovery." },
+          { q: "How long does it take to provision a new database environment? (contrast with <60 seconds)", hint: "Hours or days = KubeDB <60 seconds provisioning is a strong differentiator. Dev teams waiting on DBAs = self-service platform story." },
+          { q: "Are they evaluating or using vector databases (Milvus, Qdrant, Pgvector) for AI/RAG workloads?", hint: "YES = KubeDB supports pgvector, Milvus, and Qdrant. AI/GenAI workloads on-prem = strong data sovereignty + cost story vs. cloud AI services." },
+          { q: "Are they running Neo4j or other graph databases today?", hint: "YES = KubeDB supports graph databases. Multiple specialized DB types = '25+ engines in one operator' is a compelling consolidation message." },
+        ]
+      },
+      {
+        title: "Section 3: Pain Points & Business Drivers",
+        subtitle: "",
+        questions: [
+          { q: "Are they paying for cloud DBaaS alongside their vSphere infrastructure? How much annually?", hint: "YES + annual spend >$50K = strong cost displacement story. Running vSphere + paying cloud DBaaS = double cost. KubeDB eliminates cloud DBaaS spend entirely." },
+          { q: "Is the budget for new cloud database licensing a concern?", hint: "YES = Broadcom license restructuring has many VMware customers re-evaluating all spend. KubeDB subscription model vs. per-core cloud pricing is strongly favorable." },
+          { q: "Do they have data sovereignty, air-gap, or data residency requirements?", hint: "YES = Zero Cloud Lock-In is the #1 value prop. Air-gap environments = KubeDB supports offline Helm chart installation." },
+          { q: "How many separate operators/backup tools/monitoring configs are they managing per database?", hint: "3+ different tools per database engine = high operational tax. KubeDB consolidates operators, backup, monitoring, and alerting under one platform." },
+          { q: "Are they in a vSphere-to-Kubernetes migration phase — moving VM workloads to VKS?", hint: "Active migration = perfect timing. Database migration from VMs to VKS is a core KubeDB use case. Ask about migration scope and deadline." },
+        ]
+      },
+      {
+        title: "Section 4: Security & Compliance",
+        subtitle: "",
+        questions: [
+          { q: "Are they using NSX micro-segmentation for database traffic isolation?", hint: "YES = KubeDB complements NSX by managing DB-level access controls + Kubernetes NetworkPolicy. Combined = zero-trust database layer." },
+          { q: "Do they have requirements for TDE (Transparent Data Encryption) for databases at rest?", hint: "YES = KubeDB supports engine-native encryption for PostgreSQL, MySQL, SQL Server. Ask if vSAN encryption alone satisfies their audit requirements." },
+          { q: "How do they manage database credentials and rotation today?", hint: "Manual rotation, scripts, or no rotation policy = security risk. KubeDB integrates with HashiCorp Vault for automated credential lifecycle management." },
+          { q: "Are they in a regulated industry (FSI, Healthcare, Government) with compliance mandates?", hint: "YES = FIPS, PCI-DSS, HIPAA, or FedRAMP requirements. KubeDB on VKS delivers on-prem compliance posture no cloud DBaaS can match. Ask about audit trail requirements." },
+        ]
+      },
+      {
+        title: "Section 5: Commercial & Decision Process",
+        subtitle: "",
+        questions: [
+          { q: "Who owns the database management budget vs. the vSphere infrastructure budget?", hint: "Separate budget owners = engage technical champion (Platform/DevOps) and economic buyer (IT Director/Finance) separately. Broadcom ELA changes may have shifted ownership." },
+          { q: "What's the timeline for solving database management on VKS?", hint: "Urgent = fast-track PoC. Future = nurture with content + trial access. Broadcom ELA renewal cycles often create new urgency windows." },
+          { q: "Are they open to a 30-day trial via Helm install on their VKS cluster?", hint: "YES = very low friction. Helm install on any VKS cluster, under 5 minutes to first running database. Offer to run the install live together." },
+          { q: "How many GB of database RAM are they managing today? (for pricing tier)", hint: "100+ GB RAM = pricing conversation. Understand current cloud DBaaS spend at this scale. Helps size the KubeDB subscription and build TCO comparison." },
+          { q: "Is there a VMware/Broadcom ELA (Enterprise License Agreement) purchasing path they prefer?", hint: "YES = KubeDB can align with existing procurement channels. Broadcom partner programs may apply. Offer AppCode direct or marketplace options." },
+        ]
+      }
+    ],
+    scoring: {
+      hot: ["VKS in production", "Cloud DBaaS costs concern (double-paying)", "VM-to-K8s DB migration in progress", "vSAN deployed", "Data sovereignty / air-gap requirements", "Budget available, timeline <90 days"],
+      warm: ["VKS evaluation in progress", "Planning to expand VKS footprint", "AI/vector DB interest", "Broadcom ELA restructuring underway", "Timeline 90-180 days"],
+      cold: ["Still evaluating VKS adoption", "Fully committed to cloud DBaaS", "No budget identified", "Timeline >1 year"]
+    }
+  }
+};
+
+// State
+let currentDistro = null;
+let currentSection = 0;
+let signals = {}; // { "distro-sectionIdx-qIdx": "hot"|"warm"|"cold" }
+let notes = {}; // { "distro-sectionIdx-qIdx": "text" }
+
+function startGuide(distro) {
+  currentDistro = distro;
+  currentSection = 0;
+  document.getElementById("distro-screen").style.display = "none";
+  document.getElementById("prospect-screen").style.display = "block";
+  document.getElementById("guide-screen").style.display = "none";
+  document.getElementById("scoring-screen").style.display = "none";
+  window.scrollTo(0, 0);
+}
+
+function startQuestionsFromProspect() {
+  document.getElementById("prospect-screen").style.display = "none";
+  document.getElementById("guide-screen").style.display = "block";
+  document.getElementById("scoring-screen").style.display = "none";
+  document.getElementById("sidebar-distro-label").textContent = DATA[currentDistro].label;
+  renderSidebar();
+  renderSection();
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  document.getElementById("distro-screen").style.display = "block";
+  document.getElementById("prospect-screen").style.display = "none";
+  document.getElementById("guide-screen").style.display = "none";
+  document.getElementById("scoring-screen").style.display = "none";
+  window.scrollTo(0, 0);
+}
+
+function renderSidebar() {
+  const d = DATA[currentDistro];
+  const steps = document.getElementById("sidebar-steps");
+  let out = d.sections.map((s, i) => {
+    const isDone = i < currentSection;
+    const isActive = i === currentSection;
+    let cls = "step-item" + (isActive ? " active" : "") + (isDone ? " done" : "");
+    const shortTitle = s.title.replace(/^Section \d+: /i, "").replace(/^SECTION \d+: /i, "");
+    const hotCount = d.sections[i].questions.filter((q, qi) => signals[currentDistro + "-" + i + "-" + qi] === "hot").length;
+    const summary = isDone && hotCount > 0 ? hotCount + " hot signal" + (hotCount > 1 ? "s" : "") : "";
+    const dotContent = isDone ? "" : (i + 1);
+    return `<div class="${cls}" onclick="jumpToSection(${i})"><div class="step-dot">${dotContent}</div><div><div class="step-label">${shortTitle}</div>${summary ? `<div class="step-summary">${summary}</div>` : ""}</div></div>`;
+  }).join("");
+  const isSummaryActive = currentSection >= d.sections.length;
+  out += `<div class="sidebar-summary-item${isSummaryActive ? " active" : ""}" onclick="showScoring()"><div class="step-dot">&#128202;</div><div class="step-label">Summary</div></div>`;
+  steps.innerHTML = out;
+}
+
+function jumpToSection(idx) {
+  saveCurrentNotes();
+  currentSection = idx;
+  renderSidebar();
+  renderSection();
+}
+
+function renderSection() {
+  const d = DATA[currentDistro];
+  const s = d.sections[currentSection];
+  const totalSections = d.sections.length;
+  const pct = Math.round(((currentSection) / totalSections) * 100);
+  document.getElementById("progress-fill").style.width = pct + "%";
+  document.getElementById("progress-text").textContent = `Section ${currentSection + 1} of ${totalSections}`;
+  document.getElementById("btn-back").style.display = currentSection > 0 ? "inline-block" : "none";
+  const nextBtn = document.getElementById("btn-next");
+  if (currentSection === totalSections - 1) {
+    nextBtn.textContent = "View Summary →";
+    nextBtn.className = "btn btn-finish";
+  } else {
+    nextBtn.textContent = "Next section →";
+    nextBtn.className = "btn btn-next";
+  }
+
+  const content = document.getElementById("section-content");
+  let html = `<div class="section-title">${s.title}</div>`;
+  if (s.subtitle) html += `<div class="section-subtitle">${s.subtitle}</div>`;
+
+  s.questions.forEach((q, qi) => {
+    const key = `${currentDistro}-${currentSection}-${qi}`;
+    const sig = signals[key] || "";
+    const noteVal = (notes[key] || "").replace(/"/g, "&quot;");
+    const isOpen = qi === 0 ? " open" : "";
+    html += `
+    <div class="q-card${isOpen}" id="qcard-${qi}">
+      <div class="q-header" onclick="toggleQ(${qi})">
+        <span class="q-num">Q${qi + 1}</span>
+        <span class="q-text">${escHtml(q.q)}</span>
+        <span class="q-expand">▼</span>
+      </div>
+      <div class="q-body">
+        <div class="listen-label">💡 Why Ask / Listen For</div>
+        <div class="listen-text">${escHtml(q.hint)}</div>
+        <div class="signal-row">
+          <button class="signal-btn hot ${sig === "hot" ? "active" : ""}" onclick="setSignal(${qi}, 'hot')">🔥 Hot Signal</button>
+          <button class="signal-btn warm ${sig === "warm" ? "active" : ""}" onclick="setSignal(${qi}, 'warm')">🌡 Warm Signal</button>
+          <button class="signal-btn cold ${sig === "cold" ? "active" : ""}" onclick="setSignal(${qi}, 'cold')">❄️ No Signal</button>
+        </div>
+        <div class="notes-label">📝 Notes</div>
+        <textarea class="notes" id="note-${qi}" placeholder="Type your notes here...">${noteVal}</textarea>
+      </div>
+    </div>`;
+  });
+  content.innerHTML = html;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function toggleQ(qi) {
+  const card = document.getElementById("qcard-" + qi);
+  card.classList.toggle("open");
+}
+
+function setSignal(qi, val) {
+  const key = `${currentDistro}-${currentSection}-${qi}`;
+  signals[key] = signals[key] === val ? "" : val;
+  renderSection();
+  // Restore open state
+  const card = document.getElementById("qcard-" + qi);
+  if (card) card.classList.add("open");
+}
+
+function saveCurrentNotes() {
+  if (!currentDistro) return;
+  const d = DATA[currentDistro];
+  const s = d.sections[currentSection];
+  if (!s) return;
+  s.questions.forEach((q, qi) => {
+    const key = `${currentDistro}-${currentSection}-${qi}`;
+    const el = document.getElementById("note-" + qi);
+    if (el) notes[key] = el.value;
+  });
+}
+
+function nextSection() {
+  saveCurrentNotes();
+  const d = DATA[currentDistro];
+  if (currentSection < d.sections.length - 1) {
+    currentSection++;
+    renderSidebar();
+    renderSection();
+    window.scrollTo(0, 0);
+  } else {
+    showScoring();
+  }
+}
+
+function prevSection() {
+  saveCurrentNotes();
+  if (currentSection > 0) {
+    currentSection--;
+    renderSidebar();
+    renderSection();
+    window.scrollTo(0, 0);
+  }
+}
+
+function showScoring() {
+  saveCurrentNotes();
+  document.getElementById("guide-screen").style.display = "none";
+  document.getElementById("scoring-screen").style.display = "block";
+  window.scrollTo(0, 0);
+
+  const d = DATA[currentDistro];
+  document.getElementById("scoring-distro-label").textContent = d.label;
+
+  // Prospect info card
+  const pName    = document.getElementById("p-name")?.value.trim() || "";
+  const pEmail   = document.getElementById("p-email")?.value.trim() || "";
+  const pCompany = document.getElementById("p-company")?.value.trim() || "";
+  const pPhone   = document.getElementById("p-phone")?.value.trim() || "";
+  const pTitle   = document.getElementById("p-title")?.value.trim() || "";
+  const pCountry = document.getElementById("p-country")?.value || "";
+  const pAddress = document.getElementById("p-address")?.value.trim() || "";
+  const pNotes   = document.getElementById("p-notes")?.value.trim() || "";
+  const prospectEl = document.getElementById("prospect-card");
+  if (prospectEl) {
+    if (pName || pEmail || pCompany) {
+      prospectEl.style.display = "block";
+      const fields = [
+        pName    ? `<div class="prospect-field"><div class="pf-label">Contact</div><div class="pf-value">${escHtml(pName)}</div></div>` : "",
+        pEmail   ? `<div class="prospect-field"><div class="pf-label">Email</div><div class="pf-value">${escHtml(pEmail)}</div></div>` : "",
+        pCompany ? `<div class="prospect-field"><div class="pf-label">Company</div><div class="pf-value">${escHtml(pCompany)}</div></div>` : "",
+        pTitle   ? `<div class="prospect-field"><div class="pf-label">Title</div><div class="pf-value">${escHtml(pTitle)}</div></div>` : "",
+        pPhone   ? `<div class="prospect-field"><div class="pf-label">Phone</div><div class="pf-value">${escHtml(pPhone)}</div></div>` : "",
+        pCountry ? `<div class="prospect-field"><div class="pf-label">Country</div><div class="pf-value">${escHtml(pCountry)}</div></div>` : "",
+        pAddress ? `<div class="prospect-field" style="grid-column:1/-1"><div class="pf-label">Address</div><div class="pf-value">${escHtml(pAddress)}</div></div>` : "",
+        pNotes   ? `<div class="prospect-field" style="grid-column:1/-1"><div class="pf-label">Notes</div><div class="pf-value">${escHtml(pNotes)}</div></div>` : "",
+      ].filter(Boolean).join("");
+      prospectEl.innerHTML = `<h3>👤 Prospect Information</h3><div class="prospect-grid">${fields}</div>`;
+    } else {
+      prospectEl.style.display = "none";
+    }
+  }
+
+  let hot = 0, warm = 0, cold = 0;
+  Object.values(signals).forEach(v => {
+    if (v === "hot") hot++;
+    else if (v === "warm") warm++;
+    else if (v === "cold") cold++;
+  });
+
+  document.getElementById("hot-count").textContent = hot;
+  document.getElementById("warm-count").textContent = warm;
+  document.getElementById("cold-count").textContent = cold;
+
+  const verdict = document.getElementById("verdict");
+  let rating, guidance, color;
+  if (hot >= 3) {
+    rating = "🔥 HOT LEAD — Pursue Aggressively";
+    guidance = "This prospect has multiple strong buying signals. Prioritize a technical deep-dive and propose a 30-day PoC this week. Loop in your solutions engineer now.";
+    color = "#fff5f5";
+  } else if (hot >= 1 || warm >= 3) {
+    rating = "🌡 WARM LEAD — Nurture & Schedule Follow-Up";
+    guidance = "Good interest with some clear pain points. Send a tailored TCO comparison and schedule a follow-up in 2-3 weeks. Share relevant customer success stories.";
+    color = "#fffbf0";
+  } else {
+    rating = "❄️ COOL — Add to Nurture Track";
+    guidance = "Low urgency or early stage. Add to a monthly nurture track with KubeDB insights. Revisit in 90 days or when their K8s adoption or DB migration plans mature.";
+    color = "#f5f5f5";
+  }
+
+  // Show key signals from scoring guide
+  const sc = d.scoring;
+  const hotSignals = sc.hot.map(x => `<li>${escHtml(x)}</li>`).join("");
+  const warmSignals = sc.warm.map(x => `<li>${escHtml(x)}</li>`).join("");
+
+  verdict.style.background = color;
+  verdict.innerHTML = `
+    <div class="rating">${rating}</div>
+    <div class="guidance">${guidance}</div>
+    <details style="margin-top:16px;text-align:left;">
+      <summary style="cursor:pointer;font-size:0.82rem;color:#4D4DCB;font-weight:700;">View scoring criteria for this distro</summary>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;">
+        <div><div style="font-size:0.75rem;font-weight:700;color:#e84c4c;margin-bottom:6px;">🔥 HOT SIGNALS</div><ul style="font-size:0.8rem;color:#555;padding-left:16px;line-height:1.7;">${hotSignals}</ul></div>
+        <div><div style="font-size:0.75rem;font-weight:700;color:#f5a623;margin-bottom:6px;">🌡 WARM SIGNALS</div><ul style="font-size:0.8rem;color:#555;padding-left:16px;line-height:1.7;">${warmSignals}</ul></div>
+      </div>
+    </details>`;
+
+  // Notes summary
+  const notesSummary = document.getElementById("notes-summary");
+  let notesHtml = `<h3>📝 Call Notes</h3>`;
+  let hasNotes = false;
+  d.sections.forEach((s, si) => {
+    s.questions.forEach((q, qi) => {
+      const key = `${currentDistro}-${si}-${qi}`;
+      const note = notes[key] || "";
+      const sig = signals[key] || "";
+      if (note.trim() || sig) {
+        hasNotes = true;
+        const sigBadge = sig === "hot" ? ' <span style="color:#e84c4c;font-size:0.75rem;">🔥 HOT</span>' : sig === "warm" ? ' <span style="color:#f5a623;font-size:0.75rem;">🌡 WARM</span>' : "";
+        notesHtml += `<div class="note-item"><div class="note-q">S${si+1}Q${qi+1}: ${escHtml(q.q)}${sigBadge}</div>${note.trim() ? `<div class="note-t">${escHtml(note)}</div>` : ""}</div>`;
+      }
+    });
+  });
+  if (!hasNotes) notesHtml += `<div style="color:#aaa;font-size:0.85rem;font-style:italic;">No signals or notes recorded yet. Go back and fill in the questions.</div>`;
+  notesSummary.innerHTML = notesHtml;
+}
+
+function getCurrentDistroSignalCounts() {
+  let hot = 0, warm = 0, cold = 0;
+  const prefix = `${currentDistro}-`;
+  Object.entries(signals).forEach(([k, v]) => {
+    if (!k.startsWith(prefix)) return;
+    if (v === "hot") hot++;
+    else if (v === "warm") warm++;
+    else if (v === "cold") cold++;
+  });
+  return { hot, warm, cold };
+}
+
+function collectSubmissionData() {
+  if (!currentDistro) {
+    return null;
+  }
+
+  saveCurrentNotes();
+
+  const pName = document.getElementById("p-name")?.value.trim() || "";
+  const pEmail = document.getElementById("p-email")?.value.trim() || "";
+  const pCompany = document.getElementById("p-company")?.value.trim() || "";
+  const pPhone = document.getElementById("p-phone")?.value.trim() || "";
+  const pTitle = document.getElementById("p-title")?.value.trim() || "";
+  const pCountry = document.getElementById("p-country")?.value || "";
+  const pAddress = document.getElementById("p-address")?.value.trim() || "";
+  const pNotes = document.getElementById("p-notes")?.value.trim() || "";
+
+  const { hot, warm, cold } = getCurrentDistroSignalCounts();
+
+  let verdict = "cool";
+  let verdictText = "COOL - Add to Nurture Track";
+  if (hot >= 3) {
+    verdict = "hot";
+    verdictText = "HOT LEAD - Pursue Aggressively";
+  } else if (hot >= 1 || warm >= 3) {
+    verdict = "warm";
+    verdictText = "WARM LEAD - Nurture and Follow-Up";
+  }
+
+  const d = DATA[currentDistro];
+  const notesData = [];
+  d.sections.forEach((s, si) => {
+    s.questions.forEach((q, qi) => {
+      const key = `${currentDistro}-${si}-${qi}`;
+      const signal = signals[key] || "";
+      const note = (notes[key] || "").trim();
+      if (signal || note) {
+        notesData.push({
+          section: si + 1,
+          question: qi + 1,
+          prompt: q.q,
+          signal,
+          note,
+        });
+      }
+    });
+  });
+
+  return {
+    distro: currentDistro,
+    distroLabel: d.label,
+    contactName: pName,
+    contactEmail: pEmail,
+    contactCompany: pCompany,
+    contactPhone: pPhone,
+    contactTitle: pTitle,
+    contactCountry: pCountry,
+    contactAddress: pAddress,
+    contactNotes: pNotes,
+    hotCount: hot,
+    warmCount: warm,
+    coldCount: cold,
+    verdict,
+    verdictText,
+    notesJson: JSON.stringify(notesData),
+  };
+}
+
+async function submitSalesQA() {
+  const payload = collectSubmissionData();
+  if (!payload) {
+    alert("Please select a Kubernetes distribution first.");
+    return;
+  }
+
+  if (!payload.contactName || !payload.contactEmail || !payload.contactCompany || !payload.contactCountry) {
+    alert("Contact Name, Email, Company, and Country are required to submit.");
+    return;
+  }
+
+  const submitBtn = document.getElementById("btn-submit");
+  const originalText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
+
+  try {
+    const resp = await fetch("/_/kubedb_sales_qa/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const msg = await resp.text();
+    if (!resp.ok) {
+      throw new Error(msg || "Submission failed");
+    }
+
+    alert(msg || "Sales QA result submitted successfully.");
+  } catch (err) {
+    alert(`Failed to submit result: ${err.message || err}`);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+  }
+}
+</script>
+</body>
+</html>
