@@ -346,6 +346,33 @@ func (s *Server) Run() error {
 		respond(ctx, []byte("Thank you! Your inquiry has been submitted successfully."))
 	})
 
+	m.Get("/_/kubedb_sales_qa/", func(ctx *macaron.Context) {
+		ctx.HTML(200, "kubedb_sales_qa")
+	})
+	m.Post("/_/kubedb_sales_qa/", func(ctx *macaron.Context) {
+		var form KubeDBSalesQAInfo
+		if err := json.NewDecoder(ctx.Req.Request.Body).Decode(&form); err != nil {
+			ctx.WriteHeader(http.StatusBadRequest)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+
+		form.Complete()
+		if err := form.Validate(); err != nil {
+			ctx.WriteHeader(http.StatusBadRequest)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+
+		err := s.HandleKubeDBSalesQA(&form)
+		if err != nil {
+			ctx.WriteHeader(http.StatusInternalServerError)
+			respond(ctx, []byte(err.Error()))
+			return
+		}
+		respond(ctx, []byte("Thank you! Your sales QA result has been submitted successfully."))
+	})
+
 	m.Get("/_/offerletter/", auth.Basic(os.Getenv("APPSCODE_SALES_USERNAME"), os.Getenv("APPSCODE_SALES_PASSWORD")), func(ctx *macaron.Context) {
 		ctx.HTML(200, "offerletter") // 200 is the response code.
 	})
