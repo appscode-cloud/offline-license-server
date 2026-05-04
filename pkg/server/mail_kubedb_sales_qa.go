@@ -17,26 +17,91 @@ limitations under the License.
 package server
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"gomodules.xyz/mailer"
-	"sigs.k8s.io/yaml"
 )
 
+type salesQANote struct {
+	Section  int    `json:"section"`
+	Question int    `json:"question"`
+	Prompt   string `json:"prompt"`
+	Signal   string `json:"signal"`
+	Note     string `json:"note"`
+}
+
 func NewKubeDBSalesQAMailer(info *KubeDBSalesQAInfo) mailer.Mailer {
-	data, err := yaml.Marshal(info)
-	if err != nil {
-		data = []byte("Error: " + err.Error())
+	notesMarkdown := "- No notes were submitted."
+	if info.NotesJSON != "" {
+		var notes []salesQANote
+		if err := json.Unmarshal([]byte(info.NotesJSON), &notes); err != nil {
+			notesMarkdown = fmt.Sprintf("- Failed to parse notes JSON: %v", err)
+		} else if len(notes) > 0 {
+			var b strings.Builder
+			for _, n := range notes {
+				line := fmt.Sprintf("- S%dQ%d", n.Section, n.Question)
+				if n.Signal != "" {
+					line += fmt.Sprintf(" (%s)", strings.ToUpper(n.Signal))
+				}
+				if n.Prompt != "" {
+					line += fmt.Sprintf(": %s", n.Prompt)
+				}
+				b.WriteString(line)
+				b.WriteString("\n")
+				if n.Note != "" {
+					b.WriteString(fmt.Sprintf("  - Note: %s\n", n.Note))
+				}
+			}
+			notesMarkdown = strings.TrimSpace(b.String())
+		}
 	}
 
 	src := fmt.Sprintf(`Hi,
 A new KubeDB sales QA result has been submitted with the following details:
 
+## Prospect
+- Name: %s
+- Email: %s
+- Company: %s
+- Title: %s
+- Phone: %s
+- Country: %s
+- Address: %s
+- Notes: %s
+
+## Qualification Summary
+- Distro: %s (%s)
+- Verdict: %s
+- Verdict Text: %s
+- Hot: %d
+- Warm: %d
+- Cold: %d
+
+## Notes
 %s
 
 Regards,
 KubeDB Sales QA System
-`, string(data))
+`,
+		info.ContactName,
+		info.ContactEmail,
+		info.ContactCompany,
+		info.ContactTitle,
+		info.ContactPhone,
+		info.ContactCountry,
+		info.ContactAddress,
+		info.ContactNotes,
+		info.DistroLabel,
+		info.Distro,
+		info.Verdict,
+		info.VerdictText,
+		info.HotCount,
+		info.WarmCount,
+		info.ColdCount,
+		notesMarkdown,
+	)
 	return mailer.Mailer{
 		Sender:          MailSales,
 		BCC:             "",
