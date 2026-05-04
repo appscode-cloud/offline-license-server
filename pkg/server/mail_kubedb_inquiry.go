@@ -20,23 +20,44 @@ import (
 	"fmt"
 
 	"gomodules.xyz/mailer"
-	"sigs.k8s.io/yaml"
 )
 
 func NewKubeDBInquiryMailer(info *KubeDBInquiryInfo) mailer.Mailer {
-	data, err := yaml.Marshal(info)
-	if err != nil {
-		data = []byte("Error: " + err.Error())
-	}
-
 	src := fmt.Sprintf(`Hi,
 A new KubeDB inquiry has been submitted with the following details:
 
-%s
+## Customer
+- Name: %s
+- Email: %s
+- Company: %s
+- Phone: %s
+- Address: %s
+- Country: %s
+
+## Inquiry
+- Estimated Database Memory: %s
+- Kubernetes Setup: %s
+- Support Plan: %s
+- Project Timeline: %s
+- Professional Services: %s
+- Notes: %s
 
 Regards,
 KubeDB Inquiry System
-`, string(data))
+`,
+		info.CustomerName,
+		info.CustomerEmail,
+		info.CustomerCompany,
+		info.CustomerPhone,
+		info.CustomerAddress,
+		info.CustomerCountry,
+		info.EstimatedDatabaseMemory,
+		info.KubernetesSetup,
+		info.SupportPlan,
+		info.ProjectTimeline,
+		info.ProfessionalServices,
+		info.Notes,
+	)
 	return mailer.Mailer{
 		Sender:          MailSales,
 		BCC:             "",

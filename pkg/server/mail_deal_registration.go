@@ -20,23 +20,60 @@ import (
 	"fmt"
 
 	"gomodules.xyz/mailer"
-	"sigs.k8s.io/yaml"
 )
 
 func NewDealRegistrationMailer(info *DealRegistrationInfo) mailer.Mailer {
-	data, err := yaml.Marshal(info)
-	if err != nil {
-		data = []byte("Error: " + err.Error()) // nolint:goconst
-	}
-
 	src := fmt.Sprintf(`Hi,
 A new deal has been registered with the following details:
 
-%s
+## Partner
+- Name: %s
+- Email: %s
+- Company: %s
+- Region: %s
+
+## Customer
+- Name: %s
+- Email: %s
+- Company: %s
+- Phone: %s
+- Address: %s
+- Country: %s
+
+## Deal
+- Product: %s
+- Kubernetes Setup: %s
+- Estimated Deal Size: %s
+- Estimated Database Memory: %s
+- Estimated Kubernetes Nodes: %s
+- Estimated Kubernetes Clusters: %s
+- Project Timeline: %s
+- Competitor Product: %s
+- Notes: %s
 
 Regards,
 Deal Registration System
-`, string(data))
+`,
+		info.PartnerName,
+		info.PartnerEmail,
+		info.PartnerCompany,
+		info.Region,
+		info.CustomerName,
+		info.CustomerEmail,
+		info.CustomerCompany,
+		info.CustomerPhone,
+		info.CustomerAddress,
+		info.CustomerCountry,
+		info.Product,
+		info.KubernetesSetup,
+		info.EstimatedDealSize,
+		info.EstimatedDatabaseMemory,
+		info.EstimatedKubernetesNodes,
+		info.EstimatedKubernetesClusters,
+		info.ProjectTimeline,
+		info.CompetitorProduct,
+		info.Notes,
+	)
 	return mailer.Mailer{
 		Sender:          MailSales,
 		BCC:             "",
