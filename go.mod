@@ -25,9 +25,9 @@ require (
 	go.bytebuilders.dev/license-verifier v0.14.10
 	go.wandrs.dev/macaron-embed v0.0.2
 	gocloud.dev v0.41.0
-	golang.org/x/crypto v0.49.0
-	golang.org/x/net v0.52.0
-	golang.org/x/text v0.35.0
+	golang.org/x/crypto v0.52.0
+	golang.org/x/net v0.55.0
+	golang.org/x/text v0.37.0
 	gomodules.xyz/blobfs v0.2.2
 	gomodules.xyz/cert v1.6.0
 	gomodules.xyz/email-providers v0.1.5
@@ -144,7 +144,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/time v0.13.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
