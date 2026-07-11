@@ -428,7 +428,8 @@ func (s *Server) Run() error {
 
 	if s.opts.EnableDripCampaign {
 		go func() {
-			if err := mailer.RunCampaigns(context.TODO(),
+			if err := mailer.RunCampaigns(
+				context.TODO(),
 				NewCommunitySignupCampaign(s.srvSheets, s.mg),
 				NewEnterpriseSignupCampaign(s.srvSheets, s.mg),
 				NewEnterpriseFirstTimeCampaign(s.srvSheets, s.mg),
