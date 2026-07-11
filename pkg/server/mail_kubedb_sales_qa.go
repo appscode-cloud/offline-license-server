@@ -58,7 +58,8 @@ func NewKubeDBSalesQAMailer(info *KubeDBSalesQAInfo) mailer.Mailer {
 		}
 	}
 
-	src := fmt.Sprintf(`Hi,
+	src := fmt.Sprintf(
+		`Hi,
 A new KubeDB sales QA result has been submitted with the following details:
 
 ## Prospect

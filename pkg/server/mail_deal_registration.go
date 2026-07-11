@@ -23,7 +23,8 @@ import (
 )
 
 func NewDealRegistrationMailer(info *DealRegistrationInfo) mailer.Mailer {
-	src := fmt.Sprintf(`Hi,
+	src := fmt.Sprintf(
+		`Hi,
 A new deal has been registered with the following details:
 
 ## Partner

@@ -230,7 +230,8 @@ func (s *Server) startTest(c cache.Cache, ip string, configDocId, email string) 
 		}
 
 		docId, err := gdrive.CopyDoc(
-			s.srvDrive, s.srvDoc, cfg.QuestionTemplateDocId, folderId, docName, replacements)
+			s.srvDrive, s.srvDoc, cfg.QuestionTemplateDocId, folderId, docName, replacements,
+		)
 		if err != nil {
 			return err
 		}
