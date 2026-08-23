@@ -50,7 +50,7 @@ type LicenseForm struct {
 	Email        string `form:"email" binding:"Required;Email" json:"email"`
 	CC           string `form:"cc" json:"cc"`
 	ProductAlias string `form:"product" binding:"Required" json:"product"` // This is now called plan in a parsed LicenseInfo
-	Cluster      string `form:"cluster" binding:"Required" json:"cluster"`
+	Cluster      string `form:"cluster" json:"cluster"`
 	Tos          string `form:"tos" binding:"Required" json:"tos"`
 	Token        string `form:"token" json:"token"`
 	Coupon       string `form:"coupon" json:"coupon"`
@@ -66,12 +66,13 @@ func (form LicenseForm) Product() string {
 }
 
 func (form LicenseForm) Validate() error {
-	_, err := uuid.Parse(form.Cluster)
-	if err != nil {
-		return err
-	}
 	if form.Product() == "" {
 		return fmt.Errorf("unknown product alias: %s", form.ProductAlias)
+	}
+	if form.Product() != "postgres-enterprise" {
+		if _, err := uuid.Parse(form.Cluster); err != nil {
+			return err
+		}
 	}
 	if agree, _ := strconv.ParseBool(form.Tos); !agree {
 		return fmt.Errorf("user must agree to terms and services")
