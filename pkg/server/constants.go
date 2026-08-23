@@ -115,7 +115,7 @@ var SupportedProducts = map[string]PlanInfo{
 		TierName:       "enterprise",
 		TwitterHandle:  "AppsCode",
 		QuickstartLink: "https://kubedb.com/docs/latest/",
-		Features:       []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash", "panopticon-enterprise", "kubedb-monitoring-agent"},
+		Features:       []string{"postgres-enterprise"},
 		MailingLists:   []string{MailingList_KubeDB, MailingList_Stash, MailingList_Panopticon},
 	},
 	"kubedb-enterprise": {
