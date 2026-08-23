@@ -2,7 +2,7 @@ goldmark
 ==========================================
 
 [![https://pkg.go.dev/github.com/yuin/goldmark](https://pkg.go.dev/badge/github.com/yuin/goldmark.svg)](https://pkg.go.dev/github.com/yuin/goldmark)
-[![https://github.com/yuin/goldmark/actions?query=workflow:test](https://github.com/yuin/goldmark/workflows/test/badge.svg?branch=master&event=push)](https://github.com/yuin/goldmark/actions?query=workflow:test)
+[![https://github.com/yuin/goldmark/actions?query=workflow:test](https://github.com/yuin/goldmark/actions/workflows/test.yaml/badge.svg?branch=master&event=push)](https://github.com/yuin/goldmark/actions?query=workflow:test)
 [![https://coveralls.io/github/yuin/goldmark](https://coveralls.io/repos/github/yuin/goldmark/badge.svg?branch=master)](https://coveralls.io/github/yuin/goldmark)
 [![https://goreportcard.com/report/github.com/yuin/goldmark](https://goreportcard.com/badge/github.com/yuin/goldmark)](https://goreportcard.com/report/github.com/yuin/goldmark)
 
@@ -11,6 +11,8 @@ goldmark
 goldmark is compliant with CommonMark 0.31.2.
 
 - [goldmark playground](https://yuin.github.io/goldmark/playground/) : Try goldmark online. This playground is built with WASM(5-10MB).
+
+There is also a Rust version of goldmark: [rushdown](https://github.com/yuin/rushdown)
 
 Motivation
 ----------------------
@@ -493,9 +495,14 @@ Extensions
 - [goldmark-d2](https://github.com/FurqanSoftware/goldmark-d2): Adds support for [D2](https://d2lang.com/) diagrams.
 - [goldmark-katex](https://github.com/FurqanSoftware/goldmark-katex): Adds support for [KaTeX](https://katex.org/) math and equations.
 - [goldmark-img64](https://github.com/tenkoh/goldmark-img64): Adds support for embedding images into the document as DataURL (base64 encoded).
-- [goldmark-enclave](https://github.com/quail-ink/goldmark-enclave): Adds support for embedding youtube/bilibili video, X's [oembed tweet](https://publish.twitter.com/), [tradingview](https://www.tradingview.com/widget/)'s chart, [quail](https://quail.ink)'s widget into the document.
+- [goldmark-enclave](https://github.com/quailyquaily/goldmark-enclave): Adds support for embedding youtube/bilibili video, X's [oembed X](https://publish.x.com/), [tradingview chart](https://www.tradingview.com/widget/)'s chart, [quaily widget](https://quaily.com), [spotify embeds](https://developer.spotify.com/documentation/embeds), [dify embed](https://dify.ai/) and html audio into the document.
 - [goldmark-wiki-table](https://github.com/movsb/goldmark-wiki-table): Adds support for embedding Wiki Tables.
 - [goldmark-tgmd](https://github.com/Mad-Pixels/goldmark-tgmd): A Telegram markdown renderer that can be passed to `goldmark.WithRenderer()`.
+- [goldmark-treeblood](https://github.com/Wyatt915/goldmark-treeblood): Renders $\LaTeX$ expressions as MathML (pure Go, no external dependencies).
+- [goldmark-subtext](https://github.com/zeozeozeo/goldmark-subtext): Support for Discord-style markdown subtexts
+- [goldmark-customtag](https://github.com/tendstofortytwo/goldmark-customtag): Allows you to define custom block tags.
+- [goldmark-cjk-friendly](https://github.com/tats-u/goldmark-cjk-friendly): Port of npm package [`remark-cjk-friendly` / `markdown-it-cjk-friendly`](https://github.com/tats-u/markdown-cjk-friendly) to goldmark. Similar to the [CJK extension](#cjk-extension) (`WithEscapedSpace`), but you do not need to explicitly add `\ ` around `*` and `**`. You can combine this with the [CJK extension](#cjk-extension).
+- [goldmark-chart](https://github.com/TheGreatRambler/goldmark-chart): Generate static ChartJS charts using the simple [Markvis](https://markvis.js.org/#/) format.
 
 ### Loading extensions at runtime
 [goldmark-dynamic](https://github.com/yuin/goldmark-dynamic) allows you to write a goldmark extension in Lua and load it at runtime without re-compilation.

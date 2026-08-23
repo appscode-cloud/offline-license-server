@@ -34,10 +34,7 @@ func (b *fencedCodeBlockParser) Trigger() []byte {
 
 func (b *fencedCodeBlockParser) Open(parent ast.Node, reader text.Reader, pc Context) (ast.Node, State) {
 	line, segment := reader.PeekLine()
-	pos := pc.BlockOffset()
-	if pos < 0 || (line[pos] != '`' && line[pos] != '~') {
-		return nil, NoChildren
-	}
+	pos := pc.BlockIndent()
 	findent := pos
 	fenceChar := line[pos]
 	i := pos
@@ -79,20 +76,13 @@ func (b *fencedCodeBlockParser) Continue(node ast.Node, reader text.Reader, pc C
 		}
 		length := i - pos
 		if length >= fdata.length && util.IsBlank(line[i:]) {
-			newline := 1
-			if line[len(line)-1] != '\n' {
-				newline = 0
-			}
-			reader.Advance(segment.Stop - segment.Start - newline + segment.Padding)
+			reader.AdvanceToEOL()
 			return Close
 		}
 	}
 	pos, padding := util.IndentPositionPadding(line, reader.LineOffset(), segment.Padding, fdata.indent)
 	if pos < 0 {
-		pos = util.FirstNonSpacePosition(line)
-		if pos < 0 {
-			pos = 0
-		}
+		pos = max(0, util.FirstNonSpacePosition(line)) - segment.Padding
 		padding = 0
 	}
 	seg := text.NewSegmentPadding(segment.Start+pos, segment.Stop, padding)
@@ -100,8 +90,9 @@ func (b *fencedCodeBlockParser) Continue(node ast.Node, reader text.Reader, pc C
 	if padding != 0 {
 		preserveLeadingTabInCodeBlock(&seg, reader, fdata.indent)
 	}
+	seg.ForceNewline = true // EOF as newline
 	node.Lines().Append(seg)
-	reader.AdvanceAndSetPadding(segment.Stop-segment.Start-pos-1, padding)
+	reader.AdvanceToEOL()
 	return Continue | NoChildren
 }
 
