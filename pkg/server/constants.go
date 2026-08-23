@@ -81,6 +81,8 @@ type PlanInfo struct {
 }
 
 var productAliases = map[string]string{
+	"postgres":                 "postgres-enterprise",
+	"postgres-enterprise":      "postgres-enterprise",
 	"kubedb":                   "kubedb-enterprise",
 	"kubedb-community":         "kubedb-enterprise",
 	"kubedb-enterprise":        "kubedb-enterprise",
@@ -107,6 +109,15 @@ var productAliases = map[string]string{
 
 // plan name => features
 var SupportedProducts = map[string]PlanInfo{
+	"postgres-enterprise": {
+		DisplayName:    "Postgres Enterprise by AppsCode",
+		ProductLine:    "postgres",
+		TierName:       "enterprise",
+		TwitterHandle:  "AppsCode",
+		QuickstartLink: "https://kubedb.com/docs/latest/",
+		Features:       []string{"kubedb-enterprise", "kubedb-community", "kubedb-autoscaler", "kubedb-ext-stash", "panopticon-enterprise", "kubedb-monitoring-agent"},
+		MailingLists:   []string{MailingList_KubeDB, MailingList_Stash, MailingList_Panopticon},
+	},
 	"kubedb-enterprise": {
 		DisplayName:    "KubeDB",
 		ProductLine:    "kubedb",

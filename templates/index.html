@@ -79,11 +79,14 @@
                       <option value="platform-enterprise" {{ if eq .Product "platform-enterprise" }}selected{{ end }}>
                         ACE Platform
                       </option>
+                      <option value="postgres-enterprise" {{ if eq .Product "postgres-enterprise" }}selected{{ end }}>
+                        Postgres Enterprise by AppsCode
+                      </option>
                     </select>
                   </div>
                 </div>
               </div>
-              <div class="field">
+              <div class="field" id="cluster-field">
                 <label class="label">Kubernetes Cluster ID</label>
                 <div class="control">
                   <input name="cluster" class="input" type="text" placeholder="" />
@@ -151,6 +154,13 @@
       function onRecaptchaExpired() {
         document.getElementById('submit-btn').disabled = true;
       }
+      function toggleClusterField() {
+        var product = document.getElementById('product').value;
+        var clusterField = document.getElementById('cluster-field');
+        clusterField.style.display = product === 'postgres-enterprise' ? 'none' : '';
+      }
+      document.getElementById('product').addEventListener('change', toggleClusterField);
+      toggleClusterField();
     </script>
     {{end}}
   </body>
