@@ -239,6 +239,16 @@ func (s *Server) Run() error {
 	})
 
 	m.Post("/issue-license", binding.Bind(LicenseForm{}), func(ctx *macaron.Context, info LicenseForm) {
+		if info.Product() == "postgres-enterprise" {
+			clusterID, err := uuid.NewV7()
+			if err != nil {
+				ctx.WriteHeader(http.StatusInternalServerError)
+				respond(ctx, []byte(err.Error()))
+				return
+			}
+			info.Cluster = clusterID.String()
+		}
+
 		if err := info.Validate(); err != nil {
 			ctx.WriteHeader(http.StatusBadRequest)
 			respond(ctx, []byte(err.Error()))
