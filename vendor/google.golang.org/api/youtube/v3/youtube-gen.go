@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -182,9 +182,6 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	s.Videos = NewVideosService(s)
 	s.Watermarks = NewWatermarksService(s)
 	s.Youtube = NewYoutubeService(s)
-	if err != nil {
-		return nil, err
-	}
 	if endpoint != "" {
 		s.BasePath = endpoint
 	}
@@ -574,10 +571,34 @@ type YoutubeService struct {
 
 func NewYoutubeV3Service(s *Service) *YoutubeV3Service {
 	rs := &YoutubeV3Service{s: s}
+	rs.LiveChat = NewYoutubeV3LiveChatService(s)
 	return rs
 }
 
 type YoutubeV3Service struct {
+	s *Service
+
+	LiveChat *YoutubeV3LiveChatService
+}
+
+func NewYoutubeV3LiveChatService(s *Service) *YoutubeV3LiveChatService {
+	rs := &YoutubeV3LiveChatService{s: s}
+	rs.Messages = NewYoutubeV3LiveChatMessagesService(s)
+	return rs
+}
+
+type YoutubeV3LiveChatService struct {
+	s *Service
+
+	Messages *YoutubeV3LiveChatMessagesService
+}
+
+func NewYoutubeV3LiveChatMessagesService(s *Service) *YoutubeV3LiveChatMessagesService {
+	rs := &YoutubeV3LiveChatMessagesService{s: s}
+	return rs
+}
+
+type YoutubeV3LiveChatMessagesService struct {
 	s *Service
 }
 
@@ -2351,8 +2372,8 @@ type CommentSnippet struct {
 	// CanRate: Whether the current viewer can rate this comment.
 	CanRate bool `json:"canRate,omitempty"`
 	// ChannelId: The id of the corresponding YouTube channel. In case of a channel
-	// comment this is the channel the comment refers to. In case of a video
-	// comment it's the video's channel.
+	// comment this is the channel the comment refers to. In case of a video or
+	// post comment it's the video/post's channel.
 	ChannelId string `json:"channelId,omitempty"`
 	// LikeCount: The total number of likes this comment has received.
 	LikeCount int64 `json:"likeCount,omitempty"`
@@ -2365,8 +2386,10 @@ type CommentSnippet struct {
 	//   "likelySpam"
 	//   "rejected" - The comment is unfit for display.
 	ModerationStatus string `json:"moderationStatus,omitempty"`
-	// ParentId: The unique id of the parent comment, only set for replies.
+	// ParentId: The unique id of the top-level comment, only set for replies.
 	ParentId string `json:"parentId,omitempty"`
+	// PostId: The ID of the post the comment refers to, if any.
+	PostId string `json:"postId,omitempty"`
 	// PublishedAt: The date and time when the comment was originally published.
 	PublishedAt string `json:"publishedAt,omitempty"`
 	// TextDisplay: The comment's text. The format is either plain text or HTML
@@ -2409,9 +2432,10 @@ func (s CommentSnippet) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// CommentSnippetAuthorChannelId: The id of the author's YouTube channel, if
-// any.
+// CommentSnippetAuthorChannelId: Contains the id of the author's YouTube
+// channel, if any.
 type CommentSnippetAuthorChannelId struct {
+	// Value: The id of the author's YouTube channel.
 	Value string `json:"value,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Value") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
@@ -2539,19 +2563,20 @@ type CommentThreadSnippet struct {
 	// viewer specific - other viewers may see a different value for this field.
 	CanReply bool `json:"canReply,omitempty"`
 	// ChannelId: The YouTube channel the comments in the thread refer to or the
-	// channel with the video the comments refer to. If video_id isn't set the
-	// comments refer to the channel itself.
+	// channel with the video the comments refer to. If neither video_id nor
+	// post_id is set the comments refer to the channel itself.
 	ChannelId string `json:"channelId,omitempty"`
 	// IsPublic: Whether the thread (and therefore all its comments) is visible to
 	// all YouTube users.
 	IsPublic bool `json:"isPublic,omitempty"`
+	// PostId: The ID of the post the comments refer to, if any.
+	PostId string `json:"postId,omitempty"`
 	// TopLevelComment: The top level comment of this thread.
 	TopLevelComment *Comment `json:"topLevelComment,omitempty"`
 	// TotalReplyCount: The total number of replies (not including the top level
 	// comment).
 	TotalReplyCount int64 `json:"totalReplyCount,omitempty"`
-	// VideoId: The ID of the video the comments refer to, if any. No video_id
-	// implies a channel discussion comment.
+	// VideoId: The ID of the video the comments refer to, if any.
 	VideoId string `json:"videoId,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "CanReply") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -10953,6 +10978,13 @@ func (c *CommentThreadsListCall) Order(order string) *CommentThreadsListCall {
 // pages that could be retrieved.
 func (c *CommentThreadsListCall) PageToken(pageToken string) *CommentThreadsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// PostId sets the optional parameter "postId": Returns the comment threads of
+// the specified post.
+func (c *CommentThreadsListCall) PostId(postId string) *CommentThreadsListCall {
+	c.urlParams_.Set("postId", postId)
 	return c
 }
 
@@ -19963,4 +19995,174 @@ func (c *YoutubeV3UpdateCommentThreadsCall) Do(opts ...googleapi.CallOption) (*C
 	}
 	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.youtube.v3.updateCommentThreads", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
+}
+
+type YoutubeV3LiveChatMessagesStreamCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Stream: Allows a user to load live chat through a server-streamed RPC.
+func (r *YoutubeV3LiveChatMessagesService) Stream() *YoutubeV3LiveChatMessagesStreamCall {
+	c := &YoutubeV3LiveChatMessagesStreamCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	return c
+}
+
+// Hl sets the optional parameter "hl": Specifies the localization language in
+// which the system messages should be returned.
+func (c *YoutubeV3LiveChatMessagesStreamCall) Hl(hl string) *YoutubeV3LiveChatMessagesStreamCall {
+	c.urlParams_.Set("hl", hl)
+	return c
+}
+
+// LiveChatId sets the optional parameter "liveChatId": The id of the live chat
+// for which comments should be returned.
+func (c *YoutubeV3LiveChatMessagesStreamCall) LiveChatId(liveChatId string) *YoutubeV3LiveChatMessagesStreamCall {
+	c.urlParams_.Set("liveChatId", liveChatId)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The *maxResults*
+// parameter specifies the maximum number of items that should be returned in
+// the result set. Not used in the streaming RPC.
+func (c *YoutubeV3LiveChatMessagesStreamCall) MaxResults(maxResults int64) *YoutubeV3LiveChatMessagesStreamCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The *pageToken* parameter
+// identifies a specific page in the result set that should be returned. In an
+// API response, the nextPageToken property identify other pages that could be
+// retrieved.
+func (c *YoutubeV3LiveChatMessagesStreamCall) PageToken(pageToken string) *YoutubeV3LiveChatMessagesStreamCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Part sets the optional parameter "part": The *part* parameter specifies the
+// liveChatComment resource parts that the API response will include. Supported
+// values are id, snippet, and authorDetails.
+func (c *YoutubeV3LiveChatMessagesStreamCall) Part(part ...string) *YoutubeV3LiveChatMessagesStreamCall {
+	c.urlParams_.SetMulti("part", append([]string{}, part...))
+	return c
+}
+
+// ProfileImageSize sets the optional parameter "profileImageSize": Specifies
+// the size of the profile image that should be returned for each user.
+func (c *YoutubeV3LiveChatMessagesStreamCall) ProfileImageSize(profileImageSize int64) *YoutubeV3LiveChatMessagesStreamCall {
+	c.urlParams_.Set("profileImageSize", fmt.Sprint(profileImageSize))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *YoutubeV3LiveChatMessagesStreamCall) Fields(s ...googleapi.Field) *YoutubeV3LiveChatMessagesStreamCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *YoutubeV3LiveChatMessagesStreamCall) IfNoneMatch(entityTag string) *YoutubeV3LiveChatMessagesStreamCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *YoutubeV3LiveChatMessagesStreamCall) Context(ctx context.Context) *YoutubeV3LiveChatMessagesStreamCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *YoutubeV3LiveChatMessagesStreamCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *YoutubeV3LiveChatMessagesStreamCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "youtube/v3/liveChat/messages/stream")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "youtube.youtube.v3.liveChat.messages.stream", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.youtube.v3.liveChat.messages.stream" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *LiveChatMessageListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *YoutubeV3LiveChatMessagesStreamCall) Do(opts ...googleapi.CallOption) (*LiveChatMessageListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &LiveChatMessageListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "youtube.youtube.v3.liveChat.messages.stream", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *YoutubeV3LiveChatMessagesStreamCall) Pages(ctx context.Context, f func(*LiveChatMessageListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
 }

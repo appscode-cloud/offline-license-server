@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 // Package sheets provides access to the Google Sheets API.
 //
-// For product documentation, see: https://developers.google.com/sheets/
+// For product documentation, see: https://developers.google.com/workspace/sheets/
 //
 // # Library status
 //
@@ -141,9 +141,6 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	}
 	s := &Service{client: client, BasePath: basePath, logger: internaloption.GetLogger(opts)}
 	s.Spreadsheets = NewSpreadsheetsService(s)
-	if err != nil {
-		return nil, err
-	}
 	if endpoint != "" {
 		s.BasePath = endpoint
 	}
@@ -683,6 +680,50 @@ func (s AddSlicerResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// AddTableRequest: Adds a new table to the spreadsheet.
+type AddTableRequest struct {
+	// Table: Required. The table to add.
+	Table *Table `json:"table,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Table") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Table") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s AddTableRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod AddTableRequest
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// AddTableResponse: The result of adding a table.
+type AddTableResponse struct {
+	// Table: Output only. The table that was added.
+	Table *Table `json:"table,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Table") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Table") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s AddTableResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod AddTableResponse
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // AppendCellsRequest: Adds new cells after the last row with data in a sheet,
 // inserting new rows into the sheet if necessary.
 type AppendCellsRequest struct {
@@ -694,6 +735,10 @@ type AppendCellsRequest struct {
 	Rows []*RowData `json:"rows,omitempty"`
 	// SheetId: The sheet ID to append the data to.
 	SheetId int64 `json:"sheetId,omitempty"`
+	// TableId: The ID of the table to append data to. The data will be only
+	// appended to the table body. This field also takes precedence over the
+	// `sheet_id` field.
+	TableId string `json:"tableId,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Fields") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
 	// omitted from API requests. See
@@ -832,8 +877,12 @@ func (s AutoResizeDimensionsRequest) MarshalJSON() ([]byte, error) {
 
 // BandedRange: A banded (alternating colors) range in a sheet.
 type BandedRange struct {
-	// BandedRangeId: The ID of the banded range.
+	// BandedRangeId: The ID of the banded range. If unset, refer to
+	// banded_range_reference.
 	BandedRangeId int64 `json:"bandedRangeId,omitempty"`
+	// BandedRangeReference: Output only. The reference of the banded range, used
+	// to identify the ID that is not supported by the banded_range_id.
+	BandedRangeReference string `json:"bandedRangeReference,omitempty"`
 	// ColumnProperties: Properties for column bands. These properties are applied
 	// on a column- by-column basis throughout all the columns in the range. At
 	// least one of row_properties or column_properties must be specified.
@@ -1240,6 +1289,9 @@ type BasicFilter struct {
 	// SortSpecs: The sort order per column. Later specifications are used when
 	// values are equal in the earlier specifications.
 	SortSpecs []*SortSpec `json:"sortSpecs,omitempty"`
+	// TableId: The table this filter is backed by, if any. When writing, only one
+	// of range or table_id may be set.
+	TableId string `json:"tableId,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Criteria") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -1319,9 +1371,10 @@ func (s BatchClearValuesByDataFilterRequest) MarshalJSON() ([]byte, error) {
 // values selected with DataFilters in a spreadsheet.
 type BatchClearValuesByDataFilterResponse struct {
 	// ClearedRanges: The ranges that were cleared, in A1 notation
-	// (/sheets/api/guides/concepts#cell). If the requests are for an unbounded
-	// range or a ranger larger than the bounds of the sheet, this is the actual
-	// ranges that were cleared, bounded to the sheet's limits.
+	// (https://developers.google.com/workspace/sheets/api/guides/concepts#cell).
+	// If the requests are for an unbounded range or a ranger larger than the
+	// bounds of the sheet, this is the actual ranges that were cleared, bounded to
+	// the sheet's limits.
 	ClearedRanges []string `json:"clearedRanges,omitempty"`
 	// SpreadsheetId: The spreadsheet the updates were applied to.
 	SpreadsheetId string `json:"spreadsheetId,omitempty"`
@@ -1350,7 +1403,7 @@ func (s BatchClearValuesByDataFilterResponse) MarshalJSON() ([]byte, error) {
 // values in a spreadsheet.
 type BatchClearValuesRequest struct {
 	// Ranges: The ranges to clear, in A1 notation or R1C1 notation
-	// (/sheets/api/guides/concepts#cell).
+	// (https://developers.google.com/workspace/sheets/api/guides/concepts#cell).
 	Ranges []string `json:"ranges,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Ranges") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
@@ -1451,8 +1504,8 @@ type BatchGetValuesByDataFilterRequest struct {
 	// as decimal values. This lets you perform arithmetic on them in formulas. For
 	// more information on interpreting date and time values, see [About date &
 	// time
-	// values](https://developers.google.com/sheets/api/guides/formats#about_date_ti
-	// me_values).
+	// values](https://developers.google.com/workspace/sheets/api/guides/formats#abo
+	// ut_date_time_values).
 	ValueRenderOption string `json:"valueRenderOption,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "DataFilters") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -1647,8 +1700,8 @@ type BatchUpdateValuesByDataFilterRequest struct {
 	// as decimal values. This lets you perform arithmetic on them in formulas. For
 	// more information on interpreting date and time values, see [About date &
 	// time
-	// values](https://developers.google.com/sheets/api/guides/formats#about_date_ti
-	// me_values).
+	// values](https://developers.google.com/workspace/sheets/api/guides/formats#abo
+	// ut_date_time_values).
 	ResponseValueRenderOption string `json:"responseValueRenderOption,omitempty"`
 	// ValueInputOption: How the input data should be interpreted.
 	//
@@ -1767,8 +1820,8 @@ type BatchUpdateValuesRequest struct {
 	// as decimal values. This lets you perform arithmetic on them in formulas. For
 	// more information on interpreting date and time values, see [About date &
 	// time
-	// values](https://developers.google.com/sheets/api/guides/formats#about_date_ti
-	// me_values).
+	// values](https://developers.google.com/workspace/sheets/api/guides/formats#abo
+	// ut_date_time_values).
 	ResponseValueRenderOption string `json:"responseValueRenderOption,omitempty"`
 	// ValueInputOption: How the input data should be interpreted.
 	//
@@ -2424,6 +2477,15 @@ func (s CandlestickSeries) MarshalJSON() ([]byte, error) {
 
 // CellData: Data about a specific cell.
 type CellData struct {
+	// ChipRuns: Optional. Runs of chips applied to subsections of the cell.
+	// Properties of a run start at a specific index in the text and continue until
+	// the next run. When reading, all chipped and non-chipped runs are included.
+	// Non-chipped runs will have an empty Chip. When writing, only runs with chips
+	// are included. Runs containing chips are of length 1 and are represented in
+	// the user-entered text by an “@” placeholder symbol. New runs will
+	// overwrite any prior runs. Writing a new user_entered_value will erase
+	// previous runs.
+	ChipRuns []*ChipRun `json:"chipRuns,omitempty"`
 	// DataSourceFormula: Output only. Information about a data source formula on
 	// the cell. The field is set if user_entered_value is a formula referencing
 	// some DATA_SOURCE sheet, e.g. `=SUM(DataSheet!Column)`.
@@ -2479,15 +2541,15 @@ type CellData struct {
 	// `'Hello'`, or `=NOW()` Note: Dates, Times and DateTimes are represented as
 	// doubles in serial number format.
 	UserEnteredValue *ExtendedValue `json:"userEnteredValue,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "DataSourceFormula") to
+	// ForceSendFields is a list of field names (e.g. "ChipRuns") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "DataSourceFormula") to include in
-	// API requests with the JSON null value. By default, fields with empty values
-	// are omitted from API requests. See
+	// NullFields is a list of field names (e.g. "ChipRuns") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -2971,6 +3033,56 @@ func (s ChartSpec) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// Chip: The Smart Chip.
+type Chip struct {
+	// PersonProperties: Properties of a linked person.
+	PersonProperties *PersonProperties `json:"personProperties,omitempty"`
+	// RichLinkProperties: Properties of a rich link.
+	RichLinkProperties *RichLinkProperties `json:"richLinkProperties,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "PersonProperties") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "PersonProperties") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s Chip) MarshalJSON() ([]byte, error) {
+	type NoMethod Chip
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// ChipRun: The run of a chip. The chip continues until the start index of the
+// next run.
+type ChipRun struct {
+	// Chip: Optional. The chip of this run.
+	Chip *Chip `json:"chip,omitempty"`
+	// StartIndex: Required. The zero-based character index where this run starts,
+	// in UTF-16 code units.
+	StartIndex int64 `json:"startIndex,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Chip") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Chip") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s ChipRun) MarshalJSON() ([]byte, error) {
+	type NoMethod ChipRun
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // ClearBasicFilterRequest: Clears the basic filter, if any exists on the
 // sheet.
 type ClearBasicFilterRequest struct {
@@ -3136,8 +3248,9 @@ func (s *Color) UnmarshalJSON(data []byte) error {
 // ColorStyle: A color value.
 type ColorStyle struct {
 	// RgbColor: RGB color. The `alpha`
-	// (/sheets/api/reference/rest/v4/spreadsheets/other#Color.FIELDS.alpha) value
-	// in the `Color` (/sheets/api/reference/rest/v4/spreadsheets/other#color)
+	// (https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets/other#Color.FIELDS.alpha)
+	// value in the `Color`
+	// (https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets/other#color)
 	// object isn't generally supported.
 	RgbColor *Color `json:"rgbColor,omitempty"`
 	// ThemeColor: Theme color.
@@ -4567,6 +4680,29 @@ func (s DeleteSheetRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// DeleteTableRequest: Removes the table with the given ID from the
+// spreadsheet.
+type DeleteTableRequest struct {
+	// TableId: The ID of the table to delete.
+	TableId string `json:"tableId,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "TableId") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "TableId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s DeleteTableRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod DeleteTableRequest
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // DeveloperMetadata: Developer metadata associated with a location or object
 // in a spreadsheet. Developer metadata may be used to associate arbitrary data
 // with various parts of a spreadsheet and will remain associated at those
@@ -5240,14 +5376,17 @@ type FilterView struct {
 	// FilterViewId: The ID of the filter view.
 	FilterViewId int64 `json:"filterViewId,omitempty"`
 	// NamedRangeId: The named range this filter view is backed by, if any. When
-	// writing, only one of range or named_range_id may be set.
+	// writing, only one of range or named_range_id or table_id may be set.
 	NamedRangeId string `json:"namedRangeId,omitempty"`
 	// Range: The range this filter view covers. When writing, only one of range or
-	// named_range_id may be set.
+	// named_range_id or table_id may be set.
 	Range *GridRange `json:"range,omitempty"`
 	// SortSpecs: The sort order per column. Later specifications are used when
 	// values are equal in the earlier specifications.
 	SortSpecs []*SortSpec `json:"sortSpecs,omitempty"`
+	// TableId: The table this filter view is backed by, if any. When writing, only
+	// one of range or named_range_id or table_id may be set.
+	TableId string `json:"tableId,omitempty"`
 	// Title: The name of the filter view.
 	Title string `json:"title,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Criteria") to
@@ -5353,6 +5492,9 @@ type GetSpreadsheetByDataFilterRequest struct {
 	// DataFilters: The DataFilters used to select which ranges to retrieve from
 	// the spreadsheet.
 	DataFilters []*DataFilter `json:"dataFilters,omitempty"`
+	// ExcludeTablesInBandedRanges: True if tables should be excluded in the banded
+	// ranges. False if not set.
+	ExcludeTablesInBandedRanges bool `json:"excludeTablesInBandedRanges,omitempty"`
 	// IncludeGridData: True if grid data should be returned. This parameter is
 	// ignored if a field mask was set in the request.
 	IncludeGridData bool `json:"includeGridData,omitempty"`
@@ -6215,8 +6357,9 @@ func (s NamedRange) MarshalJSON() ([]byte, error) {
 // NumberFormat: The number format of a cell.
 type NumberFormat struct {
 	// Pattern: Pattern string used for formatting. If not set, a default pattern
-	// based on the user's locale will be used if necessary for the given type. See
-	// the Date and Number Formats guide (/sheets/api/guides/formats) for more
+	// based on the spreadsheet's locale will be used if necessary for the given
+	// type. See the Date and Number Formats guide
+	// (https://developers.google.com/workspace/sheets/api/guides/formats) for more
 	// information about the supported patterns.
 	Pattern string `json:"pattern,omitempty"`
 	// Type: The type of the number format. When writing, this field must be set.
@@ -6409,6 +6552,38 @@ type PasteDataRequest struct {
 
 func (s PasteDataRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod PasteDataRequest
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// PersonProperties: Properties specific to a linked person.
+type PersonProperties struct {
+	// DisplayFormat: Optional. The display format of the person chip. If not set,
+	// the default display format is used.
+	//
+	// Possible values:
+	//   "DISPLAY_FORMAT_UNSPECIFIED" - Default value, do not use.
+	//   "DEFAULT" - Default display format.
+	//   "LAST_NAME_COMMA_FIRST_NAME" - Last name, first name display format.
+	//   "EMAIL" - Email display format.
+	DisplayFormat string `json:"displayFormat,omitempty"`
+	// Email: Required. The email address linked to this person. This field is
+	// always present.
+	Email string `json:"email,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DisplayFormat") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DisplayFormat") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s PersonProperties) MarshalJSON() ([]byte, error) {
+	type NoMethod PersonProperties
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -6905,17 +7080,20 @@ type ProtectedRange struct {
 	// the document. Editors are not supported with warning_only protection.
 	Editors *Editors `json:"editors,omitempty"`
 	// NamedRangeId: The named range this protected range is backed by, if any.
-	// When writing, only one of range or named_range_id may be set.
+	// When writing, only one of range or named_range_id or table_id may be set.
 	NamedRangeId string `json:"namedRangeId,omitempty"`
 	// ProtectedRangeId: The ID of the protected range. This field is read-only.
 	ProtectedRangeId int64 `json:"protectedRangeId,omitempty"`
 	// Range: The range that is being protected. The range may be fully unbounded,
 	// in which case this is considered a protected sheet. When writing, only one
-	// of range or named_range_id may be set.
+	// of range or named_range_id or table_id may be set.
 	Range *GridRange `json:"range,omitempty"`
 	// RequestingUserCanEdit: True if the user who requested this protected range
 	// can edit the protected area. This field is read-only.
 	RequestingUserCanEdit bool `json:"requestingUserCanEdit,omitempty"`
+	// TableId: The table this protected range is backed by, if any. When writing,
+	// only one of range or named_range_id or table_id may be set.
+	TableId string `json:"tableId,omitempty"`
 	// UnprotectedRanges: The list of unprotected ranges within a protected sheet.
 	// Unprotected ranges are only supported on protected sheets.
 	UnprotectedRanges []*GridRange `json:"unprotectedRanges,omitempty"`
@@ -7156,6 +7334,8 @@ type Request struct {
 	AddSheet *AddSheetRequest `json:"addSheet,omitempty"`
 	// AddSlicer: Adds a slicer.
 	AddSlicer *AddSlicerRequest `json:"addSlicer,omitempty"`
+	// AddTable: Adds a table.
+	AddTable *AddTableRequest `json:"addTable,omitempty"`
 	// AppendCells: Appends cells after the last row with data in a sheet.
 	AppendCells *AppendCellsRequest `json:"appendCells,omitempty"`
 	// AppendDimension: Appends dimensions to the end of a sheet.
@@ -7205,6 +7385,8 @@ type Request struct {
 	DeleteRange *DeleteRangeRequest `json:"deleteRange,omitempty"`
 	// DeleteSheet: Deletes a sheet.
 	DeleteSheet *DeleteSheetRequest `json:"deleteSheet,omitempty"`
+	// DeleteTable: A request for deleting a table.
+	DeleteTable *DeleteTableRequest `json:"deleteTable,omitempty"`
 	// DuplicateFilterView: Duplicates a filter view.
 	DuplicateFilterView *DuplicateFilterViewRequest `json:"duplicateFilterView,omitempty"`
 	// DuplicateSheet: Duplicates a sheet.
@@ -7276,6 +7458,8 @@ type Request struct {
 	UpdateSlicerSpec *UpdateSlicerSpecRequest `json:"updateSlicerSpec,omitempty"`
 	// UpdateSpreadsheetProperties: Updates the spreadsheet's properties.
 	UpdateSpreadsheetProperties *UpdateSpreadsheetPropertiesRequest `json:"updateSpreadsheetProperties,omitempty"`
+	// UpdateTable: Updates a table.
+	UpdateTable *UpdateTableRequest `json:"updateTable,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "AddBanding") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -7314,6 +7498,8 @@ type Response struct {
 	AddSheet *AddSheetResponse `json:"addSheet,omitempty"`
 	// AddSlicer: A reply from adding a slicer.
 	AddSlicer *AddSlicerResponse `json:"addSlicer,omitempty"`
+	// AddTable: A reply from adding a table.
+	AddTable *AddTableResponse `json:"addTable,omitempty"`
 	// CancelDataSourceRefresh: A reply from cancelling data source object
 	// refreshes.
 	CancelDataSourceRefresh *CancelDataSourceRefreshResponse `json:"cancelDataSourceRefresh,omitempty"`
@@ -7363,6 +7549,37 @@ type Response struct {
 
 func (s Response) MarshalJSON() ([]byte, error) {
 	type NoMethod Response
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// RichLinkProperties: Properties of a link to a Google resource (such as a
+// file in Drive, a YouTube video, a Maps address, or a Calendar event). Only
+// Drive files can be written as chips. All other rich link types are read
+// only. URIs cannot exceed 2000 bytes when writing. NOTE: Writing Drive file
+// chips requires at least one of the `drive.file`, `drive.readonly`, or
+// `drive` OAuth scopes.
+type RichLinkProperties struct {
+	// MimeType: Output only. The MIME type
+	// (https://developers.google.com/drive/api/v3/mime-types) of the link, if
+	// there's one (for example, when it's a file in Drive).
+	MimeType string `json:"mimeType,omitempty"`
+	// Uri: Required. The URI to the link. This is always present.
+	Uri string `json:"uri,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "MimeType") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "MimeType") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s RichLinkProperties) MarshalJSON() ([]byte, error) {
+	type NoMethod RichLinkProperties
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -7608,6 +7825,8 @@ type Sheet struct {
 	RowGroups []*DimensionGroup `json:"rowGroups,omitempty"`
 	// Slicers: The slicers on this sheet.
 	Slicers []*Slicer `json:"slicers,omitempty"`
+	// Tables: The tables on this sheet.
+	Tables []*Table `json:"tables,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "BandedRanges") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -8000,6 +8219,147 @@ type SpreadsheetTheme struct {
 
 func (s SpreadsheetTheme) MarshalJSON() ([]byte, error) {
 	type NoMethod SpreadsheetTheme
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// Table: A table.
+type Table struct {
+	// ColumnProperties: The table column properties.
+	ColumnProperties []*TableColumnProperties `json:"columnProperties,omitempty"`
+	// Name: The table name. This is unique to all tables in the same spreadsheet.
+	Name string `json:"name,omitempty"`
+	// Range: The table range.
+	Range *GridRange `json:"range,omitempty"`
+	// RowsProperties: The table rows properties.
+	RowsProperties *TableRowsProperties `json:"rowsProperties,omitempty"`
+	// TableId: The id of the table.
+	TableId string `json:"tableId,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ColumnProperties") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ColumnProperties") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s Table) MarshalJSON() ([]byte, error) {
+	type NoMethod Table
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// TableColumnDataValidationRule: A data validation rule for a column in a
+// table.
+type TableColumnDataValidationRule struct {
+	// Condition: The condition that data in the cell must match. Valid only if the
+	// [BooleanCondition.type] is ONE_OF_LIST.
+	Condition *BooleanCondition `json:"condition,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Condition") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Condition") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s TableColumnDataValidationRule) MarshalJSON() ([]byte, error) {
+	type NoMethod TableColumnDataValidationRule
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// TableColumnProperties: The table column.
+type TableColumnProperties struct {
+	// ColumnIndex: The 0-based column index. This index is relative to its
+	// position in the table and is not necessarily the same as the column index in
+	// the sheet.
+	ColumnIndex int64 `json:"columnIndex,omitempty"`
+	// ColumnName: The column name.
+	ColumnName string `json:"columnName,omitempty"`
+	// ColumnType: The column type.
+	//
+	// Possible values:
+	//   "COLUMN_TYPE_UNSPECIFIED" - An unspecified column type.
+	//   "DOUBLE" - The number column type.
+	//   "CURRENCY" - The currency column type.
+	//   "PERCENT" - The percent column type.
+	//   "DATE" - The date column type.
+	//   "TIME" - The time column type.
+	//   "DATE_TIME" - The date and time column type.
+	//   "TEXT" - The text column type.
+	//   "BOOLEAN" - The boolean column type.
+	//   "DROPDOWN" - The dropdown column type.
+	//   "FILES_CHIP" - The files chip column type
+	//   "PEOPLE_CHIP" - The people chip column type
+	//   "FINANCE_CHIP" - The finance chip column type
+	//   "PLACE_CHIP" - The place chip column type
+	//   "RATINGS_CHIP" - The ratings chip column type
+	ColumnType string `json:"columnType,omitempty"`
+	// DataValidationRule: The column data validation rule. Only set for dropdown
+	// column type.
+	DataValidationRule *TableColumnDataValidationRule `json:"dataValidationRule,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ColumnIndex") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ColumnIndex") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s TableColumnProperties) MarshalJSON() ([]byte, error) {
+	type NoMethod TableColumnProperties
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// TableRowsProperties: The table row properties.
+type TableRowsProperties struct {
+	// FirstBandColorStyle: The first color that is alternating. If this field is
+	// set, the first banded row is filled with the specified color. Otherwise, the
+	// first banded row is filled with a default color.
+	FirstBandColorStyle *ColorStyle `json:"firstBandColorStyle,omitempty"`
+	// FooterColorStyle: The color of the last row. If this field is not set a
+	// footer is not added, the last row is filled with either
+	// first_band_color_style or second_band_color_style, depending on the color of
+	// the previous row. If updating an existing table without a footer to have a
+	// footer, the range will be expanded by 1 row. If updating an existing table
+	// with a footer and removing a footer, the range will be shrunk by 1 row.
+	FooterColorStyle *ColorStyle `json:"footerColorStyle,omitempty"`
+	// HeaderColorStyle: The color of the header row. If this field is set, the
+	// header row is filled with the specified color. Otherwise, the header row is
+	// filled with a default color.
+	HeaderColorStyle *ColorStyle `json:"headerColorStyle,omitempty"`
+	// SecondBandColorStyle: The second color that is alternating. If this field is
+	// set, the second banded row is filled with the specified color. Otherwise,
+	// the second banded row is filled with a default color.
+	SecondBandColorStyle *ColorStyle `json:"secondBandColorStyle,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "FirstBandColorStyle") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "FirstBandColorStyle") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s TableRowsProperties) MarshalJSON() ([]byte, error) {
+	type NoMethod TableRowsProperties
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -9065,6 +9425,32 @@ func (s UpdateSpreadsheetPropertiesRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// UpdateTableRequest: Updates a table in the spreadsheet.
+type UpdateTableRequest struct {
+	// Fields: Required. The fields that should be updated. At least one field must
+	// be specified. The root `table` is implied and should not be specified. A
+	// single "*" can be used as short-hand for listing every field.
+	Fields string `json:"fields,omitempty"`
+	// Table: Required. The table to update.
+	Table *Table `json:"table,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Fields") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Fields") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s UpdateTableRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod UpdateTableRequest
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // UpdateValuesByDataFilterResponse: The response when updating a range of
 // values by a data filter in a spreadsheet.
 type UpdateValuesByDataFilterResponse struct {
@@ -9079,7 +9465,8 @@ type UpdateValuesByDataFilterResponse struct {
 	// after all updates were applied. This is only included if the request's
 	// `includeValuesInResponse` field was `true`.
 	UpdatedData *ValueRange `json:"updatedData,omitempty"`
-	// UpdatedRange: The range (in A1 notation (/sheets/api/guides/concepts#cell))
+	// UpdatedRange: The range (in A1 notation
+	// (https://developers.google.com/workspace/sheets/api/guides/concepts#cell))
 	// that updates were applied to.
 	UpdatedRange string `json:"updatedRange,omitempty"`
 	// UpdatedRows: The number of rows where at least one cell in the row was
@@ -9159,10 +9546,11 @@ type ValueRange struct {
 	//   "COLUMNS" - Operates on the columns of a sheet.
 	MajorDimension string `json:"majorDimension,omitempty"`
 	// Range: The range the values cover, in A1 notation
-	// (/sheets/api/guides/concepts#cell). For output, this range indicates the
-	// entire requested range, even though the values will exclude trailing rows
-	// and columns. When appending values, this field represents the range to
-	// search for a table, after which values will be appended.
+	// (https://developers.google.com/workspace/sheets/api/guides/concepts#cell).
+	// For output, this range indicates the entire requested range, even though the
+	// values will exclude trailing rows and columns. When appending values, this
+	// field represents the range to search for a table, after which values will be
+	// appended.
 	Range string `json:"range,omitempty"`
 	// Values: The data that was read or to be written. This is an array of arrays,
 	// the outer array representing all the data and each inner array representing
@@ -9585,13 +9973,14 @@ type SpreadsheetsGetCall struct {
 // Get: Returns the spreadsheet at the given ID. The caller must specify the
 // spreadsheet ID. By default, data within grids is not returned. You can
 // include grid data in one of 2 ways: * Specify a field mask
-// (https://developers.google.com/sheets/api/guides/field-masks) listing your
-// desired fields using the `fields` URL parameter in HTTP * Set the
-// includeGridData URL parameter to true. If a field mask is set, the
+// (https://developers.google.com/workspace/sheets/api/guides/field-masks)
+// listing your desired fields using the `fields` URL parameter in HTTP * Set
+// the includeGridData URL parameter to true. If a field mask is set, the
 // `includeGridData` parameter is ignored For large spreadsheets, as a best
 // practice, retrieve only the specific spreadsheet fields that you want. To
 // retrieve only subsets of spreadsheet data, use the ranges URL parameter.
-// Ranges are specified using A1 notation (/sheets/api/guides/concepts#cell).
+// Ranges are specified using A1 notation
+// (https://developers.google.com/workspace/sheets/api/guides/concepts#cell).
 // You can define a single cell (for example, `A1`) or multiple cells (for
 // example, `A1:D5`). You can also get cells from other sheets within the same
 // spreadsheet (for example, `Sheet2!A1:C4`) or retrieve multiple ranges at
@@ -9603,6 +9992,14 @@ type SpreadsheetsGetCall struct {
 func (r *SpreadsheetsService) Get(spreadsheetId string) *SpreadsheetsGetCall {
 	c := &SpreadsheetsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.spreadsheetId = spreadsheetId
+	return c
+}
+
+// ExcludeTablesInBandedRanges sets the optional parameter
+// "excludeTablesInBandedRanges": True if tables should be excluded in the
+// banded ranges. False if not set.
+func (c *SpreadsheetsGetCall) ExcludeTablesInBandedRanges(excludeTablesInBandedRanges bool) *SpreadsheetsGetCall {
+	c.urlParams_.Set("excludeTablesInBandedRanges", fmt.Sprint(excludeTablesInBandedRanges))
 	return c
 }
 
@@ -9728,7 +10125,8 @@ type SpreadsheetsGetByDataFilterCall struct {
 // Specifying one or more data filters returns the portions of the spreadsheet
 // that intersect ranges matched by any of the filters. By default, data within
 // grids is not returned. You can include grid data one of 2 ways: * Specify a
-// field mask (https://developers.google.com/sheets/api/guides/field-masks)
+// field mask
+// (https://developers.google.com/workspace/sheets/api/guides/field-masks)
 // listing your desired fields using the `fields` URL parameter in HTTP * Set
 // the includeGridData parameter to true. If a field mask is set, the
 // `includeGridData` parameter is ignored For large spreadsheets, as a best
@@ -10171,16 +10569,20 @@ type SpreadsheetsValuesAppendCall struct {
 // Append: Appends values to a spreadsheet. The input range is used to search
 // for existing data and find a "table" within that range. Values will be
 // appended to the next row of the table, starting with the first column of the
-// table. See the guide (/sheets/api/guides/values#appending_values) and sample
-// code (/sheets/api/samples/writing#append_values) for specific details of how
-// tables are detected and data is appended. The caller must specify the
-// spreadsheet ID, range, and a valueInputOption. The `valueInputOption` only
-// controls how the input data will be added to the sheet (column-wise or
-// row-wise), it does not influence what cell the data starts being written to.
+// table. See the guide
+// (https://developers.google.com/workspace/sheets/api/guides/values#appending_values)
+// and sample code
+// (https://developers.google.com/workspace/sheets/api/samples/writing#append_values)
+// for specific details of how tables are detected and data is appended. The
+// caller must specify the spreadsheet ID, range, and a valueInputOption. The
+// `valueInputOption` only controls how the input data will be added to the
+// sheet (column-wise or row-wise), it does not influence what cell the data
+// starts being written to.
 //
-//   - range: The A1 notation (/sheets/api/guides/concepts#cell) of a range to
-//     search for a logical table of data. Values are appended after the last row
-//     of the table.
+//   - range: The A1 notation
+//     (https://developers.google.com/workspace/sheets/api/guides/concepts#cell)
+//     of a range to search for a logical table of data. Values are appended
+//     after the last row of the table.
 //   - spreadsheetId: The ID of the spreadsheet to update.
 func (r *SpreadsheetsValuesService) Append(spreadsheetId string, range_ string, valuerange *ValueRange) *SpreadsheetsValuesAppendCall {
 	c := &SpreadsheetsValuesAppendCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -10266,8 +10668,8 @@ func (c *SpreadsheetsValuesAppendCall) ResponseDateTimeRenderOption(responseDate
 // as decimal values. This lets you perform arithmetic on them in formulas. For
 // more information on interpreting date and time values, see [About date &
 // time
-// values](https://developers.google.com/sheets/api/guides/formats#about_date_ti
-// me_values).
+// values](https://developers.google.com/workspace/sheets/api/guides/formats#abo
+// ut_date_time_values).
 func (c *SpreadsheetsValuesAppendCall) ResponseValueRenderOption(responseValueRenderOption string) *SpreadsheetsValuesAppendCall {
 	c.urlParams_.Set("responseValueRenderOption", responseValueRenderOption)
 	return c
@@ -10660,8 +11062,9 @@ func (c *SpreadsheetsValuesBatchGetCall) MajorDimension(majorDimension string) *
 }
 
 // Ranges sets the optional parameter "ranges": The A1 notation or R1C1
-// notation (/sheets/api/guides/concepts#cell) of the range to retrieve values
-// from.
+// notation
+// (https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of
+// the range to retrieve values from.
 func (c *SpreadsheetsValuesBatchGetCall) Ranges(ranges ...string) *SpreadsheetsValuesBatchGetCall {
 	c.urlParams_.SetMulti("ranges", append([]string{}, ranges...))
 	return c
@@ -10691,8 +11094,8 @@ func (c *SpreadsheetsValuesBatchGetCall) Ranges(ranges ...string) *SpreadsheetsV
 // as decimal values. This lets you perform arithmetic on them in formulas. For
 // more information on interpreting date and time values, see [About date &
 // time
-// values](https://developers.google.com/sheets/api/guides/formats#about_date_ti
-// me_values).
+// values](https://developers.google.com/workspace/sheets/api/guides/formats#abo
+// ut_date_time_values).
 func (c *SpreadsheetsValuesBatchGetCall) ValueRenderOption(valueRenderOption string) *SpreadsheetsValuesBatchGetCall {
 	c.urlParams_.Set("valueRenderOption", valueRenderOption)
 	return c
@@ -11123,7 +11526,8 @@ type SpreadsheetsValuesClearCall struct {
 // spreadsheet ID and range. Only values are cleared -- all other properties of
 // the cell (such as formatting, data validation, etc..) are kept.
 //
-//   - range: The A1 notation or R1C1 notation (/sheets/api/guides/concepts#cell)
+//   - range: The A1 notation or R1C1 notation
+//     (https://developers.google.com/workspace/sheets/api/guides/concepts#cell)
 //     of the values to clear.
 //   - spreadsheetId: The ID of the spreadsheet to update.
 func (r *SpreadsheetsValuesService) Clear(spreadsheetId string, range_ string, clearvaluesrequest *ClearValuesRequest) *SpreadsheetsValuesClearCall {
@@ -11233,7 +11637,8 @@ type SpreadsheetsValuesGetCall struct {
 // Get: Returns a range of values from a spreadsheet. The caller must specify
 // the spreadsheet ID and a range.
 //
-//   - range: The A1 notation or R1C1 notation (/sheets/api/guides/concepts#cell)
+//   - range: The A1 notation or R1C1 notation
+//     (https://developers.google.com/workspace/sheets/api/guides/concepts#cell)
 //     of the range to retrieve values from.
 //   - spreadsheetId: The ID of the spreadsheet to retrieve data from.
 func (r *SpreadsheetsValuesService) Get(spreadsheetId string, range_ string) *SpreadsheetsValuesGetCall {
@@ -11310,8 +11715,8 @@ func (c *SpreadsheetsValuesGetCall) MajorDimension(majorDimension string) *Sprea
 // as decimal values. This lets you perform arithmetic on them in formulas. For
 // more information on interpreting date and time values, see [About date &
 // time
-// values](https://developers.google.com/sheets/api/guides/formats#about_date_ti
-// me_values).
+// values](https://developers.google.com/workspace/sheets/api/guides/formats#abo
+// ut_date_time_values).
 func (c *SpreadsheetsValuesGetCall) ValueRenderOption(valueRenderOption string) *SpreadsheetsValuesGetCall {
 	c.urlParams_.Set("valueRenderOption", valueRenderOption)
 	return c
@@ -11422,8 +11827,9 @@ type SpreadsheetsValuesUpdateCall struct {
 // Update: Sets values in a range of a spreadsheet. The caller must specify the
 // spreadsheet ID, range, and a valueInputOption.
 //
-//   - range: The A1 notation (/sheets/api/guides/concepts#cell) of the values to
-//     update.
+//   - range: The A1 notation
+//     (https://developers.google.com/workspace/sheets/api/guides/concepts#cell)
+//     of the values to update.
 //   - spreadsheetId: The ID of the spreadsheet to update.
 func (r *SpreadsheetsValuesService) Update(spreadsheetId string, range_ string, valuerange *ValueRange) *SpreadsheetsValuesUpdateCall {
 	c := &SpreadsheetsValuesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -11495,8 +11901,8 @@ func (c *SpreadsheetsValuesUpdateCall) ResponseDateTimeRenderOption(responseDate
 // as decimal values. This lets you perform arithmetic on them in formulas. For
 // more information on interpreting date and time values, see [About date &
 // time
-// values](https://developers.google.com/sheets/api/guides/formats#about_date_ti
-// me_values).
+// values](https://developers.google.com/workspace/sheets/api/guides/formats#abo
+// ut_date_time_values).
 func (c *SpreadsheetsValuesUpdateCall) ResponseValueRenderOption(responseValueRenderOption string) *SpreadsheetsValuesUpdateCall {
 	c.urlParams_.Set("responseValueRenderOption", responseValueRenderOption)
 	return c
