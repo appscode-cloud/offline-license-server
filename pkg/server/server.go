@@ -504,14 +504,7 @@ func (s *Server) HandleIssueLicense(ctx *macaron.Context, info LicenseForm) erro
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 
 	if s.blockedDomains.Has(domain) || s.blockedEmails.Has(info.Email) || s.blockedClusters.Has(info.Cluster) {
-		mailer := NewBlockedLicenseMailer(LicenseMailData{
-			LicenseForm: info,
-		})
-		err := mailer.SendMail(s.mg, MailSales, info.CC, nil)
-		if err != nil {
-			return err
-		}
-		err = s.recordLicenseEvent(ctx, info, timestamp, "", EventTypeLicenseBlocked)
+		err := s.recordLicenseEvent(ctx, info, timestamp, "", EventTypeLicenseBlocked)
 		if err != nil {
 			return err
 		}
