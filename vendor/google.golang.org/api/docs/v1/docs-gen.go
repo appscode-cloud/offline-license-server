@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 // Package docs provides access to the Google Docs API.
 //
-// For product documentation, see: https://developers.google.com/docs/
+// For product documentation, see: https://developers.google.com/workspace/docs/
 //
 // # Library status
 //
@@ -141,9 +141,6 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	}
 	s := &Service{client: client, BasePath: basePath, logger: internaloption.GetLogger(opts)}
 	s.Documents = NewDocumentsService(s)
-	if err != nil {
-		return nil, err
-	}
 	if endpoint != "" {
 		s.BasePath = endpoint
 	}
@@ -185,6 +182,52 @@ func NewDocumentsService(s *Service) *DocumentsService {
 
 type DocumentsService struct {
 	s *Service
+}
+
+// AddDocumentTabRequest: Adds a document tab. When a tab is added at a given
+// index, all subsequent tabs' indexes are incremented.
+type AddDocumentTabRequest struct {
+	// TabProperties: The properties of the tab to add. All properties are
+	// optional.
+	TabProperties *TabProperties `json:"tabProperties,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "TabProperties") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "TabProperties") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s AddDocumentTabRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod AddDocumentTabRequest
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// AddDocumentTabResponse: The result of adding a document tab.
+type AddDocumentTabResponse struct {
+	// TabProperties: The properties of the newly added tab.
+	TabProperties *TabProperties `json:"tabProperties,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "TabProperties") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "TabProperties") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s AddDocumentTabResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod AddDocumentTabResponse
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // AutoText: A ParagraphElement representing a spot in the text that's
@@ -885,6 +928,154 @@ func (s CropPropertiesSuggestionState) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// DateElement: A date instance mentioned in a document.
+type DateElement struct {
+	// DateElementProperties: The properties of this DateElement.
+	DateElementProperties *DateElementProperties `json:"dateElementProperties,omitempty"`
+	// DateId: Output only. The unique ID of this date.
+	DateId string `json:"dateId,omitempty"`
+	// SuggestedDateElementPropertiesChanges: The suggested changes to the date
+	// element properties, keyed by suggestion ID.
+	SuggestedDateElementPropertiesChanges map[string]SuggestedDateElementProperties `json:"suggestedDateElementPropertiesChanges,omitempty"`
+	// SuggestedDeletionIds: IDs for suggestions that remove this date from the
+	// document. A DateElement might have multiple deletion IDs if, for example,
+	// multiple users suggest deleting it. If empty, then this date isn't suggested
+	// for deletion.
+	SuggestedDeletionIds []string `json:"suggestedDeletionIds,omitempty"`
+	// SuggestedInsertionIds: IDs for suggestions that insert this date into the
+	// document. A DateElement might have multiple insertion IDs if it's a nested
+	// suggested change (a suggestion within a suggestion made by a different user,
+	// for example). If empty, then this date isn't a suggested insertion.
+	SuggestedInsertionIds []string `json:"suggestedInsertionIds,omitempty"`
+	// SuggestedTextStyleChanges: The suggested text style changes to this
+	// DateElement, keyed by suggestion ID.
+	SuggestedTextStyleChanges map[string]SuggestedTextStyle `json:"suggestedTextStyleChanges,omitempty"`
+	// TextStyle: The text style of this DateElement.
+	TextStyle *TextStyle `json:"textStyle,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DateElementProperties") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DateElementProperties") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s DateElement) MarshalJSON() ([]byte, error) {
+	type NoMethod DateElement
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// DateElementProperties: Properties of a DateElement.
+type DateElementProperties struct {
+	// DateFormat: Determines how the date part of the DateElement will be
+	// displayed in the document. If unset, the default value is
+	// DATE_FORMAT_MONTH_DAY_YEAR_ABBREVIATED, indicating the DateElement will be
+	// formatted as `MMM d, y` in `en_US`, or locale specific equivalent.
+	//
+	// Possible values:
+	//   "DATE_FORMAT_UNSPECIFIED" - The date format is unspecified.
+	//   "DATE_FORMAT_CUSTOM" - Output only. The date format is imported from an
+	// external source.
+	//   "DATE_FORMAT_MONTH_DAY_ABBREVIATED" - The date format is an abbreviated
+	// month followed by the day. For example, "Jan 1".
+	//   "DATE_FORMAT_MONTH_DAY_FULL" - The date format is a month followed by the
+	// day. For example, "January 01".
+	//   "DATE_FORMAT_MONTH_DAY_YEAR_ABBREVIATED" - The date format is an
+	// abbreviated month followed by the day and the year. For example, "Jan 1,
+	// 1970".
+	//   "DATE_FORMAT_ISO8601" - The date format is in ISO 8601 format. For
+	// example, "1970-01-01".
+	DateFormat string `json:"dateFormat,omitempty"`
+	// DisplayText: Output only. Indicates how the DateElement is displayed in the
+	// document.
+	DisplayText string `json:"displayText,omitempty"`
+	// Locale: The locale of the document, as defined by the Unicode Common Locale
+	// Data Repository (CLDR) project. For example, `en_US`. If unset, the default
+	// locale is `en_US`.
+	Locale string `json:"locale,omitempty"`
+	// TimeFormat: Determines how the time part of the DateElement will be
+	// displayed in the document. If unset, the default value is
+	// TIME_FORMAT_DISABLED, indicating no time should be shown.
+	//
+	// Possible values:
+	//   "TIME_FORMAT_UNSPECIFIED" - The time format is unspecified.
+	//   "TIME_FORMAT_DISABLED" - Indicates that the date does not have a time.
+	//   "TIME_FORMAT_HOUR_MINUTE" - The time format shows the hour and minute. For
+	// example, "Jan 1, 1970 12:00 PM".
+	//   "TIME_FORMAT_HOUR_MINUTE_TIMEZONE" - The time format shows the hour,
+	// minute, and timezone. For example, "Jan 1, 1970 12:00 PM UTC".
+	TimeFormat string `json:"timeFormat,omitempty"`
+	// TimeZoneId: The time zone of the DateElement, as defined by the Unicode
+	// Common Locale Data Repository (CLDR) project. For example, `America/New
+	// York`. If unset, the default time zone is `etc/UTC`.
+	TimeZoneId string `json:"timeZoneId,omitempty"`
+	// Timestamp: The point in time to represent, in seconds and nanoseconds since
+	// Unix epoch: January 1, 1970 at midnight UTC. Timestamp is expected to be in
+	// UTC. If time_zone_id is set, the timestamp is adjusted according to the time
+	// zone. For example, a timestamp of `18000` with a date format of
+	// `DATE_FORMAT_ISO8601` and time format of `TIME_FORMAT_HOUR_MINUTE` would be
+	// displayed as `1970-01-01 5:00 AM`. A timestamp of `18000` with date format
+	// of `DATE_FORMAT_8SO8601`, time format of `TIME_FORMAT_HOUR_MINUTE`, and time
+	// zone set to `America/New_York` will instead be `1970-01-01 12:00 AM`.
+	Timestamp string `json:"timestamp,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DateFormat") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DateFormat") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s DateElementProperties) MarshalJSON() ([]byte, error) {
+	type NoMethod DateElementProperties
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// DateElementPropertiesSuggestionState: A mask that indicates which of the
+// fields on the base DateElementProperties have been changed in this
+// suggestion. For any field set to true, there's a new suggested value.
+type DateElementPropertiesSuggestionState struct {
+	// DateFormatSuggested: Indicates if there was a suggested change to
+	// date_format.
+	DateFormatSuggested bool `json:"dateFormatSuggested,omitempty"`
+	// LocaleSuggested: Indicates if there was a suggested change to locale.
+	LocaleSuggested bool `json:"localeSuggested,omitempty"`
+	// TimeFormatSuggested: Indicates if there was a suggested change to
+	// time_format.
+	TimeFormatSuggested bool `json:"timeFormatSuggested,omitempty"`
+	// TimeZoneIdSuggested: Indicates if there was a suggested change to
+	// time_zone_id.
+	TimeZoneIdSuggested bool `json:"timeZoneIdSuggested,omitempty"`
+	// TimestampSuggested: Indicates if there was a suggested change to timestamp.
+	TimestampSuggested bool `json:"timestampSuggested,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DateFormatSuggested") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DateFormatSuggested") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s DateElementPropertiesSuggestionState) MarshalJSON() ([]byte, error) {
+	type NoMethod DateElementPropertiesSuggestionState
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // DeleteContentRangeRequest: Deletes content from the document.
 type DeleteContentRangeRequest struct {
 	// Range: The range of content to delete. Deleting text that crosses a
@@ -1068,6 +1259,29 @@ type DeletePositionedObjectRequest struct {
 
 func (s DeletePositionedObjectRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod DeletePositionedObjectRequest
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// DeleteTabRequest: Deletes a tab. If the tab has child tabs, they are deleted
+// as well.
+type DeleteTabRequest struct {
+	// TabId: The ID of the tab to delete.
+	TabId string `json:"tabId,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "TabId") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "TabId") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s DeleteTabRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod DeleteTabRequest
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -1304,78 +1518,125 @@ func (s Document) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// DocumentFormat: Represents document-level format settings.
+type DocumentFormat struct {
+	// DocumentMode: Whether the document has pages or is pageless.
+	//
+	// Possible values:
+	//   "DOCUMENT_MODE_UNSPECIFIED" - The document mode is unspecified.
+	//   "PAGES" - The document has pages.
+	//   "PAGELESS" - The document is pageless.
+	DocumentMode string `json:"documentMode,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DocumentMode") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DocumentMode") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s DocumentFormat) MarshalJSON() ([]byte, error) {
+	type NoMethod DocumentFormat
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // DocumentStyle: The style of the document.
 type DocumentStyle struct {
 	// Background: The background of the document. Documents cannot have a
 	// transparent background color.
 	Background *Background `json:"background,omitempty"`
 	// DefaultFooterId: The ID of the default footer. If not set, there's no
-	// default footer. This property is read-only.
+	// default footer. If DocumentMode is PAGELESS, this property will not be
+	// rendered. This property is read-only.
 	DefaultFooterId string `json:"defaultFooterId,omitempty"`
 	// DefaultHeaderId: The ID of the default header. If not set, there's no
-	// default header. This property is read-only.
+	// default header. If DocumentMode is PAGELESS, this property will not be
+	// rendered. This property is read-only.
 	DefaultHeaderId string `json:"defaultHeaderId,omitempty"`
+	// DocumentFormat: Specifies document-level format settings, such as the
+	// document mode (pages vs pageless).
+	DocumentFormat *DocumentFormat `json:"documentFormat,omitempty"`
 	// EvenPageFooterId: The ID of the footer used only for even pages. The value
 	// of use_even_page_header_footer determines whether to use the
 	// default_footer_id or this value for the footer on even pages. If not set,
-	// there's no even page footer. This property is read-only.
+	// there's no even page footer. If DocumentMode is PAGELESS, this property will
+	// not be rendered. This property is read-only.
 	EvenPageFooterId string `json:"evenPageFooterId,omitempty"`
 	// EvenPageHeaderId: The ID of the header used only for even pages. The value
 	// of use_even_page_header_footer determines whether to use the
 	// default_header_id or this value for the header on even pages. If not set,
-	// there's no even page header. This property is read-only.
+	// there's no even page header. If DocumentMode is PAGELESS, this property will
+	// not be rendered. This property is read-only.
 	EvenPageHeaderId string `json:"evenPageHeaderId,omitempty"`
 	// FirstPageFooterId: The ID of the footer used only for the first page. If not
 	// set then a unique footer for the first page does not exist. The value of
 	// use_first_page_header_footer determines whether to use the default_footer_id
 	// or this value for the footer on the first page. If not set, there's no first
-	// page footer. This property is read-only.
+	// page footer. If DocumentMode is PAGELESS, this property will not be
+	// rendered. This property is read-only.
 	FirstPageFooterId string `json:"firstPageFooterId,omitempty"`
 	// FirstPageHeaderId: The ID of the header used only for the first page. If not
 	// set then a unique header for the first page does not exist. The value of
 	// use_first_page_header_footer determines whether to use the default_header_id
 	// or this value for the header on the first page. If not set, there's no first
-	// page header. This property is read-only.
+	// page header. If DocumentMode is PAGELESS, this property will not be
+	// rendered. This property is read-only.
 	FirstPageHeaderId string `json:"firstPageHeaderId,omitempty"`
 	// FlipPageOrientation: Optional. Indicates whether to flip the dimensions of
 	// the page_size, which allows changing the page orientation between portrait
-	// and landscape.
+	// and landscape. If DocumentMode is PAGELESS, this property will not be
+	// rendered.
 	FlipPageOrientation bool `json:"flipPageOrientation,omitempty"`
 	// MarginBottom: The bottom page margin. Updating the bottom page margin on the
-	// document style clears the bottom page margin on all section styles.
+	// document style clears the bottom page margin on all section styles. If
+	// DocumentMode is PAGELESS, this property will not be rendered.
 	MarginBottom *Dimension `json:"marginBottom,omitempty"`
 	// MarginFooter: The amount of space between the bottom of the page and the
-	// contents of the footer.
+	// contents of the footer. If DocumentMode is PAGELESS, this property will not
+	// be rendered.
 	MarginFooter *Dimension `json:"marginFooter,omitempty"`
 	// MarginHeader: The amount of space between the top of the page and the
-	// contents of the header.
+	// contents of the header. If DocumentMode is PAGELESS, this property will not
+	// be rendered.
 	MarginHeader *Dimension `json:"marginHeader,omitempty"`
 	// MarginLeft: The left page margin. Updating the left page margin on the
 	// document style clears the left page margin on all section styles. It may
-	// also cause columns to resize in all sections.
+	// also cause columns to resize in all sections. If DocumentMode is PAGELESS,
+	// this property will not be rendered.
 	MarginLeft *Dimension `json:"marginLeft,omitempty"`
 	// MarginRight: The right page margin. Updating the right page margin on the
 	// document style clears the right page margin on all section styles. It may
-	// also cause columns to resize in all sections.
+	// also cause columns to resize in all sections. If DocumentMode is PAGELESS,
+	// this property will not be rendered.
 	MarginRight *Dimension `json:"marginRight,omitempty"`
 	// MarginTop: The top page margin. Updating the top page margin on the document
-	// style clears the top page margin on all section styles.
+	// style clears the top page margin on all section styles. If DocumentMode is
+	// PAGELESS, this property will not be rendered.
 	MarginTop *Dimension `json:"marginTop,omitempty"`
 	// PageNumberStart: The page number from which to start counting the number of
-	// pages.
+	// pages. If DocumentMode is PAGELESS, this property will not be rendered.
 	PageNumberStart int64 `json:"pageNumberStart,omitempty"`
-	// PageSize: The size of a page in the document.
+	// PageSize: The size of a page in the document. If DocumentMode is PAGELESS,
+	// this property will not be rendered.
 	PageSize *Size `json:"pageSize,omitempty"`
 	// UseCustomHeaderFooterMargins: Indicates whether DocumentStyle margin_header,
 	// SectionStyle margin_header and DocumentStyle margin_footer, SectionStyle
 	// margin_footer are respected. When false, the default values in the Docs
-	// editor for header and footer margin is used. This property is read-only.
+	// editor for header and footer margin is used. If DocumentMode is PAGELESS,
+	// this property will not be rendered. This property is read-only.
 	UseCustomHeaderFooterMargins bool `json:"useCustomHeaderFooterMargins,omitempty"`
 	// UseEvenPageHeaderFooter: Indicates whether to use the even page header /
-	// footer IDs for the even pages.
+	// footer IDs for the even pages. If DocumentMode is PAGELESS, this property
+	// will not be rendered.
 	UseEvenPageHeaderFooter bool `json:"useEvenPageHeaderFooter,omitempty"`
 	// UseFirstPageHeaderFooter: Indicates whether to use the first page header /
-	// footer IDs for the first page.
+	// footer IDs for the first page. If DocumentMode is PAGELESS, this property
+	// will not be rendered.
 	UseFirstPageHeaderFooter bool `json:"useFirstPageHeaderFooter,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Background") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -2159,6 +2420,36 @@ func (s InlineObjectPropertiesSuggestionState) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// InsertDateRequest: Inserts a date at the specified location.
+type InsertDateRequest struct {
+	// DateElementProperties: The properties of the date to insert.
+	DateElementProperties *DateElementProperties `json:"dateElementProperties,omitempty"`
+	// EndOfSegmentLocation: Inserts the date at the end of the given header,
+	// footer or document body.
+	EndOfSegmentLocation *EndOfSegmentLocation `json:"endOfSegmentLocation,omitempty"`
+	// Location: Inserts the date at a specific index in the document. The date
+	// must be inserted inside the bounds of an existing Paragraph. For instance,
+	// it cannot be inserted at a table's start index (i.e. between an existing
+	// table and its preceding paragraph).
+	Location *Location `json:"location,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DateElementProperties") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DateElementProperties") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s InsertDateRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod InsertDateRequest
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // InsertInlineImageRequest: Inserts an InlineObject containing an image at the
 // given location.
 type InsertInlineImageRequest struct {
@@ -2280,6 +2571,37 @@ type InsertPageBreakRequest struct {
 
 func (s InsertPageBreakRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod InsertPageBreakRequest
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// InsertPersonRequest: Inserts a person mention.
+type InsertPersonRequest struct {
+	// EndOfSegmentLocation: Inserts the person mention at the end of a header,
+	// footer, footnote or the document body.
+	EndOfSegmentLocation *EndOfSegmentLocation `json:"endOfSegmentLocation,omitempty"`
+	// Location: Inserts the person mention at a specific index in the document.
+	// The person mention must be inserted inside the bounds of an existing
+	// Paragraph. For instance, it cannot be inserted at a table's start index
+	// (i.e. between the table and its preceding paragraph). Person mentions cannot
+	// be inserted inside an equation.
+	Location *Location `json:"location,omitempty"`
+	// PersonProperties: The properties of the person mention to insert.
+	PersonProperties *PersonProperties `json:"personProperties,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "EndOfSegmentLocation") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "EndOfSegmentLocation") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s InsertPersonRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod InsertPersonRequest
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -3199,6 +3521,8 @@ type ParagraphElement struct {
 	AutoText *AutoText `json:"autoText,omitempty"`
 	// ColumnBreak: A column break paragraph element.
 	ColumnBreak *ColumnBreak `json:"columnBreak,omitempty"`
+	// DateElement: A paragraph element that represents a date.
+	DateElement *DateElement `json:"dateElement,omitempty"`
 	// EndIndex: The zero-base end index of this paragraph element, exclusive, in
 	// UTF-16 code units.
 	EndIndex int64 `json:"endIndex,omitempty"`
@@ -3528,11 +3852,11 @@ func (s Person) MarshalJSON() ([]byte, error) {
 
 // PersonProperties: Properties specific to a linked Person.
 type PersonProperties struct {
-	// Email: Output only. The email address linked to this Person. This field is
-	// always present.
+	// Email: The email address linked to this Person. This field is always
+	// present.
 	Email string `json:"email,omitempty"`
-	// Name: Output only. The name of the person if it's displayed in the link text
-	// instead of the person's email address.
+	// Name: The name of the person if it's displayed in the link text instead of
+	// the person's email address.
 	Name string `json:"name,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Email") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
@@ -3928,6 +4252,8 @@ func (s ReplaceNamedRangeContentRequest) MarshalJSON() ([]byte, error) {
 
 // Request: A single update to apply to a document.
 type Request struct {
+	// AddDocumentTab: Adds a document tab.
+	AddDocumentTab *AddDocumentTabRequest `json:"addDocumentTab,omitempty"`
 	// CreateFooter: Creates a footer.
 	CreateFooter *CreateFooterRequest `json:"createFooter,omitempty"`
 	// CreateFootnote: Creates a footnote.
@@ -3950,14 +4276,20 @@ type Request struct {
 	DeleteParagraphBullets *DeleteParagraphBulletsRequest `json:"deleteParagraphBullets,omitempty"`
 	// DeletePositionedObject: Deletes a positioned object from the document.
 	DeletePositionedObject *DeletePositionedObjectRequest `json:"deletePositionedObject,omitempty"`
+	// DeleteTab: Deletes a document tab.
+	DeleteTab *DeleteTabRequest `json:"deleteTab,omitempty"`
 	// DeleteTableColumn: Deletes a column from a table.
 	DeleteTableColumn *DeleteTableColumnRequest `json:"deleteTableColumn,omitempty"`
 	// DeleteTableRow: Deletes a row from a table.
 	DeleteTableRow *DeleteTableRowRequest `json:"deleteTableRow,omitempty"`
+	// InsertDate: Inserts a date.
+	InsertDate *InsertDateRequest `json:"insertDate,omitempty"`
 	// InsertInlineImage: Inserts an inline image at the specified location.
 	InsertInlineImage *InsertInlineImageRequest `json:"insertInlineImage,omitempty"`
 	// InsertPageBreak: Inserts a page break at the specified location.
 	InsertPageBreak *InsertPageBreakRequest `json:"insertPageBreak,omitempty"`
+	// InsertPerson: Inserts a person mention.
+	InsertPerson *InsertPersonRequest `json:"insertPerson,omitempty"`
 	// InsertSectionBreak: Inserts a section break at the specified location.
 	InsertSectionBreak *InsertSectionBreakRequest `json:"insertSectionBreak,omitempty"`
 	// InsertTable: Inserts a table at the specified location.
@@ -3982,6 +4314,8 @@ type Request struct {
 	UnmergeTableCells *UnmergeTableCellsRequest `json:"unmergeTableCells,omitempty"`
 	// UpdateDocumentStyle: Updates the style of the document.
 	UpdateDocumentStyle *UpdateDocumentStyleRequest `json:"updateDocumentStyle,omitempty"`
+	// UpdateDocumentTabProperties: Updates the properties of a document tab.
+	UpdateDocumentTabProperties *UpdateDocumentTabPropertiesRequest `json:"updateDocumentTabProperties,omitempty"`
 	// UpdateParagraphStyle: Updates the paragraph style at the specified range.
 	UpdateParagraphStyle *UpdateParagraphStyleRequest `json:"updateParagraphStyle,omitempty"`
 	// UpdateSectionStyle: Updates the section style of the specified range.
@@ -3994,15 +4328,15 @@ type Request struct {
 	UpdateTableRowStyle *UpdateTableRowStyleRequest `json:"updateTableRowStyle,omitempty"`
 	// UpdateTextStyle: Updates the text style at the specified range.
 	UpdateTextStyle *UpdateTextStyleRequest `json:"updateTextStyle,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "CreateFooter") to
+	// ForceSendFields is a list of field names (e.g. "AddDocumentTab") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "CreateFooter") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "AddDocumentTab") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -4014,6 +4348,8 @@ func (s Request) MarshalJSON() ([]byte, error) {
 
 // Response: A single response from an update.
 type Response struct {
+	// AddDocumentTab: The result of adding a document tab.
+	AddDocumentTab *AddDocumentTabResponse `json:"addDocumentTab,omitempty"`
 	// CreateFooter: The result of creating a footer.
 	CreateFooter *CreateFooterResponse `json:"createFooter,omitempty"`
 	// CreateFootnote: The result of creating a footnote.
@@ -4029,15 +4365,15 @@ type Response struct {
 	InsertInlineSheetsChart *InsertInlineSheetsChartResponse `json:"insertInlineSheetsChart,omitempty"`
 	// ReplaceAllText: The result of replacing text.
 	ReplaceAllText *ReplaceAllTextResponse `json:"replaceAllText,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "CreateFooter") to
+	// ForceSendFields is a list of field names (e.g. "AddDocumentTab") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "CreateFooter") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "AddDocumentTab") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -4134,15 +4470,15 @@ func (s RichLink) MarshalJSON() ([]byte, error) {
 
 // RichLinkProperties: Properties specific to a RichLink.
 type RichLinkProperties struct {
-	// MimeType: Output only. The MIME type
+	// MimeType: The MIME type
 	// (https://developers.google.com/drive/api/v3/mime-types) of the RichLink, if
 	// there's one (for example, when it's a file in Drive).
 	MimeType string `json:"mimeType,omitempty"`
-	// Title: Output only. The title of the RichLink as displayed in the link. This
-	// title matches the title of the linked resource at the time of the insertion
-	// or last update of the link. This field is always present.
+	// Title: The title of the RichLink as displayed in the link. This title
+	// matches the title of the linked resource at the time of the insertion or
+	// last update of the link. This field is always present.
 	Title string `json:"title,omitempty"`
-	// Uri: Output only. The URI to the RichLink. This is always present.
+	// Uri: The URI to the RichLink. This is always present.
 	Uri string `json:"uri,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "MimeType") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -4251,13 +4587,15 @@ type SectionStyle struct {
 	ContentDirection string `json:"contentDirection,omitempty"`
 	// DefaultFooterId: The ID of the default footer. If unset, the value inherits
 	// from the previous SectionBreak's SectionStyle. If the value is unset in the
-	// first SectionBreak, it inherits from DocumentStyle's default_footer_id. This
-	// property is read-only.
+	// first SectionBreak, it inherits from DocumentStyle's default_footer_id. If
+	// DocumentMode is PAGELESS, this property will not be rendered. This property
+	// is read-only.
 	DefaultFooterId string `json:"defaultFooterId,omitempty"`
 	// DefaultHeaderId: The ID of the default header. If unset, the value inherits
 	// from the previous SectionBreak's SectionStyle. If the value is unset in the
-	// first SectionBreak, it inherits from DocumentStyle's default_header_id. This
-	// property is read-only.
+	// first SectionBreak, it inherits from DocumentStyle's default_header_id. If
+	// DocumentMode is PAGELESS, this property will not be rendered. This property
+	// is read-only.
 	DefaultHeaderId string `json:"defaultHeaderId,omitempty"`
 	// EvenPageFooterId: The ID of the footer used only for even pages. If the
 	// value of DocumentStyle's use_even_page_header_footer is true, this value is
@@ -4265,7 +4603,8 @@ type SectionStyle struct {
 	// footers on even pages use the default_footer_id. If unset, the value
 	// inherits from the previous SectionBreak's SectionStyle. If the value is
 	// unset in the first SectionBreak, it inherits from DocumentStyle's
-	// even_page_footer_id. This property is read-only.
+	// even_page_footer_id. If DocumentMode is PAGELESS, this property will not be
+	// rendered. This property is read-only.
 	EvenPageFooterId string `json:"evenPageFooterId,omitempty"`
 	// EvenPageHeaderId: The ID of the header used only for even pages. If the
 	// value of DocumentStyle's use_even_page_header_footer is true, this value is
@@ -4273,7 +4612,8 @@ type SectionStyle struct {
 	// headers on even pages use the default_header_id. If unset, the value
 	// inherits from the previous SectionBreak's SectionStyle. If the value is
 	// unset in the first SectionBreak, it inherits from DocumentStyle's
-	// even_page_header_id. This property is read-only.
+	// even_page_header_id. If DocumentMode is PAGELESS, this property will not be
+	// rendered. This property is read-only.
 	EvenPageHeaderId string `json:"evenPageHeaderId,omitempty"`
 	// FirstPageFooterId: The ID of the footer used only for the first page of the
 	// section. If use_first_page_header_footer is true, this value is used for the
@@ -4281,7 +4621,8 @@ type SectionStyle struct {
 	// first page of the section uses the default_footer_id. If unset, the value
 	// inherits from the previous SectionBreak's SectionStyle. If the value is
 	// unset in the first SectionBreak, it inherits from DocumentStyle's
-	// first_page_footer_id. This property is read-only.
+	// first_page_footer_id. If DocumentMode is PAGELESS, this property will not be
+	// rendered. This property is read-only.
 	FirstPageFooterId string `json:"firstPageFooterId,omitempty"`
 	// FirstPageHeaderId: The ID of the header used only for the first page of the
 	// section. If use_first_page_header_footer is true, this value is used for the
@@ -4289,59 +4630,67 @@ type SectionStyle struct {
 	// first page of the section uses the default_header_id. If unset, the value
 	// inherits from the previous SectionBreak's SectionStyle. If the value is
 	// unset in the first SectionBreak, it inherits from DocumentStyle's
-	// first_page_header_id. This property is read-only.
+	// first_page_header_id. If DocumentMode is PAGELESS, this property will not be
+	// rendered. This property is read-only.
 	FirstPageHeaderId string `json:"firstPageHeaderId,omitempty"`
 	// FlipPageOrientation: Optional. Indicates whether to flip the dimensions of
 	// DocumentStyle's page_size for this section, which allows changing the page
 	// orientation between portrait and landscape. If unset, the value inherits
-	// from DocumentStyle's flip_page_orientation. When updating this property,
-	// setting a concrete value is required. Unsetting this property results in a
-	// 400 bad request error.
+	// from DocumentStyle's flip_page_orientation. If DocumentMode is PAGELESS,
+	// this property will not be rendered. When updating this property, setting a
+	// concrete value is required. Unsetting this property results in a 400 bad
+	// request error.
 	FlipPageOrientation bool `json:"flipPageOrientation,omitempty"`
 	// MarginBottom: The bottom page margin of the section. If unset, the value
-	// defaults to margin_bottom from DocumentStyle. When updating this property,
-	// setting a concrete value is required. Unsetting this property results in a
-	// 400 bad request error.
+	// defaults to margin_bottom from DocumentStyle. If DocumentMode is PAGELESS,
+	// this property will not be rendered. When updating this property, setting a
+	// concrete value is required. Unsetting this property results in a 400 bad
+	// request error.
 	MarginBottom *Dimension `json:"marginBottom,omitempty"`
 	// MarginFooter: The footer margin of the section. If unset, the value defaults
 	// to margin_footer from DocumentStyle. If updated,
 	// use_custom_header_footer_margins is set to true on DocumentStyle. The value
 	// of use_custom_header_footer_margins on DocumentStyle indicates if a footer
-	// margin is being respected for this section When updating this property,
-	// setting a concrete value is required. Unsetting this property results in a
-	// 400 bad request error.
+	// margin is being respected for this section If DocumentMode is PAGELESS, this
+	// property will not be rendered. When updating this property, setting a
+	// concrete value is required. Unsetting this property results in a 400 bad
+	// request error.
 	MarginFooter *Dimension `json:"marginFooter,omitempty"`
 	// MarginHeader: The header margin of the section. If unset, the value defaults
 	// to margin_header from DocumentStyle. If updated,
 	// use_custom_header_footer_margins is set to true on DocumentStyle. The value
 	// of use_custom_header_footer_margins on DocumentStyle indicates if a header
-	// margin is being respected for this section. When updating this property,
-	// setting a concrete value is required. Unsetting this property results in a
-	// 400 bad request error.
+	// margin is being respected for this section. If DocumentMode is PAGELESS,
+	// this property will not be rendered. When updating this property, setting a
+	// concrete value is required. Unsetting this property results in a 400 bad
+	// request error.
 	MarginHeader *Dimension `json:"marginHeader,omitempty"`
 	// MarginLeft: The left page margin of the section. If unset, the value
 	// defaults to margin_left from DocumentStyle. Updating the left margin causes
 	// columns in this section to resize. Since the margin affects column width,
-	// it's applied before column properties. When updating this property, setting
-	// a concrete value is required. Unsetting this property results in a 400 bad
+	// it's applied before column properties. If DocumentMode is PAGELESS, this
+	// property will not be rendered. When updating this property, setting a
+	// concrete value is required. Unsetting this property results in a 400 bad
 	// request error.
 	MarginLeft *Dimension `json:"marginLeft,omitempty"`
 	// MarginRight: The right page margin of the section. If unset, the value
 	// defaults to margin_right from DocumentStyle. Updating the right margin
 	// causes columns in this section to resize. Since the margin affects column
-	// width, it's applied before column properties. When updating this property,
-	// setting a concrete value is required. Unsetting this property results in a
-	// 400 bad request error.
-	MarginRight *Dimension `json:"marginRight,omitempty"`
-	// MarginTop: The top page margin of the section. If unset, the value defaults
-	// to margin_top from DocumentStyle. When updating this property, setting a
+	// width, it's applied before column properties. If DocumentMode is PAGELESS,
+	// this property will not be rendered. When updating this property, setting a
 	// concrete value is required. Unsetting this property results in a 400 bad
 	// request error.
+	MarginRight *Dimension `json:"marginRight,omitempty"`
+	// MarginTop: The top page margin of the section. If unset, the value defaults
+	// to margin_top from DocumentStyle. If DocumentMode is PAGELESS, this property
+	// will not be rendered. When updating this property, setting a concrete value
+	// is required. Unsetting this property results in a 400 bad request error.
 	MarginTop *Dimension `json:"marginTop,omitempty"`
 	// PageNumberStart: The page number from which to start counting the number of
 	// pages for this section. If unset, page numbering continues from the previous
 	// section. If the value is unset in the first SectionBreak, refer to
-	// DocumentStyle's page_number_start. When updating this property, setting a
+	// DocumentStyle's page_number_start. If DocumentMode is PAGELESS, this
+	// property will not be rendered. When updating this property, setting a
 	// concrete value is required. Unsetting this property results in a 400 bad
 	// request error.
 	PageNumberStart int64 `json:"pageNumberStart,omitempty"`
@@ -4356,9 +4705,10 @@ type SectionStyle struct {
 	// UseFirstPageHeaderFooter: Indicates whether to use the first page header /
 	// footer IDs for the first page of the section. If unset, it inherits from
 	// DocumentStyle's use_first_page_header_footer for the first section. If the
-	// value is unset for subsequent sectors, it should be interpreted as false.
-	// When updating this property, setting a concrete value is required. Unsetting
-	// this property results in a 400 bad request error.
+	// value is unset for subsequent sectors, it should be interpreted as false. If
+	// DocumentMode is PAGELESS, this property will not be rendered. When updating
+	// this property, setting a concrete value is required. Unsetting this property
+	// results in a 400 bad request error.
 	UseFirstPageHeaderFooter bool `json:"useFirstPageHeaderFooter,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "ColumnProperties") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -4570,6 +4920,11 @@ type SubstringMatchCriteria struct {
 	// MatchCase: Indicates whether the search should respect case: - `True`: the
 	// search is case sensitive. - `False`: the search is case insensitive.
 	MatchCase bool `json:"matchCase,omitempty"`
+	// SearchByRegex: Optional. True if the find value should be treated as a
+	// regular expression. Any backslashes in the pattern should be escaped. -
+	// `True`: the search text is treated as a regular expressions. - `False`: the
+	// search text is treated as a substring for matching.
+	SearchByRegex bool `json:"searchByRegex,omitempty"`
 	// Text: The text to search for in the document.
 	Text string `json:"text,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "MatchCase") to
@@ -4614,6 +4969,36 @@ type SuggestedBullet struct {
 
 func (s SuggestedBullet) MarshalJSON() ([]byte, error) {
 	type NoMethod SuggestedBullet
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// SuggestedDateElementProperties: A suggested change to a
+// DateElementProperties.
+type SuggestedDateElementProperties struct {
+	// DateElementProperties: DateElementProperties that only includes the changes
+	// made in this suggestion. This can be used along with the
+	// date_element_properties_suggestion_state to see which fields have changed
+	// and their new values.
+	DateElementProperties *DateElementProperties `json:"dateElementProperties,omitempty"`
+	// DateElementPropertiesSuggestionState: A mask that indicates which of the
+	// fields on the base DateElementProperties have been changed in this
+	// suggestion.
+	DateElementPropertiesSuggestionState *DateElementPropertiesSuggestionState `json:"dateElementPropertiesSuggestionState,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DateElementProperties") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DateElementProperties") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s SuggestedDateElementProperties) MarshalJSON() ([]byte, error) {
+	type NoMethod SuggestedDateElementProperties
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -4895,6 +5280,12 @@ func (s Tab) MarshalJSON() ([]byte, error) {
 
 // TabProperties: Properties of a tab.
 type TabProperties struct {
+	// IconEmoji: Optional. The emoji icon displayed with the tab. A valid emoji
+	// icon is represented by a non-empty Unicode string. Any set of characters
+	// that don't represent a single emoji is invalid. If an emoji is invalid, a
+	// 400 bad request error is returned. If this value is unset or empty, the tab
+	// will display the default tab icon.
+	IconEmoji string `json:"iconEmoji,omitempty"`
 	// Index: The zero-based index of the tab within the parent.
 	Index int64 `json:"index,omitempty"`
 	// NestingLevel: Output only. The depth of the tab within the document.
@@ -4903,17 +5294,17 @@ type TabProperties struct {
 	// ParentTabId: Optional. The ID of the parent tab. Empty when the current tab
 	// is a root-level tab, which means it doesn't have any parents.
 	ParentTabId string `json:"parentTabId,omitempty"`
-	// TabId: Output only. The ID of the tab. This field can't be changed.
+	// TabId: The immutable ID of the tab.
 	TabId string `json:"tabId,omitempty"`
 	// Title: The user-visible name of the tab.
 	Title string `json:"title,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "Index") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "IconEmoji") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Index") to include in API
+	// NullFields is a list of field names (e.g. "IconEmoji") to include in API
 	// requests with the JSON null value. By default, fields with empty values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
@@ -5676,6 +6067,32 @@ type UpdateDocumentStyleRequest struct {
 
 func (s UpdateDocumentStyleRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod UpdateDocumentStyleRequest
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// UpdateDocumentTabPropertiesRequest: Update the properties of a document tab.
+type UpdateDocumentTabPropertiesRequest struct {
+	// Fields: The fields that should be updated. At least one field must be
+	// specified. The root `tab_properties` is implied and should not be specified.
+	// A single "*" can be used as short-hand for listing every field.
+	Fields string `json:"fields,omitempty"`
+	// TabProperties: The tab properties to update.
+	TabProperties *TabProperties `json:"tabProperties,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Fields") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Fields") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s UpdateDocumentTabPropertiesRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod UpdateDocumentTabPropertiesRequest
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
