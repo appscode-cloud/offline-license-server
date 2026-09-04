@@ -59,11 +59,40 @@ func (form *KubeDBInquiryInfo) Complete() {
 	form.CustomerCompany = strings.TrimSpace(form.CustomerCompany)
 }
 
+// spamKeywords are terms that never legitimately appear in a KubeDB inquiry;
+// their presence marks the submission as spam.
+var spamKeywords = []string{"bitcoin", "coinbase"}
+
 func (form KubeDBInquiryInfo) Validate() error {
 	if !strings.Contains(form.CustomerEmail, "@") {
 		return fmt.Errorf("invalid customer email: %s", form.CustomerEmail)
 	}
+	if form.IsSpam() {
+		return fmt.Errorf("submission flagged as spam")
+	}
 	return nil
+}
+
+// IsSpam reports whether any field of the inquiry mentions a spam keyword.
+func (form KubeDBInquiryInfo) IsSpam() bool {
+	fields := strings.ToLower(strings.Join([]string{
+		form.CustomerName,
+		form.CustomerCompany,
+		form.CustomerAddress,
+		form.CustomerCountry,
+		form.EstimatedDatabaseMemory,
+		form.KubernetesSetup,
+		form.SupportPlan,
+		form.ProjectTimeline,
+		form.ProfessionalServices,
+		form.Notes,
+	}, " "))
+	for _, keyword := range spamKeywords {
+		if strings.Contains(fields, keyword) {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Server) HandleKubeDBInquiry(info *KubeDBInquiryInfo) error {
