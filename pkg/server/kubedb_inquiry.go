@@ -61,7 +61,7 @@ func (form *KubeDBInquiryInfo) Complete() {
 
 // spamKeywords are terms that never legitimately appear in a KubeDB inquiry;
 // their presence marks the submission as spam.
-var spamKeywords = []string{"bitcoin", "coinbase"}
+var spamKeywords = []string{"bitcoin", "btc", "coinbase", "mining"}
 
 func (form KubeDBInquiryInfo) Validate() error {
 	if !strings.Contains(form.CustomerEmail, "@") {
@@ -73,9 +73,10 @@ func (form KubeDBInquiryInfo) Validate() error {
 	return nil
 }
 
-// IsSpam reports whether any field of the inquiry mentions a spam keyword.
+// IsSpam reports whether any field of the inquiry mentions a spam keyword or
+// contains an emoji character.
 func (form KubeDBInquiryInfo) IsSpam() bool {
-	fields := strings.ToLower(strings.Join([]string{
+	fields := strings.Join([]string{
 		form.CustomerName,
 		form.CustomerCompany,
 		form.CustomerAddress,
@@ -86,11 +87,39 @@ func (form KubeDBInquiryInfo) IsSpam() bool {
 		form.ProjectTimeline,
 		form.ProfessionalServices,
 		form.Notes,
-	}, " "))
+	}, " ")
+
+	lower := strings.ToLower(fields)
 	for _, keyword := range spamKeywords {
-		if strings.Contains(fields, keyword) {
+		if strings.Contains(lower, keyword) {
 			return true
 		}
+	}
+	return containsEmoji(fields)
+}
+
+// containsEmoji reports whether s contains any rune from the common emoji
+// blocks of the Unicode standard.
+func containsEmoji(s string) bool {
+	for _, r := range s {
+		if isEmojiRune(r) {
+			return true
+		}
+	}
+	return false
+}
+
+func isEmojiRune(r rune) bool {
+	switch {
+	case r >= 0x1F300 && r <= 0x1FAFF, // symbols, pictographs, emoticons, transport, supplemental symbols
+		r >= 0x1F1E6 && r <= 0x1F1FF, // regional indicator symbols (flag emoji)
+		r >= 0x2600 && r <= 0x27BF,   // misc symbols and dingbats
+		r >= 0x2300 && r <= 0x23FF,   // misc technical, e.g. ⌚ ⏰
+		r >= 0x2B00 && r <= 0x2BFF,   // misc symbols and arrows, e.g. ⭐
+		r >= 0xFE00 && r <= 0xFE0F,   // variation selectors (emoji presentation)
+		r == 0x203C || r == 0x2049,   // ‼ ⁉
+		r == 0x2122 || r == 0x2139:   // ™ ℹ
+		return true
 	}
 	return false
 }
