@@ -65,6 +65,27 @@ func TestKubeDBInquiryInfo_Validate_Spam(t *testing.T) {
 			},
 			wantSpam: true,
 		},
+		{
+			name: "emoji in notes",
+			mutate: func(f *server.KubeDBInquiryInfo) {
+				f.Notes = "Great product 🚀🔥"
+			},
+			wantSpam: true,
+		},
+		{
+			name: "emoji in customer name",
+			mutate: func(f *server.KubeDBInquiryInfo) {
+				f.CustomerName = "Jane 😀 Doe"
+			},
+			wantSpam: true,
+		},
+		{
+			name: "plain punctuation is not spam",
+			mutate: func(f *server.KubeDBInquiryInfo) {
+				f.Notes = "Great product! Looking forward to it :)"
+			},
+			wantSpam: false,
+		},
 	}
 
 	for _, tt := range tests {
